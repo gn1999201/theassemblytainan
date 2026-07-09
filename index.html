@@ -530,30 +530,30 @@
       <p><span class="zh">提交後我們會以 Email 回覆看房與後續流程（此為原型頁面，表單暫不會實際送出）。</span><span class="en">We'll follow up by email with viewing details and next steps. (Prototype form — submissions aren't sent yet.)</span></p>
     </div>
     <form class="apply-form" id="applyForm">
-      <div class="field"><label for="name"><span class="zh">姓名</span><span class="en">Full name</span></label><input id="name" required></div>
+      <div class="field"><label for="name"><span class="zh">姓名</span><span class="en">Full name</span></label><input id="name" name="name" required></div>
       <div class="field">
         <label for="country"><span class="zh">國籍</span><span class="en">Nationality</span></label>
-        <select id="country" required></select>
+        <select id="country" name="country" required></select>
       </div>
-      <div class="field"><label for="school"><span class="zh">學校／身分</span><span class="en">University / status</span></label><input id="school" placeholder="NCKU exchange student"></div>
+      <div class="field"><label for="school"><span class="zh">學校／身分</span><span class="en">University / status</span></label><input id="school" name="school" placeholder="NCKU exchange student"></div>
       <div class="field">
         <label for="room"><span class="zh">希望房型</span><span class="en">Preferred room type</span></label>
-        <select id="room">
+        <select id="room" name="room">
           <option>Room A — NT$480</option>
           <option>Room B — NT$460</option>
         </select>
       </div>
-      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" type="date"></div>
+      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date"></div>
       <div class="field">
         <label for="formOccupants"><span class="zh">入住人數</span><span class="en">Number of occupants</span></label>
-        <select id="formOccupants"></select>
+        <select id="formOccupants" name="occupants"></select>
       </div>
-      <div class="field"><label for="length"><span class="zh">預計入住晚數</span><span class="en">Length of stay (nights)</span></label><input id="length" type="number" min="28" step="1" placeholder="28+"></div>
-      <div class="field full"><label for="email">Email</label><input id="email" type="email" required></div>
-      <div class="field"><label for="line"><span class="zh">LINE ID（選填）</span><span class="en">LINE ID (optional)</span></label><input id="line" placeholder="LINE ID"></div>
-      <div class="field"><label for="whatsapp"><span class="zh">WhatsApp 號碼（選填）</span><span class="en">WhatsApp number (optional)</span></label><input id="whatsapp" type="tel" placeholder="+886 9xx xxx xxx"></div>
+      <div class="field"><label for="length"><span class="zh">預計入住晚數</span><span class="en">Length of stay (nights)</span></label><input id="length" name="length_nights" type="number" min="28" step="1" placeholder="28+"></div>
+      <div class="field full"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+      <div class="field"><label for="line"><span class="zh">LINE ID（選填）</span><span class="en">LINE ID (optional)</span></label><input id="line" name="line" placeholder="LINE ID"></div>
+      <div class="field"><label for="whatsapp"><span class="zh">WhatsApp 號碼（選填）</span><span class="en">WhatsApp number (optional)</span></label><input id="whatsapp" name="whatsapp" type="tel" placeholder="+886 9xx xxx xxx"></div>
       <p class="field full" style="font-size:0.8rem; color:var(--paper-dim); margin:-8px 0 4px;"><span class="zh">如提供 LINE 或 WhatsApp，我們會優先用該方式主動聯繫你。</span><span class="en">If you provide a LINE ID or WhatsApp number, we'll reach out to you there first.</span></p>
-      <div class="field full"><label for="msg"><span class="zh">留言／問題</span><span class="en">Message / questions</span></label><textarea id="msg"></textarea></div>
+      <div class="field full"><label for="msg"><span class="zh">留言／問題</span><span class="en">Message / questions</span></label><textarea id="msg" name="message"></textarea></div>
       <div class="submit-row">
         <button type="submit" class="btn btn-primary"><span class="zh">送出申請</span><span class="en">Submit application</span></button>
         <span class="form-msg" id="formMsg"></span>
@@ -689,11 +689,46 @@
     if (window.updatePricingCalc) window.updatePricingCalc();
     if (window.refreshCountryOptions) window.refreshCountryOptions();
   });
+  // ⚠️ Paste your Google Apps Script Web App URL here after deployment (see setup guide)
+  var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwiUYMv7EXmz6AE0OzbFul5KhE314BydwEupUW1yEmlu0mYP5QDv90qflc9iEjXa5VCHg/exec';
+
   document.getElementById('applyForm').addEventListener('submit', function(e){
     e.preventDefault();
-    document.getElementById('formMsg').textContent = document.body.classList.contains('lang-en')
-      ? 'Prototype only — connect this form to email or a backend to go live.'
-      : '這是原型表單，正式上線前請串接 Email 或後端服務。';
+    var form = e.target;
+    var msgEl = document.getElementById('formMsg');
+    var isEn = document.body.classList.contains('lang-en');
+
+    if (GOOGLE_SHEETS_ENDPOINT.indexOf('PASTE_YOUR') === 0) {
+      msgEl.textContent = isEn
+        ? 'Form endpoint not connected yet — see setup guide to link this to Google Sheets.'
+        : '表單尚未連接後台，請依照設定說明把這裡接到 Google 試算表。';
+      return;
+    }
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    msgEl.textContent = isEn ? 'Submitting…' : '送出中…';
+
+    var formData = new FormData(form);
+
+    fetch(GOOGLE_SHEETS_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    }).then(function(){
+      msgEl.textContent = isEn
+        ? 'Thanks! Your application has been received.'
+        : '已收到你的申請，謝謝！';
+      form.reset();
+      if (window.refreshOccupantOptions) window.refreshOccupantOptions();
+      if (window.refreshCountryOptions) window.refreshCountryOptions();
+    }).catch(function(){
+      msgEl.textContent = isEn
+        ? 'Something went wrong — please try again or contact us directly.'
+        : '送出時發生問題，請再試一次或直接跟我們聯絡。';
+    }).finally(function(){
+      submitBtn.disabled = false;
+    });
   });
 </script>
 
