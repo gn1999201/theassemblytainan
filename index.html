@@ -44,30 +44,44 @@
   body.lang-en h1, body.lang-en h2, body.lang-en h3, body.lang-en .display{ font-family:'Zilla Slab',serif; }
 
   .wrap{ max-width:1120px; margin:0 auto; padding:0 28px; }
+  @media (max-width:380px){ .wrap{ padding:0 16px; } }
 
   /* ---------- NAV ---------- */
   .nav{
     position:sticky; top:0; z-index:50;
     background:var(--paper); border-bottom:1px solid var(--line);
   }
-  .nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:66px; }
-  .brand{ font-family:'Zilla Slab','Noto Serif TC',serif; font-weight:700; font-size:1.15rem; letter-spacing:0.02em; }
+  .nav .wrap{ display:flex; align-items:center; justify-content:space-between; min-height:66px; gap:10px; padding-top:10px; padding-bottom:10px; }
+  .brand{ font-family:'Zilla Slab','Noto Serif TC',serif; font-weight:700; font-size:1.15rem; letter-spacing:0.02em; white-space:nowrap; }
   .brand span{ color:var(--brick); }
   .nav-links{ display:flex; gap:28px; list-style:none; margin:0; padding:0; font-size:0.92rem; }
   .nav-links a{ text-decoration:none; border-bottom:2px solid transparent; padding-bottom:4px; transition:border-color .15s; }
   .nav-links a:hover, .nav-links a:focus-visible{ border-color:var(--tile); }
-  .nav-right{ display:flex; align-items:center; gap:16px; }
+  .nav-right{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
   .lang-btn{
     font-family:'IBM Plex Sans',sans-serif; font-size:0.82rem; font-weight:600;
     background:none; border:1px solid var(--ink); color:var(--ink);
     padding:6px 12px; border-radius:999px; cursor:pointer; letter-spacing:0.03em;
+    white-space:nowrap; line-height:1.3;
   }
   .lang-btn:hover{ background:var(--ink); color:var(--paper); }
   .nav-cta{
     background:var(--brick); color:var(--paper); text-decoration:none;
     padding:8px 16px; border-radius:999px; font-size:0.86rem; font-weight:600;
+    white-space:nowrap; line-height:1.3; display:inline-flex; align-items:center;
   }
   @media (max-width:760px){ .nav-links{ display:none; } }
+  @media (max-width:420px){
+    .brand{ font-size:0.98rem; }
+    .lang-btn{ font-size:0.72rem; padding:6px 9px; }
+    .nav-cta{ font-size:0.76rem; padding:7px 12px; }
+    .nav-right{ gap:7px; }
+  }
+  @media (max-width:360px){
+    .brand{ font-size:0.85rem; }
+    .lang-btn{ font-size:0.66rem; padding:5px 8px; }
+    .nav-cta{ font-size:0.7rem; padding:6px 10px; }
+  }
 
   /* ---------- CAROUSEL ---------- */
   .carousel{ position:relative; height:62vh; min-height:420px; max-height:640px; overflow:hidden; background:var(--ink); }
@@ -165,11 +179,14 @@
   .room-card.alt{ background:var(--tile); }
   .room-tag{ font-size:0.76rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; }
   .room-card.alt .room-tag{ color:var(--gold); opacity:1; }
-  .room-title{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.5rem; margin-bottom:6px; }
+  .room-header-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px; }
+  .room-title{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.5rem; }
+  .room-price-block{ text-align:right; flex-shrink:0; }
+  .room-price-inline{ font-family:'Zilla Slab',serif; font-size:1.4rem; color:var(--paper); white-space:nowrap; }
+  .room-price-inline small{ font-size:0.8rem; font-weight:400; color:var(--paper-dim); }
+  .room-usd-approx{ font-size:0.78rem; margin-top:2px; white-space:nowrap; }
   .room-count{ font-size:0.85rem; color:var(--paper-dim); margin-bottom:20px; }
   .room-card.alt .room-count{ color:rgba(239,235,218,0.85); }
-  .room-price{ font-family:'Zilla Slab',serif; font-size:2.4rem; color:var(--paper); margin-top:auto; }
-  .room-price small{ font-size:0.95rem; font-weight:400; color:var(--paper-dim); }
   .room-minstay{ font-size:0.82rem; margin-top:6px; color:var(--gold); font-weight:600; }
   .room-card.alt .room-minstay{ color:var(--gold); }
   .room-feat{ list-style:none; padding:0; margin:18px 0 0; font-size:0.86rem; display:flex; flex-direction:column; gap:6px; color:var(--paper-dim); }
@@ -344,26 +361,34 @@
     <div class="room-grid">
       <div class="room-card">
         <div class="room-tag"><span class="zh">共用衛浴</span><span class="en">Shared Bathroom</span></div>
-        <div class="room-title">Room A</div>
+        <div class="room-header-row">
+          <div class="room-title">Room A</div>
+          <div class="room-price-block">
+            <div class="room-price-inline">NT$480<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
+            <div class="room-usd-approx" style="color:var(--paper-dim);">≈ <span id="roomAUsdAmt">US$15</span> / <span class="zh">晚</span><span class="en">night</span></div>
+          </div>
+        </div>
         <div class="room-count"><span class="zh">約 12 平方米</span><span class="en">~12 sqm</span></div>
         <ul class="room-feat">
           <li><span class="zh">與 Room B 共用同一套衛浴</span><span class="en">Shares one bathroom with Room B</span></li>
           <li><span class="zh">第2人加價 NT$150/晚</span><span class="en">+NT$150/night for a 2nd occupant</span></li>
         </ul>
-        <div class="room-price">NT$480<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
-        <div class="room-usd-approx" style="font-size:0.78rem; color:var(--paper-dim);">≈ <span id="roomAUsdAmt">US$15</span> / <span class="zh">晚</span><span class="en">night</span></div>
         <div class="room-minstay"><span class="zh">最短租期 28 晚</span><span class="en">28-night minimum</span></div>
       </div>
       <div class="room-card alt">
         <div class="room-tag"><span class="zh">共用衛浴</span><span class="en">Shared Bathroom</span></div>
-        <div class="room-title">Room B</div>
+        <div class="room-header-row">
+          <div class="room-title">Room B</div>
+          <div class="room-price-block">
+            <div class="room-price-inline">NT$460<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
+            <div class="room-usd-approx" style="color:rgba(239,235,218,0.85);">≈ <span id="roomBUsdAmt">US$14</span> / <span class="zh">晚</span><span class="en">night</span></div>
+          </div>
+        </div>
         <div class="room-count"><span class="zh">約 9.5 平方米</span><span class="en">~9.5 sqm</span></div>
         <ul class="room-feat">
           <li><span class="zh">與 Room A 共用同一套衛浴</span><span class="en">Shares one bathroom with Room A</span></li>
           <li><span class="zh">第2人加價 NT$150/晚</span><span class="en">+NT$150/night for a 2nd occupant</span></li>
         </ul>
-        <div class="room-price">NT$460<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
-        <div class="room-usd-approx" style="font-size:0.78rem; color:rgba(239,235,218,0.85);">≈ <span id="roomBUsdAmt">US$14</span> / <span class="zh">晚</span><span class="en">night</span></div>
         <div class="room-minstay"><span class="zh">最短租期 28 晚</span><span class="en">28-night minimum</span></div>
       </div>
     </div>
