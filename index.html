@@ -143,9 +143,8 @@
   /* ---------- COORDINATES (signature ruler) ---------- */
   .coords{ background:var(--paper-dim); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .ruler{ position:relative; padding-top:20px; }
-  .ruler-line{ position:relative; height:2px; background:var(--ink); margin:0 0 0 0; }
-  .ruler-stops{ display:flex; justify-content:space-between; position:relative; }
-  .stop{ flex:1; position:relative; padding-top:22px; text-align:left; }
+  .ruler-stops{ display:grid; grid-template-columns:repeat(3,1fr); column-gap:24px; row-gap:34px; position:relative; }
+  .stop{ flex:1; position:relative; padding-top:22px; text-align:left; border-top:2px solid var(--ink); }
   .stop::before{
     content:''; position:absolute; top:-2px; left:0; width:2px; height:14px; background:var(--brick);
   }
@@ -156,7 +155,8 @@
   .map-embed{ position:relative; width:100%; padding-bottom:52%; margin-top:36px; border-radius:2px; overflow:hidden; filter:grayscale(0.15); }
   .map-embed iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
   @media (max-width:600px){ .map-embed{ padding-bottom:75%; } }
-  @media (max-width:760px){ .ruler-stops{ flex-direction:column; gap:26px; } .stop::before{ display:none; } .stop{ padding-top:0; border-left:2px solid var(--brick); padding-left:14px; } }
+  @media (max-width:760px){ .ruler-stops{ grid-template-columns:1fr; row-gap:26px; } .stop::before{ display:none; } .stop{ padding-top:0; border-left:2px solid var(--brick); padding-left:14px; } }
+  @media (max-width:900px) and (min-width:761px){ .ruler-stops{ grid-template-columns:repeat(2,1fr); } }
 
   /* ---------- ROOMS ---------- */
   .room-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px; max-width:760px; }
@@ -164,14 +164,14 @@
   .room-card{ background:var(--ink); color:var(--paper); border-radius:2px; padding:30px 26px; display:flex; flex-direction:column; }
   .room-card.alt{ background:var(--tile); }
   .room-tag{ font-size:0.76rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; }
-  .room-card.alt .room-tag{ color:var(--paper); opacity:0.85; }
+  .room-card.alt .room-tag{ color:var(--gold); opacity:1; }
   .room-title{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.5rem; margin-bottom:6px; }
   .room-count{ font-size:0.85rem; color:var(--paper-dim); margin-bottom:20px; }
   .room-card.alt .room-count{ color:rgba(239,235,218,0.85); }
   .room-price{ font-family:'Zilla Slab',serif; font-size:2.4rem; color:var(--paper); margin-top:auto; }
   .room-price small{ font-size:0.95rem; font-weight:400; color:var(--paper-dim); }
   .room-minstay{ font-size:0.82rem; margin-top:6px; color:var(--gold); font-weight:600; }
-  .room-card.alt .room-minstay{ color:#F1EEE1; }
+  .room-card.alt .room-minstay{ color:var(--gold); }
   .room-feat{ list-style:none; padding:0; margin:18px 0 0; font-size:0.86rem; display:flex; flex-direction:column; gap:6px; color:var(--paper-dim); }
   .room-card.alt .room-feat{ color:rgba(239,235,218,0.9); }
   .room-feat li::before{ content:'—  '; color:var(--brick-soft); }
@@ -314,11 +314,12 @@
       <p><span class="zh">台南市東區，鄰近成大光復校區與自強校區，生活機能與校園距離都在腳程之內。</span><span class="en">East District, Tainan — close to NCKU's Kuang-Fu and Tzu-Chiang campuses, with daily essentials within easy reach.</span></p>
     </div>
     <div class="ruler">
-      <div class="ruler-line"></div>
       <div class="ruler-stops">
         <div class="stop"><div class="mins">~2<span style="font-size:1rem;">min</span></div><div class="place"><span class="zh">步行至巷口便利商店</span><span class="en">Walk to the convenience store at the lane entrance</span></div></div>
+        <div class="stop"><div class="mins">~4<span style="font-size:1rem;">min</span></div><div class="place"><span class="zh">步行至全聯福利中心、小北百貨、康是美</span><span class="en">Walk to PX Mart, Shin Bei, and Cosmed</span></div></div>
         <div class="stop"><div class="mins">~7<span style="font-size:1rem;">min</span></div><div class="place"><span class="zh">機車至成大光復（本部）校區</span><span class="en">Scooter to NCKU Kuang-Fu (Main) Campus</span></div></div>
         <div class="stop"><div class="mins">~12<span style="font-size:1rem;">min</span></div><div class="place"><span class="zh">步行至成大自強校區（航太系館）</span><span class="en">Walk to NCKU Tzu-Chiang Campus (Aerospace Engineering Building)</span></div></div>
+        <div class="stop"><div class="mins">~13<span style="font-size:1rem;">min</span></div><div class="place"><span class="zh">步行至南紡購物中心（含威秀影城）</span><span class="en">Walk to Nanfang Shopping Mall (incl. Vieshow Cinemas)</span></div></div>
         <div class="stop"><div class="mins">~8<span style="font-size:1rem;">min</span></div><div class="place"><span class="zh">機車至台南火車站後站</span><span class="en">Scooter to Tainan Station (Rear Exit)</span></div></div>
       </div>
     </div>
@@ -350,6 +351,7 @@
           <li><span class="zh">第2人加價 NT$150/晚</span><span class="en">+NT$150/night for a 2nd occupant</span></li>
         </ul>
         <div class="room-price">NT$480<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
+        <div class="room-usd-approx" style="font-size:0.78rem; color:var(--paper-dim);">≈ <span id="roomAUsdAmt">US$15</span> / <span class="zh">晚</span><span class="en">night</span></div>
         <div class="room-minstay"><span class="zh">最短租期 28 晚</span><span class="en">28-night minimum</span></div>
       </div>
       <div class="room-card alt">
@@ -361,6 +363,7 @@
           <li><span class="zh">第2人加價 NT$150/晚</span><span class="en">+NT$150/night for a 2nd occupant</span></li>
         </ul>
         <div class="room-price">NT$460<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
+        <div class="room-usd-approx" style="font-size:0.78rem; color:rgba(239,235,218,0.85);">≈ <span id="roomBUsdAmt">US$14</span> / <span class="zh">晚</span><span class="en">night</span></div>
         <div class="room-minstay"><span class="zh">最短租期 28 晚</span><span class="en">28-night minimum</span></div>
       </div>
     </div>
@@ -466,14 +469,17 @@
           <div class="calc-room">Room A</div>
           <div class="calc-rate">NT$480<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
           <div class="calc-total" id="totalA">NT$13,440</div>
+          <div class="calc-usd" id="totalAUsd" style="font-size:0.8rem; color:var(--paper-dim); margin-top:2px;">≈ US$420</div>
         </div>
         <div class="calc-card alt">
           <div class="calc-room">Room B</div>
           <div class="calc-rate">NT$460<small> / <span class="zh">晚</span><span class="en">night</span></small></div>
           <div class="calc-total" id="totalB">NT$12,880</div>
+          <div class="calc-usd" id="totalBUsd" style="font-size:0.8rem; color:rgba(239,235,218,0.85); margin-top:2px;">≈ US$402</div>
         </div>
       </div>
     </div>
+    <p class="cost-note" style="margin-top:14px;"><span class="zh">＊美金金額為即時匯率概算，僅供參考，實際收費以新台幣為準。</span><span class="en">*USD amounts use a live exchange rate where available, for reference only — actual charges are in NT$.</span></p>
     <p class="cost-note"><span class="zh">＊以上為單人房租估算，已含網路與一般用電；冷氣用電依電表度數另計（每度 NT$5，退宿時自押金扣除）。若入住第2人，加價 NT$150/晚。押金統一為 NT$12,000。</span><span class="en">*Estimates above are for single occupancy, including internet and general electricity. Air-conditioning electricity is billed separately at NT$5/kWh, deducted from the deposit at move-out. A 2nd occupant adds NT$150/night. Deposit is a flat NT$12,000 for either room.</span></p>
   </div>
 </section>
@@ -632,19 +638,46 @@
         sel.value = selected;
       });
     }
+    var USD_RATE = 32; // fallback approximate NT$ per US$1, used if live rate fetch fails
+    var totalAUsd = document.getElementById('totalAUsd');
+    var totalBUsd = document.getElementById('totalBUsd');
+    var roomAUsdAmt = document.getElementById('roomAUsdAmt');
+    var roomBUsdAmt = document.getElementById('roomBUsdAmt');
+    function refreshRoomCardUsd(){
+      roomAUsdAmt.textContent = 'US$' + Math.round(480 / USD_RATE);
+      roomBUsdAmt.textContent = 'US$' + Math.round(460 / USD_RATE);
+    }
     function update(){
       var n = parseInt(nightsInput.value, 10);
       if (isNaN(n) || n < 0) n = 0;
       var extra = (occupantsInput.value === '2') ? 150 : 0;
-      totalA.textContent = fmt(n * (480 + extra));
-      totalB.textContent = fmt(n * (460 + extra));
+      var amtA = n * (480 + extra);
+      var amtB = n * (460 + extra);
+      totalA.textContent = fmt(amtA);
+      totalB.textContent = fmt(amtB);
+      totalAUsd.textContent = '≈ US$' + Math.round(amtA / USD_RATE).toLocaleString('en-US');
+      totalBUsd.textContent = '≈ US$' + Math.round(amtB / USD_RATE).toLocaleString('en-US');
     }
     window.refreshOccupantOptions = refreshOccupantOptions;
     window.updatePricingCalc = update;
     refreshOccupantOptions();
+    refreshRoomCardUsd();
     nightsInput.addEventListener('input', update);
     occupantsInput.addEventListener('change', update);
     update();
+
+    // Try to fetch a live USD/TWD rate; silently keep the fallback rate if it fails
+    // (e.g. offline, or blocked by a sandboxed preview — works fine on a real hosted page)
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if (data && data.rates && data.rates.TWD) {
+          USD_RATE = data.rates.TWD;
+          refreshRoomCardUsd();
+          update();
+        }
+      })
+      .catch(function(){ /* keep fallback rate */ });
   })();
 
   (function(){
