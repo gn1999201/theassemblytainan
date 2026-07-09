@@ -70,7 +70,7 @@
   @media (max-width:760px){ .nav-links{ display:none; } }
 
   /* ---------- CAROUSEL ---------- */
-  .carousel{ position:relative; height:56vh; min-height:340px; max-height:520px; overflow:hidden; background:var(--ink); }
+  .carousel{ position:relative; height:62vh; min-height:420px; max-height:640px; overflow:hidden; background:var(--ink); }
   .carousel-track{ position:relative; width:100%; height:100%; }
   .carousel-slide{
     position:absolute; inset:0; opacity:0; transition:opacity .6s ease;
@@ -98,7 +98,7 @@
   .carousel-dots{ position:absolute; bottom:16px; right:24px; display:flex; gap:8px; }
   .carousel-dots .dot{ width:8px; height:8px; border-radius:50%; background:rgba(239,235,218,0.4); cursor:pointer; border:none; padding:0; }
   .carousel-dots .dot.active{ background:var(--gold); }
-  @media (max-width:600px){ .carousel{ height:42vh; } .slide-tag{ font-size:1.15rem; } }
+  @media (max-width:600px){ .carousel{ height:48vh; min-height:320px; } .slide-tag{ font-size:1.15rem; } }
 
   /* ---------- AMENITIES ---------- */
   .amenity-groups{ display:grid; grid-template-columns:repeat(2,1fr); gap:40px 56px; }
@@ -400,11 +400,11 @@
         <ul class="amenity-list">
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:chef-hat.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">廚房</span><span class="en">Kitchen</span><span class="amenity-sub"><span class="zh">可自行開伙的空間</span><span class="en">Space where guests can cook their own meals</span></span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:refrigerator.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">冰箱</span><span class="en">Refrigerator</span></span></li>
-          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:zap.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">微波爐</span><span class="en">Microwave</span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/mdi:microwave.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">微波爐</span><span class="en">Microwave</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:cooking-pot.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">基本烹飪用具</span><span class="en">Cooking basics</span><span class="amenity-sub"><span class="zh">鍋具、油、鹽和胡椒</span><span class="en">Pots and pans, oil, salt and pepper</span></span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:utensils-crossed.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">餐具碗盤</span><span class="en">Dishes and silverware</span><span class="amenity-sub"><span class="zh">碗、筷子、盤子、杯子等</span><span class="en">Bowls, chopsticks, plates, cups, etc.</span></span></span></li>
-          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:flame.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">爐台</span><span class="en">Stove</span></span></li>
-          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:flame.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">烤箱</span><span class="en">Oven</span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/mdi:gas-burner.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">瓦斯爐</span><span class="en">Gas Stove</span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/mdi:toaster-oven.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">烤箱</span><span class="en">Oven</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:coffee.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">快煮壺</span><span class="en">Hot water kettle</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:utensils.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">餐桌</span><span class="en">Dining table</span></span></li>
         </ul>
@@ -527,7 +527,7 @@
     <div class="sec-head">
       <div class="sec-eyebrow"><span class="zh">線上申請</span><span class="en">Apply Online</span></div>
       <h2><span class="zh">告訴我們你的入住計畫</span><span class="en">Tell us about your stay</span></h2>
-      <p><span class="zh">提交後我們會以 Email 回覆看房與後續流程（此為原型頁面，表單暫不會實際送出）。</span><span class="en">We'll follow up by email with viewing details and next steps. (Prototype form — submissions aren't sent yet.)</span></p>
+      <p><span class="zh">提交後我們會以 Email 回覆看房與後續流程。</span><span class="en">We'll follow up by email with viewing details and next steps.</span></p>
     </div>
     <form class="apply-form" id="applyForm">
       <div class="field"><label for="name"><span class="zh">姓名</span><span class="en">Full name</span></label><input id="name" name="name" required></div>
@@ -538,17 +538,22 @@
       <div class="field"><label for="school"><span class="zh">學校／身分</span><span class="en">University / status</span></label><input id="school" name="school" placeholder="NCKU exchange student"></div>
       <div class="field">
         <label for="room"><span class="zh">希望房型</span><span class="en">Preferred room type</span></label>
-        <select id="room" name="room">
+        <select id="room" name="room" required>
           <option>Room A — NT$480</option>
           <option>Room B — NT$460</option>
         </select>
       </div>
-      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date"></div>
+      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date" required></div>
       <div class="field">
         <label for="formOccupants"><span class="zh">入住人數</span><span class="en">Number of occupants</span></label>
-        <select id="formOccupants" name="occupants"></select>
+        <select id="formOccupants" name="occupants" required></select>
       </div>
-      <div class="field"><label for="length"><span class="zh">預計入住晚數</span><span class="en">Length of stay (nights)</span></label><input id="length" name="length_nights" type="number" min="28" step="1" placeholder="28+"></div>
+      <div class="field">
+        <label for="checkout"><span class="zh">預計退房日期</span><span class="en">Preferred move-out date</span></label>
+        <input id="checkout" name="checkout" type="date" required>
+        <span id="nightsDisplay" style="font-size:0.78rem; color:var(--paper-dim); margin-top:4px;"></span>
+        <input type="hidden" id="length" name="length_nights" value="">
+      </div>
       <div class="field full"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
       <div class="field"><label for="line"><span class="zh">LINE ID（選填）</span><span class="en">LINE ID (optional)</span></label><input id="line" name="line" placeholder="LINE ID"></div>
       <div class="field"><label for="whatsapp"><span class="zh">WhatsApp 號碼（選填）</span><span class="en">WhatsApp number (optional)</span></label><input id="whatsapp" name="whatsapp" type="tel" placeholder="+886 9xx xxx xxx"></div>
@@ -692,11 +697,59 @@
   // ⚠️ Paste your Google Apps Script Web App URL here after deployment (see setup guide)
   var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyIa2zMRIBo5nDIP--sbrwD78BEOZ3xDdcvimQW-XUTvGoE1Kr5nN6luKZs9jNLb-kXSQ/exec';
 
+  (function(){
+    var moveinInput = document.getElementById('movein');
+    var checkoutInput = document.getElementById('checkout');
+    var lengthHidden = document.getElementById('length');
+    var nightsDisplay = document.getElementById('nightsDisplay');
+
+    function calcNights(){
+      var isEn = document.body.classList.contains('lang-en');
+      var inDate = moveinInput.value ? new Date(moveinInput.value + 'T00:00:00') : null;
+      var outDate = checkoutInput.value ? new Date(checkoutInput.value + 'T00:00:00') : null;
+      if (!inDate || !outDate) {
+        lengthHidden.value = '';
+        nightsDisplay.textContent = '';
+        return;
+      }
+      var nights = Math.round((outDate - inDate) / 86400000);
+      if (nights <= 0) {
+        lengthHidden.value = '';
+        nightsDisplay.textContent = isEn ? 'Move-out date must be after move-in date.' : '退房日期必須晚於入住日期。';
+        nightsDisplay.style.color = 'var(--brick-soft)';
+        return;
+      }
+      lengthHidden.value = nights;
+      if (nights < 28) {
+        nightsDisplay.textContent = isEn
+          ? ('= ' + nights + ' nights — minimum stay is 28 nights.')
+          : ('共 ' + nights + ' 晚 — 最短租期為 28 晚。');
+        nightsDisplay.style.color = 'var(--brick-soft)';
+      } else {
+        nightsDisplay.textContent = isEn ? ('= ' + nights + ' nights') : ('共 ' + nights + ' 晚');
+        nightsDisplay.style.color = 'var(--paper-dim)';
+      }
+    }
+    moveinInput.addEventListener('change', calcNights);
+    checkoutInput.addEventListener('change', calcNights);
+  })();
+
   document.getElementById('applyForm').addEventListener('submit', function(e){
     e.preventDefault();
     var form = e.target;
     var msgEl = document.getElementById('formMsg');
     var isEn = document.body.classList.contains('lang-en');
+
+    var nightsVal = parseInt(document.getElementById('length').value, 10);
+    if (isNaN(nightsVal) || nightsVal < 28) {
+      msgEl.style.color = 'var(--brick-soft)';
+      msgEl.textContent = isEn
+        ? 'Minimum stay is 28 nights — please adjust your move-in / move-out dates.'
+        : '最短租期為 28 晚，請調整入住／退房日期。';
+      document.getElementById('checkout').focus();
+      return;
+    }
+    msgEl.style.color = '';
 
     if (GOOGLE_SHEETS_ENDPOINT.indexOf('PASTE_YOUR') === 0) {
       msgEl.textContent = isEn
