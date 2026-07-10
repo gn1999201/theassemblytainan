@@ -157,8 +157,9 @@
   .amenity-groups{ display:grid; grid-template-columns:repeat(2,1fr); gap:40px 56px; }
   @media (max-width:700px){ .amenity-groups{ grid-template-columns:1fr; gap:32px; } }
   .amenity-group h3{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.05rem; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--line); }
-  .amenity-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
-  .amenity-list li{ display:flex; align-items:flex-start; gap:12px; font-size:0.92rem; color:var(--ink); }
+  .amenity-list{ list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:12px 22px; }
+  .amenity-list li{ display:flex; align-items:center; gap:8px; font-size:0.92rem; color:var(--ink); white-space:nowrap; }
+  .amenity-list li:has(.amenity-sub){ flex-basis:100%; white-space:normal; align-items:flex-start; }
   .amenity-icon{ width:20px; height:20px; flex-shrink:0; margin-top:1px; display:inline-block; }
   .amenity-sub{ display:block; font-size:0.78rem; color:var(--ink-soft); margin-top:2px; }
 
@@ -260,20 +261,25 @@
   .room-feat li::before{ content:'—  '; color:var(--brick-soft); }
 
   /* ---------- PRICING CALCULATOR ---------- */
-  .calc-input-row{ display:flex; align-items:center; gap:14px; margin-bottom:28px; }
-  .calc-input-row label{ font-size:0.9rem; color:var(--ink-soft); font-weight:600; }
-  .calc-input-row input{
-    width:110px; padding:10px 12px; border:1px solid var(--line); border-radius:2px;
-    font-family:'Zilla Slab',serif; font-size:1.2rem; color:var(--ink); background:var(--paper);
+  .calc-fields-row{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .calc-field{ display:flex; flex-direction:column; gap:6px; flex:1 1 150px; min-width:130px; }
+  .calc-field label{ font-size:0.82rem; color:var(--ink-soft); font-weight:600; white-space:nowrap; }
+  .calc-field input, .calc-field select{
+    width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid var(--line); border-radius:2px;
+    font-family:'Zilla Slab',serif; font-size:1rem; color:var(--ink); background-color:var(--paper); height:44px;
   }
-  .calc-input-row input:focus{ outline:2px solid var(--tile); outline-offset:1px; }
+  .calc-field select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2420' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
+  .calc-field input:focus, .calc-field select:focus{ outline:2px solid var(--tile); outline-offset:1px; }
   .calc-select{
     padding:10px 12px; border:1px solid var(--line); border-radius:2px;
-    font-family:'IBM Plex Sans','Noto Sans TC',sans-serif; font-size:0.92rem; color:var(--ink); background:var(--paper);
+    font-family:'IBM Plex Sans','Noto Sans TC',sans-serif; font-size:0.92rem; color:var(--ink); background-color:var(--paper);
   }
   .calc-select:focus{ outline:2px solid var(--tile); outline-offset:1px; }
   .calc-results{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media (max-width:560px){ .calc-results{ grid-template-columns:1fr; } .calc-input-row{ flex-wrap:wrap; } }
+  @media (max-width:560px){ .calc-results{ grid-template-columns:1fr; } }
+  @media (max-width:460px){ .calc-field{ flex:1 1 100%; } }
   .calc-card{ background:var(--ink); color:var(--paper); padding:22px 24px; border-radius:2px; }
   .calc-card.alt{ background:var(--tile); }
   .calc-room{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.2rem; margin-bottom:6px; }
@@ -469,7 +475,7 @@
     <div class="availability-box">
       <div class="availability-head">
         <span class="zh">近期空房狀況</span><span class="en">Live Availability</span>
-        <span class="avail-note"><span class="zh">（資料同步自 Airbnb）</span><span class="en">(synced from Airbnb)</span></span>
+        <span class="avail-note"><span class="zh">（僅供查詢十二個月內之訂房狀況）</span><span class="en">(shows booking status within the next 12 months only)</span></span>
       </div>
       <div class="cal-legend">
         <span class="cal-legend-item"><span class="cal-dot free"></span><span class="zh">可預訂</span><span class="en">Available</span></span>
@@ -587,13 +593,22 @@
       <p><span class="zh">最短租期 28 晚。實際入住晚數與費用依合約約定為準。</span><span class="en">28-night minimum stay. Actual nights and charges are set by your contract.</span></p>
     </div>
     <div class="calc">
-      <div class="calc-input-row">
-        <label for="nights"><span class="zh">入住晚數</span><span class="en">Nights</span></label>
-        <input type="number" id="nights" min="28" step="1" value="28">
+      <div class="calc-fields-row">
+        <div class="calc-field">
+          <label for="calcMovein"><span class="zh">入住日期</span><span class="en">Move-in date</span></label>
+          <input type="date" id="calcMovein">
+        </div>
+        <div class="calc-field">
+          <label for="calcCheckout"><span class="zh">退房日期</span><span class="en">Move-out date</span></label>
+          <input type="date" id="calcCheckout">
+        </div>
+        <div class="calc-field">
+          <label for="occupants"><span class="zh">入住人數</span><span class="en">Occupants</span></label>
+          <select id="occupants" class="calc-select"></select>
+        </div>
       </div>
-      <div class="calc-input-row">
-        <label for="occupants"><span class="zh">入住人數</span><span class="en">Occupants</span></label>
-        <select id="occupants" class="calc-select"></select>
+      <div id="calcNightsRow" style="margin-bottom:20px;">
+        <span id="calcNightsNote" style="font-size:0.82rem;"></span>
       </div>
       <div class="calc-results">
         <div class="calc-card">
@@ -747,7 +762,9 @@
   })();
 
   (function(){
-    var nightsInput = document.getElementById('nights');
+    var moveinInput = document.getElementById('calcMovein');
+    var checkoutInput = document.getElementById('calcCheckout');
+    var nightsNoteEl = document.getElementById('calcNightsNote');
     var occupantsInput = document.getElementById('occupants');
     var totalA = document.getElementById('totalA');
     var totalB = document.getElementById('totalB');
@@ -778,9 +795,38 @@
       roomAUsdAmt.textContent = 'US$' + Math.round(480 / USD_RATE);
       roomBUsdAmt.textContent = 'US$' + Math.round(460 / USD_RATE);
     }
+    function calcNights(){
+      var inVal = moveinInput.value, outVal = checkoutInput.value;
+      if (!inVal || !outVal) return null;
+      var inDate = new Date(inVal + 'T00:00:00');
+      var outDate = new Date(outVal + 'T00:00:00');
+      var n = Math.round((outDate - inDate) / 86400000);
+      return (n > 0) ? n : null;
+    }
     function update(){
-      var n = parseInt(nightsInput.value, 10);
-      if (isNaN(n) || n < 0) n = 0;
+      var isEn = document.body.classList.contains('lang-en');
+      var n = calcNights();
+
+      if (n === null) {
+        nightsNoteEl.textContent = '';
+        totalA.textContent = fmt(0);
+        totalB.textContent = fmt(0);
+        totalAUsd.textContent = '≈ US$0';
+        totalBUsd.textContent = '≈ US$0';
+        return;
+      }
+
+      if (n < 28) {
+        nightsNoteEl.innerHTML = '';
+        nightsNoteEl.style.color = 'var(--brick-soft)';
+        nightsNoteEl.textContent = isEn
+          ? (n + ' nights — minimum stay is 28 nights.')
+          : ('共 ' + n + ' 晚 — 最短租期為 28 晚。');
+      } else {
+        nightsNoteEl.style.color = 'var(--ink-soft)';
+        nightsNoteEl.textContent = isEn ? (n + ' nights') : ('共 ' + n + ' 晚');
+      }
+
       var extra = (occupantsInput.value === '2') ? 150 : 0;
       var amtA = n * (480 + extra);
       var amtB = n * (460 + extra);
@@ -793,7 +839,8 @@
     window.updatePricingCalc = update;
     refreshOccupantOptions();
     refreshRoomCardUsd();
-    nightsInput.addEventListener('input', update);
+    moveinInput.addEventListener('change', update);
+    checkoutInput.addEventListener('change', update);
     occupantsInput.addEventListener('change', update);
     update();
 
@@ -923,14 +970,43 @@
     function renderAll(){
       renderCalendar('Room A', 'calAWeekdays', 'calADays', 'calALabel');
       renderCalendar('Room B', 'calBWeekdays', 'calBDays', 'calBLabel');
+      updateNavButtons();
     }
 
     function changeMonth(room, dir){
       var state = calState[room];
-      state.month += dir;
-      if (state.month < 0) { state.month = 11; state.year--; }
-      if (state.month > 11) { state.month = 0; state.year++; }
+      var newMonth = state.month + dir;
+      var newYear = state.year;
+      if (newMonth < 0) { newMonth = 11; newYear--; }
+      if (newMonth > 11) { newMonth = 0; newYear++; }
+
+      var now = new Date();
+      var maxDate = new Date(now.getFullYear(), now.getMonth() + 12, 1);
+      var minDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      var target = new Date(newYear, newMonth, 1);
+      if (target > maxDate || target < minDate) return;
+
+      state.month = newMonth;
+      state.year = newYear;
       renderAll();
+    }
+
+    function updateNavButtons(){
+      var now = new Date();
+      var maxDate = new Date(now.getFullYear(), now.getMonth() + 12, 1);
+      var minDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      ['Room A', 'Room B'].forEach(function(room){
+        var state = calState[room];
+        var current = new Date(state.year, state.month, 1);
+        var widget = document.querySelector('.cal-widget[data-room="' + room + '"]');
+        if (!widget) return;
+        var prevBtn = widget.querySelector('.cal-nav-btn[data-dir="-1"]');
+        var nextBtn = widget.querySelector('.cal-nav-btn[data-dir="1"]');
+        prevBtn.disabled = (current <= minDate);
+        nextBtn.disabled = (current >= maxDate);
+        prevBtn.style.opacity = prevBtn.disabled ? 0.35 : 1;
+        nextBtn.style.opacity = nextBtn.disabled ? 0.35 : 1;
+      });
     }
 
     document.querySelectorAll('.cal-widget').forEach(function(widget){
