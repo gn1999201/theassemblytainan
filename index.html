@@ -3,7 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Assembly Tainan — 成大外籍生短期共生公寓</title>
+<title>The Assembly Tainan — 成大國際交換生短期共生公寓｜台南短租</title>
+<meta name="description" content="The Assembly Tainan 是位於台南市東區、鄰近成功大學（NCKU）的短期共生公寓，專為國際交換生、短期留學生與短期出差商務人士打造。最短租期 28 晚，Room A / Room B 兩間房共用衛浴，含網路、水電、廚房設備。線上申請、電子鎖自助入住。">
+<meta name="keywords" content="成功大學短期住宿, NCKU housing, 台南短租公寓, 交換學生住宿, Tainan co-living, NCKU exchange student housing, 台南外籍生宿舍, 成大周邊套房">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://gn1999201.github.io/theassemblytainan/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Assembly Tainan — 成大國際交換生短期共生公寓">
+<meta property="og:description" content="鄰近成功大學的短期共生公寓，最短租期 28 晚，適合國際交換生、短期留學生與短期出差商務人士。">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:url" content="https://gn1999201.github.io/theassemblytainan/">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Assembly Tainan — 成大國際交換生短期共生公寓">
+<meta name="twitter:description" content="鄰近成功大學的短期共生公寓，最短租期 28 晚，適合國際交換生、短期留學生與短期出差商務人士。">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  "name": "The Assembly Tainan",
+  "description": "Short-term co-living apartment near National Cheng Kung University (NCKU), Tainan. Two rooms (Room A, Room B) sharing one bathroom. Minimum stay 28 nights. Built for NCKU international exchange students, short-term visiting students, and business travelers.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "East District, Tainan",
+    "addressRegion": "Tainan",
+    "addressCountry": "TW"
+  },
+  "priceRange": "NT$460–480",
+  "petsAllowed": false,
+  "amenityFeature": [
+    {"@type": "LocationFeatureSpecification", "name": "WiFi", "value": true},
+    {"@type": "LocationFeatureSpecification", "name": "Air conditioning", "value": true},
+    {"@type": "LocationFeatureSpecification", "name": "Shared kitchen", "value": true},
+    {"@type": "LocationFeatureSpecification", "name": "Washer", "value": true}
+  ]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -128,6 +167,7 @@
   .hero .wrap{ padding-top:72px; padding-bottom:64px; display:grid; grid-template-columns:1.3fr 1fr; gap:40px; align-items:end; }
   .hero-eyebrow{ font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:18px; }
   .hero h1{ font-size:clamp(3rem,7vw,5.2rem); line-height:0.96; color:var(--paper); }
+  .hero-tagline{ display:block; font-family:'IBM Plex Sans','Noto Sans TC',sans-serif; font-size:1rem; font-weight:500; color:var(--gold); margin-top:16px; letter-spacing:0.01em; }
   .hero h1 .num{ color:var(--brick-soft); }
   .hero-sub{ margin-top:22px; font-size:1.05rem; max-width:46ch; color:var(--paper-dim); }
   .hero-cta{ display:flex; gap:14px; margin-top:30px; flex-wrap:wrap; }
@@ -175,6 +215,18 @@
   /* ---------- ROOMS ---------- */
   .room-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px; max-width:760px; }
   @media (max-width:700px){ .room-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- AVAILABILITY ---------- */
+  .availability-box{ margin-top:32px; max-width:760px; border-top:1px solid var(--line); padding-top:24px; }
+  .availability-head{ font-size:0.9rem; font-weight:600; color:var(--ink); margin-bottom:14px; }
+  .avail-note{ font-weight:400; color:var(--ink-soft); font-size:0.8rem; margin-left:6px; }
+  .availability-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  @media (max-width:560px){ .availability-grid{ grid-template-columns:1fr; } }
+  .avail-card{ border:1px solid var(--line); border-radius:2px; padding:16px 18px; background:var(--paper); }
+  .avail-room{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.1rem; margin-bottom:8px; }
+  .avail-status{ font-size:0.86rem; color:var(--ink-soft); }
+  .avail-status.ok{ color:var(--tile); font-weight:600; }
+  .avail-status .busy-range{ display:block; margin-top:4px; font-size:0.8rem; }
   .room-card{ background:var(--ink); color:var(--paper); border-radius:2px; padding:30px 26px; display:flex; flex-direction:column; }
   .room-card.alt{ background:var(--tile); }
   .room-tag{ font-size:0.76rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; }
@@ -244,6 +296,13 @@
   input, select, textarea{
     background:var(--ink-soft); border:1px solid var(--line-on-dark); color:var(--paper);
     padding:11px 12px; border-radius:2px; font-family:'IBM Plex Sans','Noto Sans TC',sans-serif; font-size:0.94rem;
+    line-height:1.3; box-sizing:border-box; width:100%;
+  }
+  select{
+    -webkit-appearance:none; -moz-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EFEBDA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
+    padding-right:36px;
   }
   input:focus, select:focus, textarea:focus{ outline:2px solid var(--gold); outline-offset:1px; }
   textarea{ resize:vertical; min-height:90px; }
@@ -310,7 +369,7 @@
   <div class="wrap" style="display:block;">
     <div>
       <div class="hero-eyebrow"><span class="zh">成功大學步行圈・短期共生公寓</span><span class="en">Short-Term Co-Living · Walking Distance to NCKU</span></div>
-      <h1>The Assembly<br><span class="num">Tainan</span></h1>
+      <h1>The Assembly<br><span class="num">Tainan</span><br><span class="hero-tagline"><span class="zh">台南短租・成大附近住宿</span><span class="en">Tainan Short-Term Rental · Accommodation Near NCKU</span></span></h1>
       <p class="hero-sub">
         <span class="zh">專為成大國際交換生與短期留學生、短期出差商務人士打造，最短租期 1 個月起，拎行李就能入住。</span>
         <span class="en">Built for NCKU international exchange students, short-term visiting students, and business travelers on short assignments. Minimum stay from 1 month — just bring your bags and settle in.</span>
@@ -327,7 +386,7 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-eyebrow"><span class="zh">巷弄座標</span><span class="en">Neighbourhood Coordinates</span></div>
-      <h2><span class="zh">從住宿地點出發</span><span class="en">Starting from your accommodation</span></h2>
+      <h2><span class="zh">成大附近住宿・從這裡出發</span><span class="en">Accommodation Near NCKU — Getting Around Tainan</span></h2>
       <p><span class="zh">台南市東區，鄰近成大光復校區與自強校區，生活機能與校園距離都在腳程之內。</span><span class="en">East District, Tainan — close to NCKU's Kuang-Fu and Tzu-Chiang campuses, with daily essentials within easy reach.</span></p>
     </div>
     <div class="ruler">
@@ -355,7 +414,7 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-eyebrow"><span class="zh">房型</span><span class="en">Room Types</span></div>
-      <h2><span class="zh">Room A · Room B</span></h2>
+      <h2>Room A · Room B<br><span class="hero-tagline" style="color:var(--tile); margin-top:8px;"><span class="zh">台灣語言交換學生住宿</span><span class="en">Language Exchange Student Housing in Taiwan</span></span></h2>
       <p><span class="zh">兩間房共用一套衛浴，最短租期皆為 28 晚，適合國際交換生、短期留學生與短期出差商務人士。</span><span class="en">Two rooms sharing one bathroom. Both have a 28-night minimum — a good fit for international exchange students, short-term visiting students, and business travelers.</span></p>
     </div>
     <div class="room-grid">
@@ -390,6 +449,23 @@
           <li><span class="zh">第2人加價 NT$150/晚</span><span class="en">+NT$150/night for a 2nd occupant</span></li>
         </ul>
         <div class="room-minstay"><span class="zh">最短租期 28 晚</span><span class="en">28-night minimum</span></div>
+      </div>
+    </div>
+
+    <div class="availability-box">
+      <div class="availability-head">
+        <span class="zh">近期空房狀況</span><span class="en">Live Availability</span>
+        <span class="avail-note"><span class="zh">（資料同步自 Airbnb）</span><span class="en">(synced from Airbnb)</span></span>
+      </div>
+      <div class="availability-grid">
+        <div class="avail-card" id="availA">
+          <div class="avail-room">Room A</div>
+          <div class="avail-status" id="availAStatus"><span class="zh">讀取中…</span><span class="en">Loading…</span></div>
+        </div>
+        <div class="avail-card" id="availB">
+          <div class="avail-room">Room B</div>
+          <div class="avail-status" id="availBStatus"><span class="zh">讀取中…</span><span class="en">Loading…</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -570,15 +646,15 @@
       <div class="field">
         <label for="room"><span class="zh">希望房型</span><span class="en">Preferred room type</span></label>
         <select id="room" name="room" required>
-          <option>Room A — NT$480</option>
-          <option>Room B — NT$460</option>
+          <option>Room A</option>
+          <option>Room B</option>
         </select>
       </div>
-      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date" required></div>
       <div class="field">
         <label for="formOccupants"><span class="zh">入住人數</span><span class="en">Number of occupants</span></label>
         <select id="formOccupants" name="occupants" required></select>
       </div>
+      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date" required></div>
       <div class="field">
         <label for="checkout"><span class="zh">預計退房日期</span><span class="en">Preferred move-out date</span></label>
         <input id="checkout" name="checkout" type="date" required>
@@ -751,9 +827,56 @@
     if (window.refreshOccupantOptions) window.refreshOccupantOptions();
     if (window.updatePricingCalc) window.updatePricingCalc();
     if (window.refreshCountryOptions) window.refreshCountryOptions();
+    if (window.reloadAvailabilityLang) window.reloadAvailabilityLang();
   });
   // ⚠️ Paste your Google Apps Script Web App URL here after deployment (see setup guide)
   var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyIa2zMRIBo5nDIP--sbrwD78BEOZ3xDdcvimQW-XUTvGoE1Kr5nN6luKZs9jNLb-kXSQ/exec';
+
+  (function(){
+    function fmtDate(iso, isEn){
+      var parts = iso.split('-');
+      return isEn ? (parts[1] + '/' + parts[2] + '/' + parts[0]) : (parts[0] + '/' + parts[1] + '/' + parts[2]);
+    }
+    function renderAvailability(data){
+      var isEn = document.body.classList.contains('lang-en');
+      ['Room A', 'Room B'].forEach(function(room, idx){
+        var statusEl = document.getElementById(idx === 0 ? 'availAStatus' : 'availBStatus');
+        var ranges = (data && data[room]) || [];
+        var today = new Date(); today.setHours(0,0,0,0);
+        var upcoming = ranges.filter(function(r){ return new Date(r.end) >= today; });
+        upcoming.sort(function(a,b){ return new Date(a.start) - new Date(b.start); });
+
+        if (upcoming.length === 0) {
+          statusEl.innerHTML = '';
+          var okSpan = document.createElement('span');
+          okSpan.className = 'ok';
+          okSpan.textContent = isEn ? 'No upcoming bookings found' : '近期沒有已知的訂房';
+          statusEl.appendChild(okSpan);
+          statusEl.classList.add('ok');
+        } else {
+          statusEl.classList.remove('ok');
+          var html = (isEn ? 'Booked: ' : '已訂：');
+          var shown = upcoming.slice(0, 3).map(function(r){
+            return fmtDate(r.start, isEn) + '–' + fmtDate(r.end, isEn);
+          });
+          statusEl.innerHTML = html + '<span class="busy-range">' + shown.join('<br>') + '</span>';
+        }
+      });
+    }
+    function loadAvailability(){
+      fetch(GOOGLE_SHEETS_ENDPOINT + '?action=availability')
+        .then(function(res){ return res.json(); })
+        .then(renderAvailability)
+        .catch(function(){
+          var isEn = document.body.classList.contains('lang-en');
+          var msg = isEn ? 'Unable to load availability right now.' : '目前無法讀取空房狀態。';
+          document.getElementById('availAStatus').textContent = msg;
+          document.getElementById('availBStatus').textContent = msg;
+        });
+    }
+    window.reloadAvailabilityLang = loadAvailability;
+    loadAvailability();
+  })();
 
   (function(){
     var moveinInput = document.getElementById('movein');
