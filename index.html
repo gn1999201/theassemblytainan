@@ -154,8 +154,9 @@
   @media (max-width:600px){ .carousel{ height:48vh; min-height:320px; } .slide-tag{ font-size:1.15rem; } }
 
   /* ---------- AMENITIES ---------- */
-  .amenity-groups{ display:grid; grid-template-columns:repeat(2,1fr); gap:40px 56px; }
-  @media (max-width:700px){ .amenity-groups{ grid-template-columns:1fr; gap:32px; } }
+  .amenity-groups{ column-count:2; column-gap:56px; }
+  .amenity-group{ break-inside:avoid; -webkit-column-break-inside:avoid; margin-bottom:36px; }
+  @media (max-width:700px){ .amenity-groups{ column-count:1; } }
   .amenity-group h3{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.05rem; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--line); }
   .amenity-list{ list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:12px 22px; }
   .amenity-list li{ display:flex; align-items:center; gap:8px; font-size:0.92rem; color:var(--ink); white-space:nowrap; }
@@ -240,6 +241,7 @@
   .cal-day.empty{ visibility:hidden; }
   .cal-day.free{ background:rgba(60,110,104,0.12); }
   .cal-day.busy{ background:var(--brick); color:var(--paper); }
+  .cal-day.unknown{ background:transparent; color:var(--ink-soft); opacity:0.4; }
   .cal-day.today{ box-shadow:inset 0 0 0 1.5px var(--gold); font-weight:700; }
   .cal-day.past{ opacity:0.35; }
   .room-card{ background:var(--ink); color:var(--paper); border-radius:2px; padding:30px 26px; display:flex; flex-direction:column; }
@@ -529,8 +531,8 @@
       <div class="amenity-group">
         <h3><span class="zh">臥室與洗衣</span><span class="en">Bedroom &amp; Laundry</span></h3>
         <ul class="amenity-list">
-          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:washing-machine.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">洗衣機</span><span class="en">Washer</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:package.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">備品</span><span class="en">Essentials</span><span class="amenity-sub"><span class="zh">毛巾、床單、肥皂、衛生紙</span><span class="en">Towels, bed sheets, soap, and toilet paper</span></span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:washing-machine.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">洗衣機</span><span class="en">Washer</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:bed.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">床包組</span><span class="en">Bed linens</span></span></li>
         </ul>
       </div>
@@ -539,10 +541,10 @@
         <h3><span class="zh">廚房與用餐</span><span class="en">Kitchen &amp; Dining</span></h3>
         <ul class="amenity-list">
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:chef-hat.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">廚房</span><span class="en">Kitchen</span><span class="amenity-sub"><span class="zh">可自行開伙的空間</span><span class="en">Space where guests can cook their own meals</span></span></span></li>
-          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:refrigerator.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">冰箱</span><span class="en">Refrigerator</span></span></li>
-          <li><img class="amenity-icon" src="https://api.iconify.design/mdi:microwave.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">微波爐</span><span class="en">Microwave</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:cooking-pot.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">基本烹飪用具</span><span class="en">Cooking basics</span><span class="amenity-sub"><span class="zh">鍋具、油、鹽和胡椒</span><span class="en">Pots and pans, oil, salt and pepper</span></span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:utensils-crossed.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">餐具碗盤</span><span class="en">Dishes and silverware</span><span class="amenity-sub"><span class="zh">碗、筷子、盤子、杯子等</span><span class="en">Bowls, chopsticks, plates, cups, etc.</span></span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:refrigerator.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">冰箱</span><span class="en">Refrigerator</span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/mdi:microwave.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">微波爐</span><span class="en">Microwave</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/mdi:gas-burner.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">瓦斯爐</span><span class="en">Gas Stove</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/mdi:toaster-oven.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">烤箱</span><span class="en">Oven</span></span></li>
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:coffee.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">快煮壺</span><span class="en">Hot water kettle</span></span></li>
@@ -577,7 +579,7 @@
         <h3><span class="zh">網路與辦公</span><span class="en">Internet &amp; Office</span></h3>
         <ul class="amenity-list">
           <li><img class="amenity-icon" src="https://api.iconify.design/lucide:wifi.svg?color=%233C6E68" alt="" loading="lazy"><span>Wifi</span></li>
-          <li><img class="amenity-icon" src="https://api.iconify.design/lucide:briefcase.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">獨立工作空間</span><span class="en">Dedicated workspace</span><span class="amenity-sub"><span class="zh">有門的房間內</span><span class="en">In a room with a door</span></span></span></li>
+          <li><img class="amenity-icon" src="https://api.iconify.design/mdi:desk.svg?color=%233C6E68" alt="" loading="lazy"><span><span class="zh">辦公用書桌</span><span class="en">Office Desk</span></span></li>
         </ul>
       </div>
 
@@ -626,7 +628,11 @@
       </div>
     </div>
     <p class="cost-note" style="margin-top:14px;"><span class="zh">＊美金金額為即時匯率概算，僅供參考，實際收費以新台幣為準。</span><span class="en">*USD amounts use a live exchange rate where available, for reference only — actual charges are in NT$.</span></p>
-    <p class="cost-note"><span class="zh">＊以上為單人房租估算，已含網路與一般用電；冷氣用電依電表度數另計（每度 NT$5，退宿時自押金扣除）。若入住第2人，加價 NT$150/晚。押金統一為 NT$12,000。</span><span class="en">*Estimates above are for single occupancy, including internet and general electricity. Air-conditioning electricity is billed separately at NT$5/kWh, deducted from the deposit at move-out. A 2nd occupant adds NT$150/night. Deposit is a flat NT$12,000 for either room.</span></p>
+    <ul class="cost-note" style="list-style:none; padding:0; margin-top:14px; display:flex; flex-direction:column; gap:6px;">
+      <li><span class="zh">＊以上總額已含網路與一般用電，不含押金。</span><span class="en">*Totals above include internet and general electricity; deposit not included.</span></li>
+      <li><span class="zh">＊冷氣用電依電表度數另計（每度 NT$5，退宿時自押金扣除）。</span><span class="en">*Air-conditioning electricity is billed separately based on the meter reading (NT$5/kWh), deducted from the deposit at move-out.</span></li>
+      <li><span class="zh">＊押金統一為 NT$12,000。</span><span class="en">*Deposit is a flat NT$12,000.</span></li>
+    </ul>
   </div>
 </section>
 
@@ -951,6 +957,7 @@
       var firstWeekday = new Date(y, m, 1).getDay();
       var daysInMonth = new Date(y, m + 1, 0).getDate();
       var today = new Date(); today.setHours(0,0,0,0);
+      var cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 365);
 
       var cells = [];
       for (var i = 0; i < firstWeekday; i++) {
@@ -959,7 +966,15 @@
       for (var d = 1; d <= daysInMonth; d++) {
         var cellDate = new Date(y, m, d);
         var classes = ['cal-day'];
-        if (isBusy(room, y, m, d)) classes.push('busy'); else classes.push('free');
+        if (cellDate >= cutoff) {
+          // Beyond Airbnb's 12-month booking window — its calendar marks these
+          // as "closed" the same way as "booked", so we can't trust busy/free here.
+          classes.push('unknown');
+        } else if (isBusy(room, y, m, d)) {
+          classes.push('busy');
+        } else {
+          classes.push('free');
+        }
         if (cellDate.getTime() === today.getTime()) classes.push('today');
         if (cellDate < today) classes.push('past');
         cells.push('<div class="' + classes.join(' ') + '">' + d + '</div>');
