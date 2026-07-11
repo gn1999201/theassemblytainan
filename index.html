@@ -8,6 +8,9 @@
 <meta name="keywords" content="成功大學短期住宿, NCKU housing, 台南短租公寓, 交換學生住宿, Tainan co-living, NCKU exchange student housing, 台南外籍生宿舍, 成大周邊套房">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://theassemblytainan.com/">
+<link rel="alternate" hreflang="zh-Hant" href="https://theassemblytainan.com/">
+<link rel="alternate" hreflang="en" href="https://theassemblytainan.com/en/">
+<link rel="alternate" hreflang="x-default" href="https://theassemblytainan.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="The Assembly Tainan — 成大國際交換生短期共生公寓">
@@ -353,7 +356,7 @@
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <div class="nav-right">
-      <button class="lang-btn" id="langToggle">EN / 中</button>
+      <a class="lang-btn" href="/en/" id="langToggle" style="text-decoration:none; display:inline-block;">EN / 中</a>
       <a class="nav-cta" href="#apply"><span class="zh">線上申請</span><span class="en">Apply</span></a>
     </div>
   </div>
@@ -740,11 +743,15 @@
 
 <script>
   (function(){
-    // Default to English for non-Chinese browser languages.
+    // Non-Chinese browsers get redirected to the English version once.
+    // A "?nolang" or "lang=zh" query param, or a prior visit flag, skips this
+    // so the redirect doesn't loop or override an explicit choice.
+    var params = new URLSearchParams(location.search);
+    if (params.get('lang') === 'zh') return;
     var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
     var looksChinese = langs.some(function(l){ return /^zh/i.test(l); });
     if (!looksChinese) {
-      document.body.classList.add('lang-en');
+      location.replace('/en/');
     }
   })();
 
@@ -914,13 +921,6 @@
     refreshCountryOptions();
   })();
 
-  document.getElementById('langToggle').addEventListener('click', function(){
-    document.body.classList.toggle('lang-en');
-    if (window.refreshOccupantOptions) window.refreshOccupantOptions();
-    if (window.updatePricingCalc) window.updatePricingCalc();
-    if (window.refreshCountryOptions) window.refreshCountryOptions();
-    if (window.reloadAvailabilityLang) window.reloadAvailabilityLang();
-  });
   // ⚠️ Paste your Google Apps Script Web App URL here after deployment (see setup guide)
   var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyIa2zMRIBo5nDIP--sbrwD78BEOZ3xDdcvimQW-XUTvGoE1Kr5nN6luKZs9jNLb-kXSQ/exec';
 
