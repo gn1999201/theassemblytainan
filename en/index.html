@@ -232,6 +232,9 @@
   .cal-dot.busy{ background:var(--brick); }
   .availability-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
   @media (max-width:560px){ .availability-grid{ grid-template-columns:1fr; } }
+  .avail-cta{ margin-top:18px; font-size:0.86rem; color:var(--ink-soft); border-left:2px solid var(--tile); padding-left:14px; }
+  .avail-cta a{ color:var(--brick); font-weight:600; text-decoration:none; margin-left:4px; white-space:nowrap; }
+  .avail-cta a:hover{ text-decoration:underline; }
   .cal-widget{ border:1px solid var(--line); border-radius:2px; padding:16px 18px; background:var(--paper); }
   .cal-room-label{ font-family:'Zilla Slab','Noto Serif TC',serif; font-size:1.05rem; margin-bottom:10px; }
   .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
@@ -508,6 +511,11 @@
           <div class="cal-days" id="calBDays"></div>
         </div>
       </div>
+      <p class="avail-cta">
+        <span class="zh">看到的日期已被訂走，不代表訂不到——偶爾會有取消訂房，也可能可以協調其他日期或房型。</span>
+        <span class="en">Don't see the dates you want? Cancellations happen, and we may be able to work out alternative dates or rooms.</span>
+        <a href="#apply"><span class="zh">直接留言詢問 →</span><span class="en">Reach out anyway →</span></a>
+      </p>
     </div>
   </div>
 </section>
@@ -708,12 +716,16 @@
         <label for="formOccupants"><span class="zh">入住人數</span><span class="en">Number of occupants</span></label>
         <select id="formOccupants" name="occupants" required></select>
       </div>
-      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date" required></div>
+      <div class="field"><label for="movein"><span class="zh">預計入住日期</span><span class="en">Preferred move-in date</span></label><input id="movein" name="movein" type="date"></div>
       <div class="field">
         <label for="checkout"><span class="zh">預計退房日期</span><span class="en">Preferred move-out date</span></label>
-        <input id="checkout" name="checkout" type="date" required>
+        <input id="checkout" name="checkout" type="date">
         <span id="nightsDisplay" style="font-size:0.78rem; color:var(--paper-dim); margin-top:4px;"></span>
         <input type="hidden" id="length" name="length_nights" value="">
+      </div>
+      <div class="field full" style="flex-direction:row; align-items:center; gap:8px;">
+        <input type="checkbox" id="flexibleDates" name="flexible_dates" style="width:16px; height:16px; padding:0; border:1px solid var(--line-on-dark); flex-shrink:0;">
+        <label for="flexibleDates" style="font-weight:400; font-size:0.88rem;"><span class="zh">日期還沒確定，先讓我留資料詢問</span><span class="en">My dates aren't set yet — just want to leave my info and ask</span></label>
       </div>
       <div class="field full"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
       <div class="field"><label for="line"><span class="zh">LINE ID（選填）</span><span class="en">LINE ID (optional)</span></label><input id="line" name="line" placeholder="LINE ID"></div>
@@ -1094,15 +1106,18 @@
     var form = e.target;
     var msgEl = document.getElementById('formMsg');
     var isEn = document.body.classList.contains('lang-en');
+    var isFlexible = document.getElementById('flexibleDates').checked;
 
-    var nightsVal = parseInt(document.getElementById('length').value, 10);
-    if (isNaN(nightsVal) || nightsVal < 28) {
-      msgEl.style.color = 'var(--brick-soft)';
-      msgEl.textContent = isEn
-        ? 'Minimum stay is 28 nights — please adjust your move-in / move-out dates.'
-        : '最短租期為 28 晚，請調整入住／退房日期。';
-      document.getElementById('checkout').focus();
-      return;
+    if (!isFlexible) {
+      var nightsVal = parseInt(document.getElementById('length').value, 10);
+      if (isNaN(nightsVal) || nightsVal < 28) {
+        msgEl.style.color = 'var(--brick-soft)';
+        msgEl.textContent = isEn
+          ? 'Minimum stay is 28 nights — please adjust your move-in / move-out dates, or check "dates not set yet" below.'
+          : '最短租期為 28 晚，請調整入住／退房日期，或勾選下方「日期還沒確定」。';
+        document.getElementById('checkout').focus();
+        return;
+      }
     }
     msgEl.style.color = '';
 
