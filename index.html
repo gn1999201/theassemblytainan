@@ -127,8 +127,8 @@
 
   /* ---------- CAROUSEL ---------- */
   
-  .carousel{ position:relative; overflow:hidden; background:var(--ink); max-width:1400px; margin:0 auto; }
-  .carousel-track{ position:relative; width:100%; padding-top:56.25%; /* 16:9 fallback for all browsers */ }
+  .carousel{ position:relative; overflow:hidden; background:var(--ink); }
+  .carousel-track{ position:relative; width:100%; max-width:1400px; margin:0 auto; padding-top:56.25%; /* 16:9 fallback for all browsers */ }
   @supports (aspect-ratio:16/9){ .carousel-track{ padding-top:0; aspect-ratio:16/9; } }
   .carousel-slide{
     position:absolute; inset:0; opacity:0; transition:opacity .6s ease;
@@ -158,7 +158,6 @@
   .carousel-dots .dot.active{ background:var(--gold); }
   @media (max-width:600px){
     .carousel-track{ padding-top:75%; } /* 4:3 on mobile */
-    .carousel{ max-width:none; }
     .slide-tag{ font-size:1.15rem; }
   }
   @supports (aspect-ratio:16/9){
