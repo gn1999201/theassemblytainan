@@ -124,6 +124,11 @@
     <div class="meta-hint" id="readMeterStatus" style="font-size:11px; color:#999; margin-top:4px;"></div>
     <label>Rate (NT$/kWh) — optional</label>
     <input type="number" step="0.1" id="rateInput" placeholder="Leave blank to use default rate">
+    <label>Check-in date</label>
+    <input type="date" id="checkinDatetimeInput">
+    <label>Check-out date</label>
+    <input type="date" id="checkoutDatetimeInput">
+    <div style="font-size:11px; color:#999; margin-top:4px;">Door code (if this room has a smart lock) activates at 12:00 AM on check-in day and deactivates at 12:00 PM on check-out day.</div>
     <button onclick="createBooking()" id="createBtn">Generate Link</button>
     <div id="createResult"></div>
   </div>
@@ -256,13 +261,30 @@
     }
   }
 
+  function buildLocalDateTime_(dateStr, hour) {
+    if (!dateStr) return null;
+    const parts = dateStr.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2], hour, 0, 0);
+  }
+
   async function createBooking() {
     const btn = document.getElementById('createBtn');
     const room = document.getElementById('roomSelect').value;
     const guestName = document.getElementById('guestNameInput').value.trim();
     const manualReading = document.getElementById('checkinReadingInput').value.trim();
     const rate = document.getElementById('rateInput').value.trim();
+    const checkinDateStr = document.getElementById('checkinDatetimeInput').value;
+    const checkoutDateStr = document.getElementById('checkoutDatetimeInput').value;
     const resultBox = document.getElementById('createResult');
+
+    // 入住日 00:00 生效, 退房日 12:00 失效
+    const checkinDT = buildLocalDateTime_(checkinDateStr, 0);
+    const checkoutDT = buildLocalDateTime_(checkoutDateStr, 12);
+
+    if (checkinDT && checkoutDT && checkoutDT <= checkinDT) {
+      resultBox.innerHTML = `<div class="error">Check-out must be after check-in.</div>`;
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = manualReading ? 'Creating...' : 'Reading meter...';
@@ -277,6 +299,12 @@
       if (rate) {
         url += '&rate=' + encodeURIComponent(rate);
       }
+      if (checkinDT) {
+        url += '&checkin_datetime=' + encodeURIComponent(checkinDT.toISOString());
+      }
+      if (checkoutDT) {
+        url += '&checkout_datetime=' + encodeURIComponent(checkoutDT.toISOString());
+      }
       const res = await fetch(url);
       const data = await res.json();
 
@@ -289,12 +317,15 @@
             <strong>${data.room}${data.guest_name ? ' — ' + data.guest_name : ''}</strong><br>
             Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh ${data.was_manual_reading ? '(manually entered)' : '(auto-read from meter)'}<br>
             Rate: NT$${data.rate_per_kwh}/kWh<br>
+            ${data.door_code_available ? '' : '<span style="color:#999;">(Door code setup not available for this room yet)</span><br>'}
             Link: <a href="${data.guest_link}" target="_blank">${data.guest_link}</a>
             <br><button class="copy-btn" onclick="copyLink('${data.guest_link}')">Copy Link</button>
           </div>`;
         document.getElementById('guestNameInput').value = '';
         document.getElementById('checkinReadingInput').value = '';
         document.getElementById('rateInput').value = '';
+        document.getElementById('checkinDatetimeInput').value = '';
+        document.getElementById('checkoutDatetimeInput').value = '';
         loadActiveBookings();
       }
     } catch (e) {
@@ -324,6 +355,8 @@
         <div class="booking-item" data-token="${b.token}" data-room="${b.room}">
           <div class="name">${b.room}${b.guest_name ? ' — ' + b.guest_name : ''}</div>
           <div class="meta">Token: ${b.token} · Check-in reading: ${b.checkin_reading_kwh.toFixed(2)} kWh</div>
+          ${(b.checkin_datetime || b.checkout_datetime) ? `<div class="meta">Stay: ${b.checkin_datetime ? new Date(b.checkin_datetime).toLocaleString() : '—'} → ${b.checkout_datetime ? new Date(b.checkout_datetime).toLocaleString() : '—'}</div>` : ''}
+          ${b.door_code_available ? `<div class="meta">Door code: ${b.door_code_set ? '✓ Set by guest' : 'Not set yet'}</div>` : ''}
           <button class="copy-btn" onclick="copyLink('${b.guest_link}')">Copy Link</button>
           <button class="danger" id="checkoutBtn_${b.token.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="checkoutBooking('${b.token}')">Check Out</button>
         </div>
