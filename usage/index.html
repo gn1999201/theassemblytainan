@@ -154,12 +154,49 @@
     color: #999;
     padding: 40px 0;
   }
+  .loading-hint {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 8px;
+  }
+  .install-hint {
+    max-width: 420px;
+    margin: 12px auto 0;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #6d5300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .install-hint button {
+    background: none;
+    border: none;
+    color: #6d5300;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+  }
 </style>
 </head>
 <body>
 
 <div class="card" id="card">
-  <div class="loading">Loading...</div>
+  <div class="loading">
+    Loading...
+    <div class="loading-hint">This may take a moment, please wait</div>
+  </div>
+</div>
+
+<div class="install-hint" id="installHint" style="display:none;">
+  <span id="installHintText"></span>
+  <button onclick="dismissInstallHint()" aria-label="Dismiss">&times;</button>
 </div>
 
 <script>
@@ -348,6 +385,26 @@
   loadUsage();
   // 每 60 秒自動刷新一次(僅在入住中才有意義,已退房的畫面不會變)
   setInterval(loadUsage, 60000);
+
+  // ---- 提示房客「加到主畫面」----
+  (function showInstallHint() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const dismissed = localStorage.getItem('install_hint_dismissed_' + token);
+    if (isStandalone || dismissed) return;
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const text = isIOS
+      ? 'Tip: Tap the Share icon below, then "Add to Home Screen" to check your usage anytime like an app.'
+      : 'Tip: Tap the ⋮ menu above, then "Add to Home Screen" to check your usage anytime like an app.';
+
+    document.getElementById('installHintText').textContent = text;
+    document.getElementById('installHint').style.display = 'flex';
+  })();
+
+  function dismissInstallHint() {
+    localStorage.setItem('install_hint_dismissed_' + token, '1');
+    document.getElementById('installHint').style.display = 'none';
+  }
 </script>
 
 </body>
