@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electricity Usage — The Assembly Tainan</title>
+
+<!-- 讓手機「加到主畫面」時看起來像一個 App -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Power Bill">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1976d2">
+<link id="dynamic-manifest" rel="manifest">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
+    background: #f4f6f8;
+    color: #1a1a1a;
+    padding: 24px 16px;
+  }
+  .card {
+    max-width: 420px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: #555;
+  }
+  .cn { font-size: 11px; color: #aaa; display: block; font-weight: 400; margin-top: 2px; }
+  .kwh {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 16px 0 0;
+    color: #1976d2;
+  }
+  .kwh .unit { font-size: 18px; color: #999; margin-left: 4px; }
+  .label { font-size: 13px; color: #888; margin-top: 4px; }
+  .cost-box {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f0f7ff;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cost-box .amount { font-size: 24px; font-weight: 700; color: #d84315; }
+  .meta {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+  }
+  .greeting {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1976d2;
+    margin-bottom: 10px;
+  }
+  .reading-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 14px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .badge-active { background: #e8f5e9; color: #2e7d32; }
+  .badge-closed { background: #eeeeee; color: #757575; }
+  .live-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  .live-heading {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    flex-shrink: 0;
+  }
+  .dot-active {
+    background: #43a047;
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(67,160,71, 0.5); }
+    70%  { box-shadow: 0 0 0 7px rgba(67,160,71, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(67,160,71, 0); }
+  }
+  .live-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
+  }
+  .live-item {
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 10px 4px;
+  }
+  .live-value { font-size: 18px; font-weight: 700; color: #333; }
+  .live-label { font-size: 11px; color: #999; margin-top: 2px; }
+  .live-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+  }
+  .closed-note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: #f7f7f7;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+  }
+  .error {
+    color: #c62828;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 14px;
+  }
+  .loading {
+    text-align: center;
+    color: #999;
+    padding: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="loading">Loading...</div>
+</div>
+
+<script>
+  // 這個網址不用改,已經指向你的 Apps Script 部署
+  const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
+
+  // 從網址讀取這位房客的專屬 token,例如 ?token=roomb-0812-tw
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  // 動態產生 manifest,讓「加到主畫面」的捷徑能記住這位房客專屬的網址(含 token)
+  (function setupManifest() {
+    const iconUrl192 = new URL('icon-192.png', window.location.href).href;
+    const iconUrl512 = new URL('icon-512.png', window.location.href).href;
+    const manifest = {
+      name: 'My Power Bill — The Assembly Tainan',
+      short_name: 'My Power Bill',
+      start_url: window.location.href,
+      display: 'standalone',
+      background_color: '#f4f6f8',
+      theme_color: '#1976d2',
+      icons: [
+        { src: iconUrl192, sizes: '192x192', type: 'image/png' },
+        { src: iconUrl512, sizes: '512x512', type: 'image/png' }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    document.getElementById('dynamic-manifest').setAttribute('href', URL.createObjectURL(blob));
+  })();
+
+  async function loadUsage() {
+    const card = document.getElementById('card');
+
+    if (!token) {
+      card.innerHTML = `<div class="error">This link is missing your access token.<br>Please use the personal link provided by your host.</div>`;
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '?token=' + encodeURIComponent(token));
+      const data = await res.json();
+
+      if (data.error) {
+        card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+
+      const updated = new Date(data.updated_at);
+      const timeStr = updated.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+      if (data.status === 'checked_out') {
+        // ---- 已退房:顯示封存的最終帳單 ----
+        card.innerHTML = `
+          <span class="badge badge-closed">STAY COMPLETED</span>
+          ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
+          <h1>${data.room_name} — Final Usage<span class="cn">${data.room_name} 最終用電量</span></h1>
+
+          <div class="reading-row">
+            <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+            <span>Final reading: ${data.final_reading_kwh.toFixed(2)} kWh</span>
+          </div>
+
+          <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+          <div class="label">Total electricity used during your stay</div>
+
+          <div class="cost-box">
+            <div>
+              <div class="label">Total Cost<span class="cn">總電費</span></div>
+            </div>
+            <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+          </div>
+
+          <div class="closed-note">
+            Your stay has ended. This is your final electricity summary.
+          </div>
+
+          <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
+        `;
+        return;
+      }
+
+      // ---- 入住中:顯示即時數據 ----
+      const isActive = data.power_kw !== null && data.power_kw > 0.01;
+
+      card.innerHTML = `
+        <span class="badge badge-active">CURRENT STAY</span>
+        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
+        <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+
+        <div class="reading-row">
+          <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+          <span>Current reading: ${data.current_reading_kwh.toFixed(2)} kWh</span>
+        </div>
+
+        <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+        <div class="label">Electricity used during your stay so far</div>
+
+        <div class="cost-box">
+          <div>
+            <div class="label">Estimated Cost<span class="cn">預估電費</span></div>
+          </div>
+          <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+        </div>
+
+        <div class="live-section">
+          <div class="live-heading">
+            <span class="dot ${isActive ? 'dot-active' : ''}"></span>
+            Live Power Usage Right Now
+            <span class="cn">即時用電狀況</span>
+          </div>
+          <div class="live-grid">
+            <div class="live-item">
+              <div class="live-value">${data.voltage_v ?? '—'}</div>
+              <div class="live-label">Voltage (V)<span class="cn">電壓</span></div>
+            </div>
+            <div class="live-item">
+              <div class="live-value">${data.current_a ?? '—'}</div>
+              <div class="live-label">Current (A)<span class="cn">電流</span></div>
+            </div>
+            <div class="live-item">
+              <div class="live-value">${data.power_kw ?? '—'}</div>
+              <div class="live-label">Power (kW)<span class="cn">功率</span></div>
+            </div>
+          </div>
+          <div class="live-hint">
+            ${isActive
+              ? 'Electricity is currently being used in this room.'
+              : 'No significant power draw right now.'}
+          </div>
+        </div>
+
+        <div class="meta">
+          Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}
+        </div>
+      `;
+    } catch (e) {
+      card.innerHTML = `<div class="error">Connection failed. Please try again later.</div>`;
+    }
+  }
+
+  loadUsage();
+  // 每 60 秒自動刷新一次(僅在入住中才有意義,已退房的畫面不會變)
+  setInterval(loadUsage, 60000);
+</script>
+
+</body>
+</html>
