@@ -194,7 +194,8 @@
     document.getElementById('dynamic-manifest').setAttribute('href', URL.createObjectURL(blob));
   })();
 
-  async function loadUsage(isRetry) {
+  async function loadUsage(attempt) {
+    attempt = attempt || 1;
     const card = document.getElementById('card');
 
     if (!token) {
@@ -202,117 +203,146 @@
       return;
     }
 
+    // 先看本機有沒有上次成功抓到的資料,有的話先顯示,不要讓房客對著空白 Loading 等
+    const cacheKey = 'cached_view_' + token;
+    if (attempt === 1) {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          renderView_(JSON.parse(cached), true);
+        } catch (e) { /* 快取壞掉就忽略,照常走正常流程 */ }
+      }
+    }
+
     try {
       const res = await fetch(API_BASE + '?token=' + encodeURIComponent(token));
       const data = await res.json();
 
       if (data.error) {
-        card.innerHTML = `<div class="error">${data.message}</div>`;
+        // 如果已經有快取畫面顯示著,連線失敗就不要蓋掉它,悄悄放棄這次更新就好
+        if (!localStorage.getItem(cacheKey)) {
+          card.innerHTML = `<div class="error">${data.message}</div>`;
+        }
         return;
       }
 
-      const updated = new Date(data.updated_at);
-      const timeStr = updated.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      renderView_(data, false);
 
-      if (data.status === 'checked_out') {
-        // ---- 已退房:顯示封存的最終帳單 ----
+    } catch (e) {
+      // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
+      if (attempt < 3) {
+        setTimeout(function () { loadUsage(attempt + 1); }, attempt * 2000);
+        return;
+      }
+      // 有快取畫面顯示著的話,連線失敗也不要蓋掉它
+      if (!localStorage.getItem(cacheKey)) {
         card.innerHTML = `
-          <span class="badge badge-closed">STAY COMPLETED</span>
-          ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
-          <h1>${data.room_name} — Final Usage<span class="cn">${data.room_name} 最終用電量</span></h1>
-
-          <div class="reading-row">
-            <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
-            <span>Final reading: ${data.final_reading_kwh.toFixed(2)} kWh</span>
-          </div>
-
-          <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
-          <div class="label">Total electricity used during your stay</div>
-
-          <div class="cost-box">
-            <div>
-              <div class="label">Total Cost<span class="cn">總電費</span></div>
+          <div class="error">
+            Connection failed. Please try again.
+            <div style="margin-top:12px;">
+              <button onclick="loadUsage()" style="padding:8px 20px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">Retry</button>
             </div>
-            <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
-          </div>
-
-          <div class="closed-note">
-            Your stay has ended. This is your final electricity summary.
-          </div>
-
-          <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
-        `;
-        return;
+          </div>`;
       }
+    }
+  }
 
-      // ---- 入住中:顯示即時數據 ----
-      const isActive = data.power_kw !== null && data.power_kw > 0.01;
+  function renderView_(data, isStale) {
+    const card = document.getElementById('card');
+    const updated = new Date(data.updated_at);
+    const timeStr = updated.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const staleNotice = isStale
+      ? `<div style="text-align:center; font-size:11px; color:#1976d2; margin-bottom:8px;">Showing last known data — updating...</div>`
+      : '';
 
+    if (data.status === 'checked_out') {
+      // ---- 已退房:顯示封存的最終帳單 ----
       card.innerHTML = `
-        <span class="badge badge-active">CURRENT STAY</span>
-        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
-        <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+        ${staleNotice}
+        <span class="badge badge-closed">STAY COMPLETED</span>
+        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
+        <h1>${data.room_name} — Final Usage<span class="cn">${data.room_name} 最終用電量</span></h1>
 
         <div class="reading-row">
           <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
-          <span>Current reading: ${data.current_reading_kwh.toFixed(2)} kWh</span>
+          <span>Final reading: ${data.final_reading_kwh.toFixed(2)} kWh</span>
         </div>
 
         <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
-        <div class="label">Electricity used during your stay so far</div>
+        <div class="label">Total electricity used during your stay</div>
 
         <div class="cost-box">
           <div>
-            <div class="label">Estimated Cost<span class="cn">預估電費</span></div>
+            <div class="label">Total Cost<span class="cn">總電費</span></div>
           </div>
           <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
         </div>
 
-        <div class="live-section">
-          <div class="live-heading">
-            <span class="dot ${isActive ? 'dot-active' : ''}"></span>
-            Live Power Usage Right Now
-            <span class="cn">即時用電狀況</span>
-          </div>
-          <div class="live-grid">
-            <div class="live-item">
-              <div class="live-value">${data.voltage_v ?? '—'}</div>
-              <div class="live-label">Voltage (V)<span class="cn">電壓</span></div>
-            </div>
-            <div class="live-item">
-              <div class="live-value">${data.current_a ?? '—'}</div>
-              <div class="live-label">Current (A)<span class="cn">電流</span></div>
-            </div>
-            <div class="live-item">
-              <div class="live-value">${data.power_kw ?? '—'}</div>
-              <div class="live-label">Power (kW)<span class="cn">功率</span></div>
-            </div>
-          </div>
-          <div class="live-hint">
-            ${isActive
-              ? 'Electricity is currently being used in this room.'
-              : 'No significant power draw right now.'}
-          </div>
+        <div class="closed-note">
+          Your stay has ended. This is your final electricity summary.
         </div>
 
-        <div class="meta">
-          Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}
-        </div>
+        <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
       `;
-    } catch (e) {
-      // 第一次失敗通常是 Apps Script 剛啟動的延遲,先悄悄重試一次,不要馬上嚇到房客
-      if (!isRetry) {
-        setTimeout(function () { loadUsage(true); }, 2000);
-        return;
-      }
-      card.innerHTML = `
-        <div class="error">
-          Connection failed. Please try again.
-          <div style="margin-top:12px;">
-            <button onclick="loadUsage()" style="padding:8px 20px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">Retry</button>
-          </div>
-        </div>`;
+      return;
     }
+
+    // ---- 入住中:顯示即時數據 ----
+    const isActive = data.power_kw !== null && data.power_kw > 0.01;
+
+    card.innerHTML = `
+      ${staleNotice}
+      <span class="badge badge-active">CURRENT STAY</span>
+      ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
+      <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+
+      <div class="reading-row">
+        <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+        <span>Current reading: ${data.current_reading_kwh.toFixed(2)} kWh</span>
+      </div>
+
+      <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+      <div class="label">Electricity used during your stay so far</div>
+
+      <div class="cost-box">
+        <div>
+          <div class="label">Estimated Cost<span class="cn">預估電費</span></div>
+        </div>
+        <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+      </div>
+
+      <div class="live-section">
+        <div class="live-heading">
+          <span class="dot ${isActive ? 'dot-active' : ''}"></span>
+          Live Power Usage Right Now
+          <span class="cn">即時用電狀況</span>
+        </div>
+        <div class="live-grid">
+          <div class="live-item">
+            <div class="live-value">${data.voltage_v ?? '—'}</div>
+            <div class="live-label">Voltage (V)<span class="cn">電壓</span></div>
+          </div>
+          <div class="live-item">
+            <div class="live-value">${data.current_a ?? '—'}</div>
+            <div class="live-label">Current (A)<span class="cn">電流</span></div>
+          </div>
+          <div class="live-item">
+            <div class="live-value">${data.power_kw ?? '—'}</div>
+            <div class="live-label">Power (kW)<span class="cn">功率</span></div>
+          </div>
+        </div>
+        <div class="live-hint">
+          ${isActive
+            ? 'Electricity is currently being used in this room.'
+            : 'No significant power draw right now.'}
+        </div>
+      </div>
+
+      <div class="meta">
+        Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}
+      </div>
+    `;
   }
 
   loadUsage();
