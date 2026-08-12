@@ -82,6 +82,7 @@
   .booking-item .meta { font-size: 12px; color: #888; margin-top: 2px; }
   .booking-item button {
     margin-top: 8px;
+    margin-right: 8px;
     width: auto;
     padding: 6px 16px;
     font-size: 13px;
@@ -169,7 +170,8 @@
     verifyAndEnter();
   }
 
-  async function verifyAndEnter() {
+  async function verifyAndEnter(attempt) {
+    attempt = attempt || 1;
     try {
       const res = await fetch(API_BASE + '?action=list_rooms&admin_key=' + encodeURIComponent(adminKey));
       const data = await res.json();
@@ -183,7 +185,13 @@
       populateRooms(data.rooms);
       loadActiveBookings();
     } catch (e) {
-      document.getElementById('lockError').textContent = 'Connection failed. Please try again.';
+      // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
+      if (attempt < 3) {
+        document.getElementById('lockError').textContent = 'Connecting... (attempt ' + (attempt + 1) + ' of 3)';
+        setTimeout(function () { verifyAndEnter(attempt + 1); }, attempt * 1500);
+        return;
+      }
+      document.getElementById('lockError').textContent = 'Connection failed after several attempts. Please try again.';
     }
   }
 
@@ -279,7 +287,8 @@
     navigator.clipboard.writeText(link);
   }
 
-  async function loadActiveBookings(isRetry) {
+  async function loadActiveBookings(attempt) {
+    attempt = attempt || 1;
     const list = document.getElementById('activeList');
     try {
       const res = await fetch(API_BASE + '?action=list_active&admin_key=' + encodeURIComponent(adminKey));
@@ -292,13 +301,13 @@
         <div class="booking-item" data-token="${b.token}" data-room="${b.room}">
           <div class="name">${b.room}${b.guest_name ? ' — ' + b.guest_name : ''}</div>
           <div class="meta">Token: ${b.token} · Check-in reading: ${b.checkin_reading_kwh.toFixed(2)} kWh</div>
+          <button class="copy-btn" onclick="copyLink('${b.guest_link}')">Copy Link</button>
           <button class="danger" id="checkoutBtn_${b.token.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="checkoutBooking('${b.token}')">Check Out</button>
         </div>
       `).join('');
     } catch (e) {
-      // 第一次失敗通常是延遲問題,先悄悄重試一次
-      if (!isRetry) {
-        setTimeout(function () { loadActiveBookings(true); }, 2000);
+      if (attempt < 3) {
+        setTimeout(function () { loadActiveBookings(attempt + 1); }, attempt * 1500);
         return;
       }
       list.innerHTML = `<div class="error">Failed to load current stays. <button onclick="loadActiveBookings()" style="width:auto; padding:6px 14px; font-size:12px;">Retry</button></div>`;
