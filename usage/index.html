@@ -430,6 +430,7 @@
    */
   function renderDoorCodeSection_(data) {
     if (!data.door_code_available) return '';
+    doorCodeLength_ = data.door_code_length || 7;
 
     const savedCode = localStorage.getItem('door_code_' + token);
 
@@ -469,13 +470,15 @@
     `;
   }
 
+  let doorCodeLength_ = 7; // 預設值,實際會被伺服器回傳的 door_code_length 覆蓋
+
   function doorCodeInputForm_(buttonLabel) {
     return `
-      <div style="display:flex; gap:8px;">
-        <input type="tel" inputmode="numeric" id="doorCodeInput" maxlength="8"
-          placeholder="4-8 digits" style="flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:16px; letter-spacing:2px;">
+      <div style="display:flex; gap:8px; width:100%;">
+        <input type="tel" inputmode="numeric" id="doorCodeInput" maxlength="${doorCodeLength_}"
+          placeholder="${doorCodeLength_} digits" style="flex:1; min-width:0; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:16px; letter-spacing:2px; box-sizing:border-box;">
         <button onclick="submitDoorCode()" id="doorCodeSubmitBtn"
-          style="width:auto; padding:0 18px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">${buttonLabel}</button>
+          style="width:auto; flex-shrink:0; white-space:nowrap; padding:0 16px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">${buttonLabel}</button>
       </div>
       <div id="doorCodeError" style="color:#c62828; font-size:12px; margin-top:6px;"></div>
     `;
@@ -492,8 +495,8 @@
     const btn = document.getElementById('doorCodeSubmitBtn');
     const code = input.value.trim();
 
-    if (!/^\d{4,8}$/.test(code)) {
-      errorBox.textContent = 'Code must be 4-8 digits.';
+    if (!(new RegExp('^\\d{' + doorCodeLength_ + '}$')).test(code)) {
+      errorBox.textContent = 'Code must be exactly ' + doorCodeLength_ + ' digits.';
       return;
     }
 
