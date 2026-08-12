@@ -190,7 +190,7 @@
     document.getElementById('dynamic-manifest').setAttribute('href', URL.createObjectURL(blob));
   })();
 
-  async function loadUsage() {
+  async function loadUsage(isRetry) {
     const card = document.getElementById('card');
 
     if (!token) {
@@ -296,7 +296,18 @@
         </div>
       `;
     } catch (e) {
-      card.innerHTML = `<div class="error">Connection failed. Please try again later.</div>`;
+      // 第一次失敗通常是 Apps Script 剛啟動的延遲,先悄悄重試一次,不要馬上嚇到房客
+      if (!isRetry) {
+        setTimeout(function () { loadUsage(true); }, 2000);
+        return;
+      }
+      card.innerHTML = `
+        <div class="error">
+          Connection failed. Please try again.
+          <div style="margin-top:12px;">
+            <button onclick="loadUsage()" style="padding:8px 20px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">Retry</button>
+          </div>
+        </div>`;
     }
   }
 
