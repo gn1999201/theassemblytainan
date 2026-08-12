@@ -115,8 +115,12 @@
     <select id="roomSelect"></select>
     <label>Guest name (optional)</label>
     <input type="text" id="guestNameInput" placeholder="e.g. William">
-    <label>Starting reading (kWh) — optional</label>
-    <input type="number" step="0.01" id="checkinReadingInput" placeholder="Leave blank to auto-read current meter">
+    <label>Starting reading (kWh)</label>
+    <div style="display:flex; gap:8px;">
+      <input type="number" step="0.01" id="checkinReadingInput" placeholder="Tap 'Read Meter' or type manually" style="flex:1;">
+      <button type="button" onclick="readMeterNow()" id="readMeterBtn" style="width:auto; margin-top:0; white-space:nowrap; padding:0 16px;">Read Meter</button>
+    </div>
+    <div class="meta-hint" id="readMeterStatus" style="font-size:11px; color:#999; margin-top:4px;"></div>
     <label>Rate (NT$/kWh) — optional</label>
     <input type="number" step="0.1" id="rateInput" placeholder="Leave blank to use default rate">
     <button onclick="createBooking()" id="createBtn">Generate Link</button>
@@ -188,6 +192,39 @@
     sel.innerHTML = rooms.map(r => `<option value="${r}">${r}</option>`).join('');
   }
 
+  async function readMeterNow(isRetry) {
+    const room = document.getElementById('roomSelect').value;
+    const btn = document.getElementById('readMeterBtn');
+    const status = document.getElementById('readMeterStatus');
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    if (!isRetry) status.textContent = 'Reading meter, this can take a few seconds...';
+
+    try {
+      const res = await fetch(API_BASE + '?action=get_current_reading&room=' + encodeURIComponent(room) +
+        '&admin_key=' + encodeURIComponent(adminKey));
+      const data = await res.json();
+      if (data.error) {
+        status.innerHTML = `<span style="color:#c62828;">${data.message}</span>`;
+      } else {
+        document.getElementById('checkinReadingInput').value = data.reading_kwh.toFixed(2);
+        status.innerHTML = `<span style="color:#2e7d32;">✓ Read successfully</span>`;
+      }
+    } catch (e) {
+      // 這是唯讀動作,失敗不會有副作用,放心自動重試
+      if (!isRetry) {
+        status.textContent = 'Retrying...';
+        setTimeout(function () { readMeterNow(true); }, 1500);
+        return;
+      }
+      status.innerHTML = `<span style="color:#c62828;">Failed to read meter. Tap "Read Meter" to try again.</span>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Read Meter';
+    }
+  }
+
   async function createBooking() {
     const btn = document.getElementById('createBtn');
     const room = document.getElementById('roomSelect').value;
@@ -217,6 +254,7 @@
       } else {
         resultBox.innerHTML = `
           <div class="result">
+            ${data.already_existed ? '<strong style="color:#d84315;">⚠ An active booking for this guest already existed — showing that link instead of creating a duplicate.</strong><br><br>' : ''}
             <strong>${data.room}${data.guest_name ? ' — ' + data.guest_name : ''}</strong><br>
             Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh ${data.was_manual_reading ? '(manually entered)' : '(auto-read from meter)'}<br>
             Rate: NT$${data.rate_per_kwh}/kWh<br>
@@ -229,7 +267,8 @@
         loadActiveBookings();
       }
     } catch (e) {
-      resultBox.innerHTML = `<div class="error">Connection failed. Please try again.</div>`;
+      resultBox.innerHTML = `<div class="error">Connection failed, but the request may have still gone through on the server.<br><strong>Check "Current Stays" below before clicking Generate Link again</strong> — retrying may create a duplicate booking.</div>`;
+      loadActiveBookings();
     } finally {
       btn.disabled = false;
       btn.textContent = 'Generate Link';
@@ -240,7 +279,7 @@
     navigator.clipboard.writeText(link);
   }
 
-  async function loadActiveBookings() {
+  async function loadActiveBookings(isRetry) {
     const list = document.getElementById('activeList');
     try {
       const res = await fetch(API_BASE + '?action=list_active&admin_key=' + encodeURIComponent(adminKey));
@@ -250,32 +289,74 @@
         return;
       }
       list.innerHTML = data.active_bookings.map(b => `
-        <div class="booking-item">
+        <div class="booking-item" data-token="${b.token}" data-room="${b.room}">
           <div class="name">${b.room}${b.guest_name ? ' — ' + b.guest_name : ''}</div>
           <div class="meta">Token: ${b.token} · Check-in reading: ${b.checkin_reading_kwh.toFixed(2)} kWh</div>
-          <button class="danger" onclick="checkoutBooking('${b.token}')">Check Out</button>
+          <button class="danger" id="checkoutBtn_${b.token.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="checkoutBooking('${b.token}')">Check Out</button>
         </div>
       `).join('');
     } catch (e) {
-      list.innerHTML = `<div class="error">Failed to load current stays.</div>`;
+      // 第一次失敗通常是延遲問題,先悄悄重試一次
+      if (!isRetry) {
+        setTimeout(function () { loadActiveBookings(true); }, 2000);
+        return;
+      }
+      list.innerHTML = `<div class="error">Failed to load current stays. <button onclick="loadActiveBookings()" style="width:auto; padding:6px 14px; font-size:12px;">Retry</button></div>`;
     }
   }
 
-  async function checkoutBooking(token) {
-    if (!confirm('Check out this guest? This will lock in the final reading and cannot be undone.')) return;
+  let pendingCheckoutToken = null;
+
+  async function checkoutBooking(token, isRetry) {
+    pendingCheckoutToken = token;
+    const btn = document.getElementById('checkoutBtn_' + cssSafe(token));
+    if (btn) { btn.disabled = true; btn.textContent = 'Reading meter...'; }
+
     try {
-      const res = await fetch(API_BASE + '?action=checkout_booking&token=' + encodeURIComponent(token) +
+      const bookingRoom = document.querySelector('[data-token="' + token + '"]').dataset.room;
+      const res = await fetch(API_BASE + '?action=get_current_reading&room=' + encodeURIComponent(bookingRoom) +
         '&admin_key=' + encodeURIComponent(adminKey));
       const data = await res.json();
+
       if (data.error) {
         alert(data.message);
-      } else {
-        alert(`Checked out. Final usage: ${data.usage_kwh.toFixed(2)} kWh — NT$${data.estimated_cost_ntd}`);
-        loadActiveBookings();
+        if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+        return;
       }
+
+      const confirmed = confirm(
+        `Final meter reading: ${data.reading_kwh.toFixed(2)} kWh\n\nCheck out this guest with this reading? This cannot be undone.`
+      );
+      if (!confirmed) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+        return;
+      }
+
+      // 這一步只是寫入試算表,速度快,失敗率低
+      const finalizeRes = await fetch(API_BASE + '?action=checkout_booking&token=' + encodeURIComponent(token) +
+        '&final_reading=' + encodeURIComponent(data.reading_kwh) + '&admin_key=' + encodeURIComponent(adminKey));
+      const finalizeData = await finalizeRes.json();
+
+      if (finalizeData.error) {
+        alert(finalizeData.message);
+      } else {
+        alert(`Checked out. Final usage: ${finalizeData.usage_kwh.toFixed(2)} kWh — NT$${finalizeData.estimated_cost_ntd}`);
+      }
+      loadActiveBookings();
+
     } catch (e) {
-      alert('Connection failed. Please try again.');
+      // 讀電表這步失敗可以放心重試(還沒寫入任何資料)
+      if (!isRetry) {
+        setTimeout(function () { checkoutBooking(token, true); }, 1500);
+        return;
+      }
+      alert('Connection failed while reading the meter. Please try again — nothing has been written yet, so it is safe to retry.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
     }
+  }
+
+  function cssSafe(str) {
+    return str.replace(/[^a-zA-Z0-9]/g, '_');
   }
 
   // 如果之前已經解鎖過(瀏覽器記住 admin key),直接進入
