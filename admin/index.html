@@ -136,8 +136,28 @@
 </div>
 
 <script>
-  // 動態產生 manifest,讓「加到主畫面」的捷徑能記住這個管理頁面的網址
-  (function setupManifest() {
+  const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
+
+  // 優先看網址裡有沒有帶 admin_key(這個比瀏覽器儲存空間更可靠,不會被系統自動清掉)
+  // 沒有的話,退回看瀏覽器記住的舊值
+  const urlParams = new URLSearchParams(window.location.search);
+  let adminKey = urlParams.get('admin_key') || localStorage.getItem('admin_key') || '';
+
+  function unlock() {
+    const val = document.getElementById('adminKeyInput').value.trim();
+    if (!val) return;
+    adminKey = val;
+    verifyAndEnter();
+  }
+
+  // 動態產生 manifest,讓「加到主畫面」的捷徑網址裡直接帶著 admin_key,
+  // 這樣就算瀏覽器清掉本機儲存的密碼,捷徑本身還是能直接登入,不用重新輸入
+  function setupManifest_() {
+    const baseUrl = new URL(window.location.href);
+    if (adminKey) {
+      baseUrl.searchParams.set('admin_key', adminKey);
+    }
+
     const iconUrl192 = new URL('icon-192.png', window.location.href).href;
     const iconUrl512 = new URL('icon-512.png', window.location.href).href;
     const iconUrl192Mask = new URL('icon-192-maskable.png', window.location.href).href;
@@ -145,7 +165,7 @@
     const manifest = {
       name: 'Bookings Admin — The Assembly Tainan',
       short_name: 'Bookings Admin',
-      start_url: window.location.href,
+      start_url: baseUrl.href,
       display: 'standalone',
       background_color: '#f4f6f8',
       theme_color: '#1976d2',
@@ -158,17 +178,8 @@
     };
     const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
     document.getElementById('dynamic-manifest').setAttribute('href', URL.createObjectURL(blob));
-  })();
-
-  const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
-  let adminKey = localStorage.getItem('admin_key') || '';
-
-  function unlock() {
-    const val = document.getElementById('adminKeyInput').value.trim();
-    if (!val) return;
-    adminKey = val;
-    verifyAndEnter();
   }
+  setupManifest_();
 
   async function verifyAndEnter(attempt) {
     attempt = attempt || 1;
@@ -180,6 +191,13 @@
         return;
       }
       localStorage.setItem('admin_key', adminKey);
+      // 密碼確認有效後,把它也悄悄放進網址列(不會整頁重新整理),
+      // 這樣「加到主畫面」抓到的網址就會自動帶著它
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('admin_key', adminKey);
+      window.history.replaceState({}, '', newUrl);
+      setupManifest_();
+
       document.getElementById('lockScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
       populateRooms(data.rooms);
@@ -193,6 +211,11 @@
       }
       document.getElementById('lockError').textContent = 'Connection failed after several attempts. Please try again.';
     }
+  }
+
+  // 如果網址或瀏覽器已經有記住的 admin_key,直接嘗試自動登入,不用等使用者按 Unlock
+  if (adminKey) {
+    verifyAndEnter();
   }
 
   function populateRooms(rooms) {
@@ -366,11 +389,6 @@
 
   function cssSafe(str) {
     return str.replace(/[^a-zA-Z0-9]/g, '_');
-  }
-
-  // 如果之前已經解鎖過(瀏覽器記住 admin key),直接進入
-  if (adminKey) {
-    verifyAndEnter();
   }
 </script>
 
