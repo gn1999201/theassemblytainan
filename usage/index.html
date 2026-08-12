@@ -183,6 +183,43 @@
     flex-shrink: 0;
     padding: 0;
   }
+  .door-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  .door-heading {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+  .door-code-display {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #1976d2;
+    text-align: center;
+    margin: 14px 0 6px;
+    background: #f0f7ff;
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .door-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+  }
+  .door-reset-btn {
+    margin-top: 10px;
+    width: auto;
+    background: none;
+    border: 1px solid #ddd;
+    color: #888;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -376,10 +413,115 @@
         </div>
       </div>
 
+      ${renderDoorCodeSection_(data)}
+
       <div class="meta">
         Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}
       </div>
     `;
+  }
+
+  /**
+   * 門鎖密碼區塊:
+   * - 房間沒開通門鎖功能 → 不顯示這個區塊
+   * - 這台裝置本機有存密碼 → 直接顯示密碼(不用重問伺服器,伺服器也沒存)
+   * - 伺服器顯示已設定、但這台裝置沒有存(例如換了裝置) → 顯示提示 + 可以重設
+   * - 還沒設定過 → 顯示輸入欄位讓房客自己選一組
+   */
+  function renderDoorCodeSection_(data) {
+    if (!data.door_code_available) return '';
+
+    const savedCode = localStorage.getItem('door_code_' + token);
+
+    if (data.door_code_set && savedCode) {
+      return `
+        <div class="live-section">
+          <div class="live-heading">🔑 Your Door Code<span class="cn">你的門鎖密碼</span></div>
+          <div class="kwh" style="font-size:34px; margin-top:6px;">${savedCode}</div>
+          <div class="live-hint">Valid for your entire stay — use this code to unlock your room door.</div>
+          <div style="text-align:center; margin-top:10px;">
+            <button onclick="toggleDoorCodeForm_()" style="width:auto; padding:6px 16px; font-size:12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#666; cursor:pointer;">Change Code</button>
+          </div>
+          <div id="doorCodeFormWrap" style="display:none; margin-top:12px;">
+            ${doorCodeInputForm_('Update Code')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (data.door_code_set && !savedCode) {
+      return `
+        <div class="live-section">
+          <div class="live-heading">🔑 Door Code<span class="cn">門鎖密碼</span></div>
+          <div class="live-hint" style="margin-bottom:8px;">A code was already set for this stay, but it isn't saved on this device. Set a new one below (this replaces the old one).</div>
+          ${doorCodeInputForm_('Set Code')}
+        </div>
+      `;
+    }
+
+    // 還沒設定過
+    return `
+      <div class="live-section">
+        <div class="live-heading">🔑 Set Your Door Code<span class="cn">設定門鎖密碼</span></div>
+        <div class="live-hint" style="margin-bottom:8px;">Choose a 4-8 digit code to unlock your room during your stay.</div>
+        ${doorCodeInputForm_('Set Code')}
+      </div>
+    `;
+  }
+
+  function doorCodeInputForm_(buttonLabel) {
+    return `
+      <div style="display:flex; gap:8px;">
+        <input type="tel" inputmode="numeric" id="doorCodeInput" maxlength="8"
+          placeholder="4-8 digits" style="flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:16px; letter-spacing:2px;">
+        <button onclick="submitDoorCode()" id="doorCodeSubmitBtn"
+          style="width:auto; padding:0 18px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">${buttonLabel}</button>
+      </div>
+      <div id="doorCodeError" style="color:#c62828; font-size:12px; margin-top:6px;"></div>
+    `;
+  }
+
+  function toggleDoorCodeForm_() {
+    const wrap = document.getElementById('doorCodeFormWrap');
+    if (wrap) wrap.style.display = (wrap.style.display === 'none') ? 'block' : 'none';
+  }
+
+  async function submitDoorCode() {
+    const input = document.getElementById('doorCodeInput');
+    const errorBox = document.getElementById('doorCodeError');
+    const btn = document.getElementById('doorCodeSubmitBtn');
+    const code = input.value.trim();
+
+    if (!/^\d{4,8}$/.test(code)) {
+      errorBox.textContent = 'Code must be 4-8 digits.';
+      return;
+    }
+
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Setting...';
+    errorBox.textContent = '';
+
+    try {
+      const res = await fetch(API_BASE + '?action=set_door_code&token=' + encodeURIComponent(token) + '&code=' + encodeURIComponent(code));
+      const data = await res.json();
+
+      if (data.error) {
+        errorBox.textContent = data.message;
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+        return;
+      }
+
+      // 成功了:密碼只存在這台裝置本機,不會傳回伺服器儲存
+      localStorage.setItem('door_code_' + token, data.code);
+      loadUsage(); // 重新整理畫面,這次會直接顯示密碼
+
+    } catch (e) {
+      errorBox.textContent = 'Connection failed. Please try again.';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   }
 
   loadUsage();
