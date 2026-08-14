@@ -1,1913 +1,556 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#ff5a5f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electricity Usage — The Assembly Tainan</title>
+
+<!-- 讓手機「加到主畫面」時看起來像一個 App -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="房東後台">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="manifest" href="manifest-host.json">
-<title>The Assembly Tainan 房東後台</title>
+<meta name="apple-mobile-web-app-title" content="My Power Bill">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1976d2">
+<link id="dynamic-manifest" rel="manifest">
 <style>
-  :root {
-    color-scheme: light;
-    --brand: #ff5a5f;
-    --brand-dark: #e14449;
-    --brand-wash: #fff1f0;
-
-    --surface: #fcfcfb;
-    --plane: #f0f1f3;
-    --ink: #0b0b0b;
-    --ink-2: #52514e;
-    --ink-muted: #898781;
-    --line: #e6e5e0;
-    --baseline: #c3c2b7;
-
-    --good: #0ca30c;
-    --good-bg: #e7f7e7;
-    --warning: #b9790a;
-    --warning-bg: #fff3dc;
-    --serious: #c1552f;
-    --serious-bg: #fdece3;
-    --critical: #d03b3b;
-    --critical-bg: #fbe7e7;
-    --info: #2a78d6;
-    --info-bg: #eaf2fc;
-
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-  }
-  [data-theme="dark"] {
-    color-scheme: dark;
-    --brand: #ff6f73;
-    --brand-dark: #ff8a8d;
-    --brand-wash: #2a1a1a;
-
-    --surface: #1a1a19;
-    --plane: #121212;
-    --ink: #ffffff;
-    --ink-2: #c3c2b7;
-    --ink-muted: #8f8d86;
-    --line: #2c2c2a;
-    --baseline: #383835;
-
-    --good: #35c235;
-    --good-bg: #123a17;
-    --warning: #e0a233;
-    --warning-bg: #3a2c0c;
-    --serious: #e88a63;
-    --serious-bg: #3a2416;
-    --critical: #e66767;
-    --critical-bg: #3a1616;
-    --info: #3987e5;
-    --info-bg: #12233a;
-  }
-
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--plane); color: var(--ink); }
-
-  /* ===== 圖示系統(SVG,不用 emoji)===== */
-  .ic { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; flex-shrink: 0; }
-  .ic svg { width: 100%; height: 100%; display: block; }
-  .ic-sm { width: 12px; height: 12px; }
-  .ic-lg { width: 20px; height: 20px; }
-  .ic-xl { width: 26px; height: 26px; }
-
-  /* ===== 登入畫面 ===== */
-  .auth-gate {
-    display: none; align-items: center; justify-content: center; padding: 40px 16px;
+  body {
+    margin: 0;
+    font-family: -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
+    background: #f4f6f8;
+    color: #1a1a1a;
+    padding: 24px 16px;
   }
-  .auth-gate.show { display: flex; }
-  .auth-card {
-    width: 340px; max-width: 100%; background: var(--surface); border: 1px solid var(--line);
-    border-radius: 16px; padding: 26px; box-shadow: 0 20px 40px -20px rgba(20,20,30,.25);
-  }
-  .auth-card h2 { margin: 0 0 6px; font-size: 17px; }
-  .auth-card p { margin: 0 0 18px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
-  .auth-label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-muted); margin: 12px 0 6px; }
-  .auth-label:first-of-type { margin-top: 0; }
-  .auth-input {
-    width: 100%; border: 1px solid var(--line); background: var(--plane); color: var(--ink);
-    border-radius: 9px; padding: 10px 12px; font-size: 13px; font-family: inherit;
-  }
-  .auth-input:focus { outline: none; border-color: var(--brand); }
-  .auth-submit {
-    width: 100%; margin-top: 18px; background: var(--brand); color: #fff; border: none;
-    padding: 11px; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer;
-  }
-  .auth-submit:disabled { opacity: .6; cursor: default; }
-  .auth-error { margin-top: 12px; font-size: 12px; color: var(--critical); min-height: 14px; }
-
-  /* ===== 正式上線的畫面容器 =====
-     以前這裡是一層裝飾用的「假瀏覽器外框」(圓角卡片+紅黃綠三顆假視窗按鈕+
-     假網址列),是設計討論用的示範樣式,方便截圖比較桌面版/手機版。真的
-     部署給 Kyle 自己在瀏覽器/手機上用之後,這層裝飾沒有意義了(瀏覽器
-     本身就有自己的視窗和網址列),已經拿掉,#browserFrame 現在就是真的
-     鋪滿整個視窗的畫面容器。 */
-  .browser {
-    min-height: 100vh;
-    min-height: 100dvh;
-    background: var(--surface);
-  }
-  .theme-toggle {
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-    border-radius: 999px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .theme-toggle .ic { width: 13px; height: 13px; }
-  .logout-btn {
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-    border-radius: 999px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .logout-btn:hover, .theme-toggle:hover { background: var(--plane); }
-  .logout-btn .ic { width: 13px; height: 13px; }
-
-  .app { display: flex; min-height: 100vh; min-height: 100dvh; }
-
-  /* sidebar */
-  .sidebar {
-    width: 208px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--line);
-    padding: 18px 12px; display: flex; flex-direction: column;
-  }
-  .brand-row { display: flex; align-items: center; padding: 4px 8px 22px; }
-  .brand-row .name { font-size: 14px; font-weight: 800; }
-
-  .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
-    font-size: 13.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; margin-bottom: 2px;
-  }
-  .nav-item .ic { width: 18px; height: 18px; }
-  .nav-item:hover { background: var(--plane); }
-  .nav-item.active { background: var(--brand-wash); color: var(--brand-dark); font-weight: 800; }
-
-  .sidebar-foot {
-    margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line);
-    display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap;
-  }
-  .sidebar-foot-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sidebar-foot-actions { display: flex; gap: 6px; width: 100%; margin-top: 10px; }
-  .sidebar-foot-actions .theme-toggle, .sidebar-foot-actions .logout-btn { flex: 1; }
-  .avatar {
-    width: 26px; height: 26px; border-radius: 50%; background: #ffd9d7; color: var(--brand-dark);
-    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; flex-shrink: 0;
-  }
-
-  /* main */
-  .main { flex: 1; padding: 22px 26px 30px; overflow: auto; }
-  .main-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
-  .main-top h2 { margin: 0 0 4px; font-size: 19px; }
-  .main-top .sub { font-size: 12.5px; color: var(--ink-muted); }
-  .refresh-btn {
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-    padding: 8px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .refresh-btn .ic { width: 13px; height: 13px; }
-
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  /* stat tiles */
-  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-  .tile {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px;
-  }
-  .tile .lbl { font-size: 12px; color: var(--ink-muted); font-weight: 600; margin-bottom: 8px; }
-  .tile .val { font-size: 26px; font-weight: 800; }
-  .tile .foot { font-size: 11.5px; margin-top: 6px; font-weight: 700; }
-  .tile .foot.good { color: var(--good); }
-  .tile .foot.critical { color: var(--critical); }
-  .tile .foot.muted { color: var(--ink-muted); font-weight: 600; }
-
-  /* section card */
   .card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    max-width: 420px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
-  .card + .card { margin-top: 16px; }
-  .card-head {
-    padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between;
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: #555;
   }
-  .card-head .t { font-size: 14px; font-weight: 800; }
-  .card-head .s { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th {
-    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-muted);
-    padding: 10px 18px; border-bottom: 1px solid var(--line); font-weight: 700;
+  .cn { font-size: 11px; color: #aaa; display: block; font-weight: 400; margin-top: 2px; }
+  .kwh {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 16px 0 0;
+    color: #1976d2;
   }
-  td { padding: 12px 18px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  td.mono { font-variant-numeric: tabular-nums; font-family: "SF Mono", Menlo, monospace; font-size: 12.5px; }
-  td .prop { font-weight: 700; }
-  td .sub { color: var(--ink-muted); font-size: 11.5px; margin-top: 1px; }
-
+  .kwh .unit { font-size: 18px; color: #999; margin-left: 4px; }
+  .label { font-size: 13px; color: #888; margin-top: 4px; }
+  .cost-box {
+    margin-top: 24px;
+    padding: 16px;
+    background: #f0f7ff;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cost-box .amount { font-size: 24px; font-weight: 700; color: #d84315; }
+  .meta {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+  }
+  .greeting {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1976d2;
+    margin-bottom: 10px;
+  }
+  .reading-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 14px;
+  }
   .badge {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700;
-    padding: 4px 10px; border-radius: 999px;
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
   }
-  .badge.good { background: var(--good-bg); color: var(--good); }
-  .badge.info { background: var(--info-bg); color: var(--info); }
-  .badge.muted { background: var(--plane); color: var(--ink-muted); }
-  .badge.critical { background: var(--critical-bg); color: var(--critical); }
-  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-  .row-actions { display: flex; gap: 6px; }
-  .mini-btn {
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-    padding: 6px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-    white-space: nowrap; flex-shrink: 0;
+  .badge-active { background: #e8f5e9; color: #2e7d32; }
+  .badge-closed { background: #eeeeee; color: #757575; }
+  .live-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
   }
-  .mini-btn .ic { width: 12px; height: 12px; }
-  .mini-btn:hover { background: var(--plane); }
-  .mini-btn.danger { color: var(--critical); border-color: #f3caca; }
-  .mini-btn.brand { color: var(--brand-dark); border-color: #ffd0cf; background: var(--brand-wash); }
-
-  /* alerts */
-  .alert-row { display: flex; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--line); align-items: flex-start; }
-  .alert-row:last-child { border-bottom: none; }
-  .alert-ic {
-    width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  .live-heading {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
     flex-shrink: 0;
   }
-  .alert-ic .ic { width: 15px; height: 15px; }
-  .alert-ic.critical { background: var(--critical-bg); color: var(--critical); }
-  .alert-ic.warning { background: var(--warning-bg); color: var(--warning); }
-  .alert-title { font-size: 13px; font-weight: 700; }
-  .alert-desc { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
-  .alert-time { font-size: 11px; color: var(--ink-muted); margin-left: auto; flex-shrink: 0; white-space: nowrap; }
-
-  /* sync cards */
-  .sync-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .sync-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
-  .sync-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .sync-card .name { font-size: 14px; font-weight: 800; }
-  .sync-card .meta { font-size: 11.5px; color: var(--ink-muted); margin-top: 3px; }
-  .sync-now {
-    width: 100%; margin-top: 12px; padding: 9px; border-radius: 9px; border: 1px solid var(--line);
-    background: var(--plane); color: var(--ink); font-size: 12.5px; font-weight: 700; cursor: pointer;
+  .dot-active {
+    background: #43a047;
+    animation: pulse 1.6s infinite;
   }
-
-  /* access log timeline */
-  .log-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
-  .log-row:last-child { border-bottom: none; }
-  .log-ic {
-    width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(67,160,71, 0.5); }
+    70%  { box-shadow: 0 0 0 7px rgba(67,160,71, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(67,160,71, 0); }
   }
-  .log-ic .ic { width: 16px; height: 16px; }
-  .log-ic.lock { background: var(--info-bg); color: var(--info); }
-  .log-ic.door { background: var(--good-bg); color: var(--good); }
-  .log-main { flex: 1; }
-  .log-title { font-size: 13px; font-weight: 700; }
-  .log-sub { font-size: 11.5px; color: var(--ink-muted); margin-top: 1px; }
-  .log-time { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
-
-  /* modal */
-  .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(10,10,10,.45); display: none; align-items: center; justify-content: center; z-index: 50;
+  .live-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
   }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: var(--surface); border-radius: 16px; width: 380px; max-width: 90vw; padding: 22px;
-    box-shadow: 0 30px 60px -15px rgba(0,0,0,.4);
+  .live-item {
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 10px 4px;
   }
-  .modal h3 { margin: 0 0 6px; font-size: 16px; }
-  .modal p { margin: 0 0 18px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
-  .modal .val-box {
-    background: var(--plane); border: 1px solid var(--line); border-radius: 10px; padding: 14px; text-align: center;
-    font-size: 26px; font-weight: 800; letter-spacing: 4px; font-family: "SF Mono", Menlo, monospace; margin-bottom: 16px;
+  .live-value { font-size: 18px; font-weight: 700; color: #333; }
+  .live-label { font-size: 11px; color: #999; margin-top: 2px; }
+  .live-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
   }
-  .modal-actions { display: flex; gap: 8px; }
-  .modal-actions button {
-    flex: 1; padding: 11px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; border: none;
+  .closed-note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: #f7f7f7;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
   }
-  .btn-close { background: var(--plane); color: var(--ink-2); }
-  .btn-confirm { background: var(--brand); color: #fff; }
-
-  /* ===== 入住引導編輯器 ===== */
-  .guide-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .guide-toolbar label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
-  .guide-toolbar select {
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-    padding: 8px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; font-family: inherit;
+  .error {
+    color: #c62828;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 14px;
   }
-  .guide-note {
-    background: var(--info-bg); color: var(--info); border-radius: 10px; padding: 11px 14px;
-    font-size: 12px; margin-bottom: 18px; line-height: 1.6;
-    display: flex; align-items: flex-start; gap: 8px;
+  .loading {
+    text-align: center;
+    color: #999;
+    padding: 40px 0;
   }
-  .guide-note .ic { width: 14px; height: 14px; margin-top: 2px; }
-
-  .guide-step-editor {
-    display: grid; grid-template-columns: 1fr 250px; gap: 20px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-    padding: 18px; margin-bottom: 14px;
+  .loading-hint {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 8px;
   }
-  .gse-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .gse-num {
-    width: 24px; height: 24px; border-radius: 50%; background: var(--brand-wash); color: var(--brand-dark);
-    font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  .install-hint {
+    max-width: 420px;
+    margin: 12px auto 0;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #6d5300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
-  .gse-move { display: flex; gap: 4px; }
-  .gse-head .mini-btn.danger { margin-left: auto; }
-
-  .gse-label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-muted); margin: 12px 0 6px; }
-  .gse-label.first { margin-top: 0; }
-  .gse-label-hint { display: inline; font-size: 11px; font-weight: 400; color: var(--ink-muted); margin-left: 6px; }
-  .gse-input, .gse-textarea {
-    width: 100%; border: 1px solid var(--line); background: var(--plane); color: var(--ink);
-    border-radius: 9px; padding: 9px 12px; font-size: 13px; font-family: inherit; resize: vertical;
+  .install-hint button {
+    background: none;
+    border: none;
+    color: #6d5300;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
   }
-  .gse-input:focus, .gse-textarea:focus { outline: none; border-color: var(--brand); }
-
-  /* ===== 步驟標題/說明的語言分頁(2026-08 確認:房東自己填每個語言版本,
-     不是自動翻譯,所以標題/說明要分開輸入中文跟英文兩份) ===== */
-  .gse-lang-tabs { display: flex; gap: 6px; margin-bottom: 2px; }
-  .gse-lang-tab {
-    border: 1px solid var(--line); background: var(--plane); color: var(--ink-muted);
-    padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700; cursor: pointer;
+  .door-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
   }
-  .gse-lang-tab.active { background: var(--brand-wash); color: var(--brand-dark); border-color: #ffd0cf; }
-  .gse-lang-pane { display: none; }
-  .gse-lang-pane.active { display: block; }
-
-  .gse-photo-upload {
-    border: 1.5px dashed var(--line); border-radius: 10px; padding: 14px; text-align: center;
-    cursor: pointer; background: var(--plane); min-height: 70px;
-    display: flex; align-items: center; justify-content: center;
+  .door-heading {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
   }
-  .gse-photo-upload:hover { border-color: var(--brand); }
-  .gse-photo-placeholder {
-    font-size: 12.5px; color: var(--ink-muted); font-weight: 600;
-    display: inline-flex; align-items: center; gap: 6px;
+  .door-code-display {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #1976d2;
+    text-align: center;
+    margin: 14px 0 6px;
+    background: #f0f7ff;
+    border-radius: 10px;
+    padding: 12px;
   }
-  .gse-photo-placeholder .ic { width: 14px; height: 14px; }
-  .gse-photo-preview { max-width: 100%; max-height: 130px; object-fit: cover; border-radius: 8px; display: none; }
-
-  .prop-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
-  .prop-photo-slot {
-    position: relative; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden;
-    border: 1.5px dashed var(--line); background: var(--plane);
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  .door-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
   }
-  .prop-photo-slot:hover { border-color: var(--brand); }
-  .prop-photo-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .prop-photo-slot.filled { cursor: default; border-style: solid; }
-  .prop-photo-placeholder {
-    font-size: 11.5px; color: var(--ink-muted); font-weight: 600; text-align: center;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  .door-reset-btn {
+    margin-top: 10px;
+    width: auto;
+    background: none;
+    border: 1px solid #ddd;
+    color: #888;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
   }
-  .prop-photo-placeholder .ic { width: 16px; height: 16px; }
-  .prop-photo-remove {
-    position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%;
-    background: rgba(0,0,0,.55); color: #fff; border: none; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; padding: 0;
-  }
-  .prop-photo-remove .ic { width: 11px; height: 11px; }
-  .prop-photo-uploading {
-    position: absolute; inset: 0; background: rgba(255,255,255,.8); display: flex; align-items: center;
-    justify-content: center; font-size: 11px; font-weight: 700; color: var(--ink-2); text-align: center; padding: 4px;
-  }
-  .prop-photo-empty-note { grid-column: 1 / -1; font-size: 12px; color: var(--ink-muted); padding: 10px 0; }
-
-  .gse-checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); margin-top: 14px; cursor: pointer; }
-  .gse-code-row { margin-top: 10px; }
-
-  .gse-right { border-left: 1px solid var(--line); padding-left: 20px; }
-  .guide-preview-label { font-size: 11px; color: var(--ink-muted); font-weight: 700; margin-bottom: 10px; }
-  .guide-preview-card { background: var(--plane); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
-  .guide-preview-photo {
-    width: 100%; height: 100px; border-radius: 10px; background: linear-gradient(135deg,#eef0f5,#e3e6ee);
-    display: flex; align-items: center; justify-content: center; color: var(--ink-muted);
-    margin-bottom: 10px; overflow: hidden;
-  }
-  .guide-preview-photo .ic { width: 26px; height: 26px; }
-  .guide-preview-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .guide-preview-title { font-size: 14px; font-weight: 800; margin-bottom: 6px; }
-  .guide-preview-desc { font-size: 12px; color: var(--ink-2); line-height: 1.6; }
-  .guide-preview-code {
-    margin-top: 10px; background: var(--brand-wash); border: 1.5px dashed #ffb3af; border-radius: 9px;
-    padding: 10px; text-align: center;
-  }
-  .guide-preview-code .lbl { font-size: 10.5px; color: var(--brand-dark); font-weight: 700; margin-bottom: 4px; }
-  .guide-preview-code .val { font-size: 17px; font-weight: 800; letter-spacing: 3px; font-family: "SF Mono", Menlo, monospace; }
-
-  .guide-add-btn {
-    width: 100%; padding: 13px; border-radius: 12px; border: 1.5px dashed var(--line); background: var(--surface);
-    color: var(--brand-dark); font-size: 13.5px; font-weight: 700; cursor: pointer; margin-bottom: 18px;
-  }
-  .guide-add-btn:hover { border-color: var(--brand); background: var(--brand-wash); }
-
-  .guide-save-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .guide-saved-toast {
-    font-size: 12.5px; color: var(--good); font-weight: 700; margin-right: auto; opacity: 0; transition: opacity .3s ease;
-    display: inline-flex; align-items: center; gap: 5px;
-  }
-  .guide-saved-toast .ic { width: 12px; height: 12px; }
-  .guide-saved-toast.show { opacity: 1; }
-  .guide-save-btn {
-    background: var(--brand); color: #fff; border: none; padding: 11px 22px; border-radius: 10px;
-    font-size: 13.5px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  }
-
-  /* ===== 手機版畫面(#browserFrame 加上 .mobile-mode class)=====
-     以前這裡是「桌面上按按鈕手動切換,固定 390x800、黑色邊框、假瀏海」的
-     手機外框預覽,是設計討論用的裝飾。房東實際拿自己手機打開這個網址時,
-     手機本身就有真的螢幕尺寸跟系統狀態列了,不需要再疊一層假的手機殼。
-     現在 .mobile-mode 這個 class 由 applyResponsiveMode() 依「視窗真的多
-     窄」自動加上/拿掉(見 script),不再有手動按鈕;下面這些排版規則(側
-     邊欄收起來、底部改用分頁列、表格改用卡片式呈現)本身都是真的有用的
-     手機版排版,原封不動保留,只拿掉外框裝飾跟假狀態列。 */
-  .mobile-tabbar {
-    display: none; flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--line);
-    padding: 7px 4px calc(7px + env(safe-area-inset-bottom)); justify-content: space-around;
-  }
-  .mtab {
-    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 4px;
-    border-radius: 10px; font-size: 10px; font-weight: 700; color: var(--ink-muted); cursor: pointer; flex: 1;
-  }
-  .mtab .ic { width: 19px; height: 19px; }
-  .mtab.active { color: var(--brand-dark); }
-
-  /* 手機底部導覽列只有 4 個分頁,「房源設定/入住引導」跟「開門紀錄/系統同步」
-     各自合併成一個分頁——進去之後用這排次分頁切換兩個子畫面。桌面版完全
-     不受影響(桌面側邊欄還是 6 個獨立項目,這排次分頁預設不顯示)。 */
-  .mobile-subnav { display: none; gap: 8px; margin-bottom: 14px; }
-  .browser.mobile-mode .mobile-subnav { display: flex; }
-  .mobile-subnav-btn {
-    flex: 1; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
-    padding: 9px 6px; border-radius: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; text-align: center;
-  }
-  .mobile-subnav-btn.active { background: var(--brand-wash); color: var(--brand-dark); border-color: #ffd0cf; }
-
-  .browser.mobile-mode {
-    display: flex; flex-direction: column; overflow: hidden; position: relative;
-    /* 手機版一定要給「明確高度」(不能只靠 min-height),.app 的 flex:1
-       才會被限制在剩餘空間內、讓 .main 自己內部滾動——不然像訂單列表這種
-       長列表撐開的高度會把下面 .mobile-tabbar 一起往下推出畫面外,要滾到
-       最底部才看得到分頁列。這是實機測試(真手機瀏覽器)才會看到的
-       bug,桌面用視窗縮小模擬看不出來,因為那時內容通常沒有真的被撐爆。 */
-    height: 100vh; height: 100dvh;
-  }
-  .browser.mobile-mode .app {
-    flex: 1; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  .browser.mobile-mode .sidebar { display: none; }
-  .browser.mobile-mode .main { flex: 1; overflow-y: auto; padding: 14px 14px 18px; }
-  .browser.mobile-mode .mobile-tabbar { display: flex; }
-  .browser.mobile-mode .main-top { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .browser.mobile-mode .tiles { grid-template-columns: repeat(2, 1fr); }
-  .browser.mobile-mode .sync-grid { grid-template-columns: 1fr; }
-  .browser.mobile-mode .guide-step-editor { grid-template-columns: 1fr; }
-  .browser.mobile-mode .gse-right { border-left: none; padding-left: 0; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 4px; }
-
-  /* 手機模式下,「選擇房源」toolbar 改成上下堆疊,避免 label/下拉選單/按鈕
-     擠在同一列造成文字被壓縮換行(原本 flex 一列排不下三個元件) */
-  .browser.mobile-mode .guide-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
-  .browser.mobile-mode .guide-toolbar select,
-  .browser.mobile-mode .guide-toolbar button { width: 100%; }
-
-  /* 「刪除這個房源」/「儲存房源設定」按鈕手機版也改成滿版堆疊,避免兩顆
-     按鈕擠在同一列造成文字被壓縮換行 */
-  .browser.mobile-mode .guide-save-row { flex-direction: column; align-items: stretch; }
-  .browser.mobile-mode .guide-save-row .guide-saved-toast { margin-right: 0; order: -1; }
-  .browser.mobile-mode .guide-save-row .mini-btn,
-  .browser.mobile-mode .guide-save-row .guide-save-btn { width: 100%; }
-
-  /* 手機模式下,表格改用「一列一張卡片」的方式呈現,而不是橫向捲動的表格 */
-  .browser.mobile-mode table,
-  .browser.mobile-mode thead,
-  .browser.mobile-mode tbody,
-  .browser.mobile-mode tr,
-  .browser.mobile-mode td {
-    display: block; width: 100%;
-  }
-  .browser.mobile-mode thead,
-  .browser.mobile-mode .table-head-row { display: none; }
-  .browser.mobile-mode tr { border-bottom: 8px solid var(--plane); padding-bottom: 4px; }
-  .browser.mobile-mode tr:last-child { border-bottom: none; }
-  .browser.mobile-mode td {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 9px 18px; border-bottom: none; text-align: right;
-  }
-  .browser.mobile-mode td::before {
-    content: attr(data-label); font-size: 11px; font-weight: 700; color: var(--ink-muted);
-    text-align: left; flex-shrink: 0;
-  }
-  .browser.mobile-mode td.row-actions { justify-content: flex-end; }
 </style>
 </head>
 <body>
 
-  <!-- ===== 登入畫面(真實 Supabase Auth,不是示範)===== -->
-  <div class="auth-gate" id="authGate">
-    <div class="auth-card">
-      <h2>房東登入</h2>
-      <p>用你的房東帳號登入，才能載入、編輯真實的房源資料。</p>
-      <label class="auth-label">Email</label>
-      <input class="auth-input" id="authEmail" type="email" placeholder="you@example.com" autocomplete="username">
-      <label class="auth-label">密碼</label>
-      <input class="auth-input" id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') attemptLogin()">
-      <button class="auth-submit" id="authSubmitBtn" onclick="attemptLogin()">登入</button>
-      <div class="auth-error" id="authError"></div>
-    </div>
+<div class="card" id="card">
+  <div class="loading">
+    Loading...
+    <div class="loading-hint">This may take a moment, please wait</div>
   </div>
+</div>
 
-  <div class="browser" id="browserFrame" style="display:none;">
-    <div class="app">
-      <div class="sidebar">
-        <div class="brand-row">
-          <div class="name">房東後台</div>
-        </div>
-        <div class="nav-item active" data-p="p-overview" onclick="showPanel('p-overview', this)"><span class="ic" data-icon="home"></span>總覽</div>
-        <div class="nav-item" data-p="p-reservations" onclick="showPanel('p-reservations', this)"><span class="ic" data-icon="clipboard"></span>訂單管理</div>
-        <div class="nav-item" data-p="p-settings" onclick="showPanel('p-settings', this)"><span class="ic" data-icon="settings"></span>房源設定</div>
-        <div class="nav-item" data-p="p-guide" onclick="showPanel('p-guide', this)"><span class="ic" data-icon="compass"></span>入住引導</div>
-        <div class="nav-item" data-p="p-logs" onclick="showPanel('p-logs', this)"><span class="ic" data-icon="door"></span>開門紀錄</div>
-        <div class="nav-item" data-p="p-sync" onclick="showPanel('p-sync', this)"><span class="ic" data-icon="refreshCw"></span>系統同步</div>
+<div class="install-hint" id="installHint" style="display:none;">
+  <span id="installHintText"></span>
+  <button onclick="dismissInstallHint()" aria-label="Dismiss">&times;</button>
+</div>
 
-        <div class="sidebar-foot">
-          <div class="avatar" id="sidebarAvatarInitial">K</div>
-          <div class="sidebar-foot-name" id="sidebarHostEmail">房東</div>
-          <div class="sidebar-foot-actions">
-            <button class="theme-toggle" onclick="toggleTheme()"><span class="ic" data-icon="moon"></span>深色模式</button>
-            <button class="logout-btn" onclick="doLogout()"><span class="ic" data-icon="close"></span>登出</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="main">
-
-        <!-- ===== 總覽 ===== -->
-        <div class="panel active" id="p-overview">
-          <div class="main-top">
-            <div>
-              <h2>總覽</h2>
-              <div class="sub" id="ovSubline">載入中...</div>
-            </div>
-            <button class="refresh-btn" id="ovRefreshBtn" onclick="loadOverview(this)"><span class="ic" data-icon="refreshCw"></span>重新整理</button>
-          </div>
-
-          <div class="tiles">
-            <div class="tile">
-              <div class="lbl">今日入住</div>
-              <div class="val" id="ovTileCheckin">—</div>
-              <div class="foot muted" id="ovTileCheckinFoot"></div>
-            </div>
-            <div class="tile">
-              <div class="lbl">今日退房</div>
-              <div class="val" id="ovTileCheckout">—</div>
-              <div class="foot muted" id="ovTileCheckoutFoot"></div>
-            </div>
-            <div class="tile">
-              <div class="lbl">進行中訂單</div>
-              <div class="val" id="ovTileActive">—</div>
-              <div class="foot muted" id="ovTileActiveFoot"></div>
-            </div>
-            <div class="tile">
-              <div class="lbl">待處理警示</div>
-              <div class="val" id="ovTileAlerts" style="color:var(--critical)">—</div>
-              <div class="foot critical" id="ovTileAlertsFoot"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="t" style="display:flex;align-items:center;gap:6px;"><span class="ic" data-icon="alertTriangle" style="color:var(--warning)"></span>待處理警示</div>
-                <div class="s">系統自動流程無法處理、需要你確認的事項</div>
-              </div>
-            </div>
-            <div id="ovAlertsList"></div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="t">今日行程</div>
-                <div class="s">今天的入住與退房</div>
-              </div>
-            </div>
-            <table>
-              <tr class="table-head-row"><th>房源</th><th>房客（後4碼）</th><th>行程</th><th>狀態</th></tr>
-              <tbody id="ovTodayBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ===== 訂單管理 ===== -->
-        <div class="panel" id="p-reservations">
-          <div class="main-top">
-            <div>
-              <h2>訂單管理</h2>
-              <div class="sub" id="resSubline">所有房源的 Airbnb 訂單與密碼核發狀態</div>
-            </div>
-            <button class="refresh-btn" id="resRefreshBtn" onclick="loadReservationsPanel(this)"><span class="ic" data-icon="refreshCw"></span>重新整理</button>
-          </div>
-
-          <div class="card">
-            <table>
-              <tr class="table-head-row">
-                <th>房源</th><th>房客（後4碼）</th><th>入住</th><th>退房</th><th>狀態</th><th>密碼</th><th>操作</th>
-              </tr>
-              <tbody id="resTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ===== 房源設定(真實資料,接 Supabase properties 表)===== -->
-        <div class="panel" id="p-settings">
-          <div class="mobile-subnav">
-            <button class="mobile-subnav-btn active" data-p="p-settings" onclick="showPanel('p-settings', this)">房源設定</button>
-            <button class="mobile-subnav-btn" data-p="p-guide" onclick="showPanel('p-guide', this)">入住引導</button>
-          </div>
-          <div class="main-top">
-            <div>
-              <h2>房源設定</h2>
-              <div class="sub">地址、iCal 連結、門鎖裝置、聯絡電話——這些資料真的會寫進資料庫</div>
-            </div>
-          </div>
-
-          <div class="guide-toolbar">
-            <label>選擇房源</label>
-            <select id="settingsPropSelect" onchange="onSettingsPropertyChange(this.value)"></select>
-            <button class="mini-btn brand" onclick="startNewProperty()">＋ 新增房源</button>
-          </div>
-
-          <div class="card" style="padding: 20px;">
-            <label class="gse-label first">房源名稱</label>
-            <input class="gse-input" id="setName" type="text" placeholder="例如：The Assembly Tainan">
-
-            <label class="gse-label">地址</label>
-            <input class="gse-input" id="setAddress" type="text" placeholder="完整地址，會顯示在房客畫面最上方">
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-              <div>
-                <label class="gse-label">入住時間</label>
-                <input class="gse-input" id="setCheckinTime" type="time">
-              </div>
-              <div>
-                <label class="gse-label">退房時間</label>
-                <input class="gse-input" id="setCheckoutTime" type="time">
-              </div>
-            </div>
-
-            <label class="gse-label">
-              Wi-Fi 資訊
-              <span class="gse-label-hint">選填，會顯示在房客入住主頁</span>
-            </label>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-              <div>
-                <label class="gse-label first">名稱</label>
-                <input class="gse-input" id="setWifiName" type="text" placeholder="例如：Daan_Guest">
-              </div>
-              <div>
-                <label class="gse-label first">密碼</label>
-                <input class="gse-input" id="setWifiPassword" type="text" placeholder="例如：daan2026">
-              </div>
-            </div>
-
-            <label class="gse-label">
-              房源照片
-              <span class="gse-label-hint">最多 3 張，會顯示在房客入住主頁最上方</span>
-            </label>
-            <div class="prop-photo-grid" id="propPhotoGrid"></div>
-            <div class="auth-error" id="propPhotoError"></div>
-
-            <label class="gse-label">Airbnb 匯出的 iCal 連結</label>
-            <input class="gse-input" id="setIcalUrl" type="text" placeholder="https://www.airbnb.com.tw/calendar/ical/....ics">
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-              <div>
-                <label class="gse-label">Tuya 門鎖 device_id</label>
-                <input class="gse-input" id="setTuyaDeviceId" type="text" placeholder="例如：eb28460d55410d6cabzigv">
-              </div>
-              <div>
-                <label class="gse-label">密碼位數</label>
-                <select class="gse-input" id="setPwdLength">
-                  <option value="7">7 碼（Wi-Fi 門鎖）</option>
-                  <option value="6">6 碼（Zigbee/藍牙門鎖）</option>
-                </select>
-              </div>
-            </div>
-
-            <label class="gse-label">
-              密碼輸入提示
-              <span class="gse-label-hint">選填，告訴房客輸入密碼後怎麼確認，不同鎖款不一樣（例如按 #、按 *、或感應卡不用按鍵）</span>
-            </label>
-            <input class="gse-input" id="setLockPwdHint" type="text" placeholder="例如：輸入密碼後按 # 鍵確認">
-
-            <label class="gse-label">房東聯絡電話（「聯繫房東」按鈕撥打用）</label>
-            <div style="display:flex; gap:8px;">
-              <select class="gse-input" id="setHostPhoneCountry" style="flex:0 0 130px;">
-                <option value="+886">台灣 +886</option>
-                <option value="+86">中國 +86</option>
-                <option value="+852">香港 +852</option>
-                <option value="+853">澳門 +853</option>
-                <option value="+81">日本 +81</option>
-                <option value="+82">韓國 +82</option>
-                <option value="+65">新加坡 +65</option>
-                <option value="+60">馬來西亞 +60</option>
-                <option value="+1">美國/加拿大 +1</option>
-                <option value="+44">英國 +44</option>
-                <option value="+61">澳洲 +61</option>
-              </select>
-              <input class="gse-input" id="setHostPhone" type="text" placeholder="例如：912345678" style="flex:1;">
-            </div>
-
-            <label class="gse-label">
-              易微聯大門裝置 ID
-              <span class="gse-label-hint">選填，eWeLink 審核通過後才會有</span>
-            </label>
-            <input class="gse-input" id="setEwelinkId" type="text" placeholder="尚未申請就留空——留空的話房客端不會顯示「一樓大門遠端開鎖」那張卡片">
-
-            <div class="guide-save-row" style="margin-top:18px;">
-              <div class="guide-saved-toast" id="settingsSavedToast"><span class="ic" data-icon="check"></span>已儲存</div>
-              <button class="mini-btn danger" id="settingsDeleteBtn" onclick="openDeletePropertyModal()" style="display:none;"><span class="ic" data-icon="trash"></span>刪除這個房源</button>
-              <button class="guide-save-btn" id="settingsSaveBtn" onclick="savePropertySettings()">儲存房源設定</button>
-            </div>
-            <div class="auth-error" id="settingsError"></div>
-          </div>
-        </div>
-
-        <!-- ===== 入住引導 ===== -->
-        <div class="panel" id="p-guide">
-          <div class="mobile-subnav">
-            <button class="mobile-subnav-btn" data-p="p-settings" onclick="showPanel('p-settings', this)">房源設定</button>
-            <button class="mobile-subnav-btn active" data-p="p-guide" onclick="showPanel('p-guide', this)">入住引導</button>
-          </div>
-          <div class="main-top">
-            <div>
-              <h2>入住引導</h2>
-              <div class="sub">設定房客驗證成功後看到的圖文通關步驟</div>
-            </div>
-          </div>
-
-          <div class="guide-toolbar">
-            <label>編輯房源</label>
-            <select id="guideProp" onchange="loadPropertyStepsReal(this.value)"></select>
-          </div>
-
-          <div class="guide-note">
-            <span class="ic" data-icon="lightbulb"></span>
-            <span>每一步可以填寫說明文字、上傳一張照片、也可以選填一組密碼（例如鐵門密碼）。房客會在完成身份驗證後，一張一張卡片依序看到這些步驟。</span>
-          </div>
-
-          <div id="stepsContainer"></div>
-
-          <button class="guide-add-btn" onclick="addStep()">＋ 新增下一步</button>
-
-          <div class="guide-save-row">
-            <div class="guide-saved-toast" id="guideSavedToast"><span class="ic" data-icon="check"></span>已儲存</div>
-            <button class="mini-btn" onclick="loadPropertyStepsReal(document.getElementById('guideProp').value)">還原變更</button>
-            <button class="guide-save-btn" onclick="saveGuide()">儲存入住引導</button>
-          </div>
-        </div>
-
-        <!-- ===== 開門紀錄 ===== -->
-        <div class="panel" id="p-logs">
-          <div class="mobile-subnav">
-            <button class="mobile-subnav-btn active" data-p="p-logs" onclick="showPanel('p-logs', this)">開門紀錄</button>
-            <button class="mobile-subnav-btn" data-p="p-sync" onclick="showPanel('p-sync', this)">系統同步</button>
-          </div>
-          <div class="main-top">
-            <div>
-              <h2>開門紀錄</h2>
-              <div class="sub">所有密碼核發／撤銷與大門開啟的歷史紀錄</div>
-            </div>
-            <button class="refresh-btn" id="logsRefreshBtn" onclick="loadDoorLogs(this)"><span class="ic" data-icon="refreshCw"></span>重新整理</button>
-          </div>
-
-          <div class="card" id="logsCard"></div>
-        </div>
-
-        <!-- ===== 系統同步 ===== -->
-        <div class="panel" id="p-sync">
-          <div class="mobile-subnav">
-            <button class="mobile-subnav-btn" data-p="p-logs" onclick="showPanel('p-logs', this)">開門紀錄</button>
-            <button class="mobile-subnav-btn active" data-p="p-sync" onclick="showPanel('p-sync', this)">系統同步</button>
-          </div>
-          <div class="main-top">
-            <div>
-              <h2>系統同步</h2>
-              <div class="sub">各房源 Airbnb iCal 同步狀態，以及裝置設定狀態</div>
-            </div>
-            <button class="refresh-btn" id="syncAllBtn" onclick="syncAllNow(this)"><span class="ic" data-icon="refreshCw"></span>全部同步</button>
-          </div>
-
-          <div class="sync-grid" id="syncGrid"></div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="mobile-tabbar">
-      <div class="mtab active" data-group="p-overview" onclick="showPanel('p-overview', this)"><span class="ic" data-icon="home"></span><span class="lbl">總覽</span></div>
-      <div class="mtab" data-group="p-reservations" onclick="showPanel('p-reservations', this)"><span class="ic" data-icon="clipboard"></span><span class="lbl">訂單</span></div>
-      <div class="mtab" data-group="p-property" onclick="showPanel('p-settings', this)"><span class="ic" data-icon="settings"></span><span class="lbl">房源</span></div>
-      <div class="mtab" data-group="p-logs-group" onclick="showPanel('p-logs', this)"><span class="ic" data-icon="door"></span><span class="lbl">紀錄</span></div>
-    </div>
-  </div>
-
-  <!-- 入住引導:單一步驟編輯卡片範本 -->
-  <template id="stepEditorTemplate">
-    <div class="guide-step-editor">
-      <div class="gse-left">
-        <div class="gse-head">
-          <span class="gse-num">1</span>
-          <div class="gse-move">
-            <button class="mini-btn" type="button" onclick="moveStep(this,-1)"><span class="ic" data-icon="arrowUp"></span></button>
-            <button class="mini-btn" type="button" onclick="moveStep(this,1)"><span class="ic" data-icon="arrowDown"></span></button>
-          </div>
-          <button class="mini-btn danger" type="button" onclick="removeStep(this)"><span class="ic" data-icon="trash"></span>刪除</button>
-        </div>
-        <div class="gse-lang-tabs">
-          <button class="gse-lang-tab active" type="button" data-lang="zh" onclick="switchStepLang(this,'zh')">中文</button>
-          <button class="gse-lang-tab" type="button" data-lang="en" onclick="switchStepLang(this,'en')">English</button>
-        </div>
-
-        <div class="gse-lang-pane active" data-lang="zh">
-          <label class="gse-label first">步驟標題（中文）</label>
-          <input class="gse-input gse-title-input" data-lang="zh" type="text" placeholder="例如：一樓大門" oninput="syncStepPreview(this.closest('.guide-step-editor'))">
-          <label class="gse-label">說明文字（中文）</label>
-          <textarea class="gse-textarea gse-desc-input" data-lang="zh" rows="3" placeholder="請描述房客該怎麼做，例如：請至信箱取出鑰匙，插入鑰匙孔即可開啟大門。" oninput="syncStepPreview(this.closest('.guide-step-editor'))"></textarea>
-        </div>
-        <div class="gse-lang-pane" data-lang="en">
-          <label class="gse-label first">Step Title (English)</label>
-          <input class="gse-input gse-title-input" data-lang="en" type="text" placeholder="e.g. Front Door (1F)" oninput="syncStepPreview(this.closest('.guide-step-editor'))">
-          <label class="gse-label">Description (English)</label>
-          <textarea class="gse-textarea gse-desc-input" data-lang="en" rows="3" placeholder="Describe what the guest should do, e.g. Take the key from the mailbox and open the front door." oninput="syncStepPreview(this.closest('.guide-step-editor'))"></textarea>
-        </div>
-
-        <label class="gse-label">照片（選填，兩個語言共用同一張，房客畫面會直接顯示這張照片）</label>
-        <div class="gse-photo-upload" onclick="this.querySelector('input[type=file]').click()">
-          <input type="file" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
-          <div class="gse-photo-placeholder"><span class="ic" data-icon="camera"></span>點擊上傳照片</div>
-          <img class="gse-photo-preview">
-        </div>
-        <label class="gse-checkbox-row">
-          <input type="checkbox" class="gse-code-toggle" onchange="toggleCodeField(this)"> 這一步需要輸入密碼（例如鐵門密碼）
-        </label>
-        <div class="gse-code-row" style="display:none">
-          <input class="gse-input gse-code-input" type="text" placeholder="密碼，例如 1943" oninput="syncStepPreview(this.closest('.guide-step-editor'))">
-        </div>
-      </div>
-      <div class="gse-right">
-        <div class="guide-preview-label">房客會看到（<span class="gse-preview-lang-label">中文</span>版本）</div>
-        <div class="guide-preview-card">
-          <div class="guide-preview-photo"><span class="ic" data-icon="camera"></span></div>
-          <div class="guide-preview-title">（尚未輸入標題）</div>
-          <div class="guide-preview-desc">（尚未輸入說明文字）</div>
-          <div class="guide-preview-code" style="display:none">
-            <div class="lbl">密碼</div>
-            <div class="val"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <!-- password modal -->
-  <div class="modal-backdrop" id="pwdModal">
-    <div class="modal">
-      <h3>房間門鎖密碼</h3>
-      <p id="pwdModalMeta"></p>
-      <div class="val-box" id="pwdVal">——</div>
-      <div class="modal-actions">
-        <button class="btn-close" onclick="closePwdModal()">關閉</button>
-        <button class="btn-confirm" onclick="copyPwdModalValue(this)">複製密碼</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 刪除房源確認彈窗(真的會刪除資料庫資料,連帶刪掉這個房源所有的訂單/密碼/開門紀錄,所以要求手動輸入房源名稱才能刪) -->
-  <div class="modal-backdrop" id="deletePropModal">
-    <div class="modal">
-      <h3>刪除房源</h3>
-      <p>
-        即將刪除「<b id="deletePropName"></b>」。這個動作<b style="color:var(--critical)">無法復原</b>，
-        會連同這個房源底下所有的訂單紀錄、已核發過的密碼紀錄、開門紀錄一起永久刪除。
-        <br><br>
-        請在下面輸入完整房源名稱以確認：
-      </p>
-      <input class="gse-input" id="deletePropConfirmInput" type="text" placeholder="輸入房源名稱" oninput="checkDeletePropConfirmInput()" style="margin-bottom:16px;">
-      <div class="modal-actions">
-        <button class="btn-close" onclick="closeDeletePropertyModal()">取消</button>
-        <button class="btn-confirm" id="deletePropConfirmBtn" style="background:var(--critical);" disabled onclick="confirmDeleteProperty()">確認永久刪除</button>
-      </div>
-      <div class="auth-error" id="deletePropError"></div>
-    </div>
-  </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-  // 手機底部導覽列把「房源設定/入住引導」「開門紀錄/系統同步」各自合併成一個
-  // 分頁,所以底部分頁的 active 狀態要用「群組」比對,不能直接比對面板 id——
-  // 同一群組裡不管顯示哪個子畫面,底部那顆分頁都要維持亮著。桌面側邊欄跟面板
-  // 內的手機次分頁則是精準比對(點哪個亮哪個)。
-  const MOBILE_TAB_GROUP = {
-    'p-overview': 'p-overview',
-    'p-reservations': 'p-reservations',
-    'p-settings': 'p-property',
-    'p-guide': 'p-property',
-    'p-logs': 'p-logs-group',
-    'p-sync': 'p-logs-group',
-  };
+  // 這個網址不用改,已經指向你的 Apps Script 部署
+  const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
 
-  // 各面板第一次被點進去時才載入真實資料(懶載入),之後靠面板自己的
-  // 「重新整理」按鈕手動刷新——避免一登入就同時打一堆查詢。
-  const PANEL_LOADERS = {
-    'p-overview': () => loadOverview(),
-    'p-reservations': () => loadReservationsPanel(),
-    'p-logs': () => loadDoorLogs(),
-    'p-sync': () => loadSyncPanel(),
-  };
-  const panelLoadedOnce = {};
+  // 從網址讀取這位房客的專屬 token,例如 ?token=roomb-0812-tw
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
 
-  function showPanel(id, el) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    // 同時同步側邊欄(桌面)跟面板內次分頁(手機)的 active 狀態,不管是從哪一邊點的
-    document.querySelectorAll('.nav-item, .mobile-subnav-btn').forEach(n => n.classList.toggle('active', n.dataset.p === id));
-    // 手機底部導覽列用群組比對
-    document.querySelectorAll('.mtab').forEach(n => n.classList.toggle('active', n.dataset.group === MOBILE_TAB_GROUP[id]));
-    if (PANEL_LOADERS[id] && !panelLoadedOnce[id] && REAL_PROPERTIES) {
-      panelLoadedOnce[id] = true;
-      PANEL_LOADERS[id]();
-    }
-  }
-
-  // ===== 手機版排版:以前是桌面上手動按鈕切換的「手機預覽」,現在改成依
-  // 視窗真的多窄自動判斷——房東拿自己手機打開時會自動套用手機版排版,不用
-  // 也不能再手動切換(手機瀏覽器上本來就沒有「切換回桌面版」的意義)。 =====
-  const MOBILE_BREAKPOINT = '(max-width: 860px)';
-  function applyResponsiveMode() {
-    const isMobile = window.matchMedia(MOBILE_BREAKPOINT).matches;
-    document.getElementById('browserFrame').classList.toggle('mobile-mode', isMobile);
-  }
-  applyResponsiveMode();
-  window.addEventListener('resize', debounce(applyResponsiveMode, 150));
-  window.addEventListener('orientationchange', applyResponsiveMode);
-
-  function debounce(fn, ms) {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-  }
-
-  let pwdModalPassword = '';
-  function openPwdModal(pwd, metaText) {
-    pwdModalPassword = pwd || '';
-    document.getElementById('pwdVal').textContent = pwd || '——';
-    document.getElementById('pwdModalMeta').textContent = metaText || '';
-    document.getElementById('pwdModal').classList.add('show');
-  }
-  function closePwdModal() {
-    document.getElementById('pwdModal').classList.remove('show');
-  }
-  function copyPwdModalValue(btn) {
-    const original = btn.textContent;
-    if (pwdModalPassword) navigator.clipboard.writeText(pwdModalPassword.replace(/\s/g, '')).catch(() => {});
-    btn.textContent = '已複製';
-    setTimeout(() => { btn.textContent = original; }, 1200);
-  }
-
-  function toggleTheme() {
-    const root = document.documentElement;
-    const isDark = root.getAttribute('data-theme') === 'dark';
-    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    const themeBtn = document.querySelector('.theme-toggle');
-    themeBtn.innerHTML = isDark
-      ? '<span class="ic" data-icon="moon"></span>深色模式'
-      : '<span class="ic" data-icon="sun"></span>淺色模式';
-    renderIcons(themeBtn);
-  }
-
-  // ===== 房東登入 + 真實房源資料(2026-08 接上真正的 Supabase,不再是示範假資料)=====
-  // anon public key 是設計給前端公開使用的,靠 RLS(host_id = auth.uid())保護資料,
-  // 不是機密金鑰,可以安心寫在前端程式碼裡。
-  const SUPABASE_URL = 'https://qovdqwlewlygzqcbmnoh.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvdmRxd2xld2x5Z3pxY2Jtbm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MDY5MTQsImV4cCI6MjEwMjE4MjkxNH0.p5_JbDpo3yX53DdEoUXTHI5xHrjWoHw0iz5JonA3DTs';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const FUNCTIONS_BASE = SUPABASE_URL + '/functions/v1';
-
-  // 呼叫房客 PWA 也在用的同一批 Edge Functions(guest-verify / tuya-issue-password /
-  // tuya-get-password / tuya-revoke-password / reservation-sync),差別只在這裡帶的是
-  // 房東自己的登入 JWT(不是 guest_session_token),對應每支 function 裡「房東手動」
-  // 那個分支。
-  async function callFn(name, body) {
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token || SUPABASE_ANON_KEY;
-    try {
-      const res = await fetch(`${FUNCTIONS_BASE}/${name}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + token,
-        },
-        body: JSON.stringify(body || {}),
-      });
-      let data = null;
-      try { data = await res.json(); } catch (e) { /* 沒有 body 也沒關係 */ }
-      return { ok: res.ok, status: res.status, data: data || {} };
-    } catch (err) {
-      return { ok: false, status: 0, data: { error: 'network_error', message: String(err) } };
-    }
-  }
-
-  let REAL_PROPERTIES = [];
-  let currentSettingsPropertyId = null;
-  let currentGuidePropertyId = null;
-
-  // ===== 圖示系統(SVG,不用 emoji)=====
-  // 跟房客 PWA(airbnb-checkin-pwa-mockup.html)同一套慣例:[data-icon="xxx"]
-  // 的元素,靠 renderIcons() 把對應的 SVG 換進去;大小由外層 .ic / .ic-sm /
-  // .ic-lg / .ic-xl 這些 class 決定,SVG 本身不寫死尺寸。door/mailbox/
-  // stairs/gate/house/key/pin/lock/check/close 這幾個直接沿用房客 PWA 的
-  // 圖示,確保兩邊視覺一致。
-  const ICONS = {
-    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-    clipboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
-    settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
-    compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
-    refreshCw: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
-    alertTriangle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>',
-    lightbulb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1v.2h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>',
-    arrowUp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>',
-    arrowDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>',
-    camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
-    smartphone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
-    monitor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
-    moon: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
-    sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
-    signal: '<svg viewBox="0 0 20 14" fill="currentColor"><rect x="0" y="8" width="3.5" height="6" rx="0.8"/><rect x="6" y="5" width="3.5" height="9" rx="0.8"/><rect x="12" y="2" width="3.5" height="12" rx="0.8"/></svg>',
-    battery: '<svg viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1.5" width="20" height="11" rx="2.5"/><line x1="23.5" y1="5.5" x2="23.5" y2="8.5"/><rect x="3" y="3.3" width="16" height="7.4" rx="1.2" fill="currentColor" stroke="none"/></svg>',
-    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-    key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.85 12.15L19 4m0 0h-4m4 0v4"/></svg>',
-    door: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="1.2"/><line x1="15" y1="12" x2="15" y2="12.01"/></svg>',
-    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    mailbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7H4z"/><path d="M4 17v3h4v-3"/><line x1="12" y1="9" x2="17" y2="9"/><circle cx="8" cy="10" r="1.3" fill="currentColor" stroke="none"/></svg>',
-    stairs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h4v-4h4v-4h4v-4h4V5"/></svg>',
-    gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17"/><line x1="8" y1="4" x2="8" y2="21"/><line x1="13" y1="4" x2="13" y2="21"/><line x1="18" y1="4" x2="18" y2="21"/></svg>',
-    house: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>',
-    pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
-  };
-
-  // 把畫面上所有 [data-icon="xxx"] 的元素換成對應的 SVG。頁面載入時跑一次
-  // 處理所有寫死在 HTML 裡的圖示;動態產生的區塊(入住引導步驟卡片等)
-  // 自己在 innerHTML/clone 之後,再對自己的範圍呼叫一次這個函式即可。
-  function renderIcons(root) {
-    (root || document).querySelectorAll('[data-icon]').forEach(el => {
-      const name = el.dataset.icon;
-      if (ICONS[name]) el.innerHTML = ICONS[name];
-    });
-  }
-  renderIcons();
-
-  function escapeHtml(s) {
-    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
-  // ===== 房東聯絡電話:國碼 + 號碼分開輸入 =====
-  // 資料庫裡 host_phone 還是存單一字串(例如 "+886919976203"),跟前面
-  // guest-verify、tel: 連結的既有格式保持一致;拆成兩個欄位純粹是為了
-  // 輸入體驗好一點,存檔前再組回單一字串。
-  const HOST_PHONE_COUNTRY_CODES = ['+886', '+86', '+852', '+853', '+81', '+82', '+65', '+60', '+1', '+44', '+61'];
-
-  function splitHostPhone(phone) {
-    const p = String(phone || '').trim();
-    if (!p) return { code: '+886', number: '' };
-    // 比對最長的國碼開頭(例如先比對 +853 再比對 +85 之類,避免誤判),找不到就
-    // 預設台灣國碼,把整串數字放進號碼欄位讓房東自己修正。
-    const match = [...HOST_PHONE_COUNTRY_CODES].sort((a, b) => b.length - a.length).find(c => p.startsWith(c));
-    return match ? { code: match, number: p.slice(match.length) } : { code: '+886', number: p.replace(/^\+/, '') };
-  }
-
-  function combineHostPhone() {
-    const code = document.getElementById('setHostPhoneCountry').value;
-    const number = document.getElementById('setHostPhone').value.trim().replace(/\D/g, '');
-    return number ? code + number : null;
-  }
-
-  async function attemptLogin() {
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    const btn = document.getElementById('authSubmitBtn');
-    const errEl = document.getElementById('authError');
-    errEl.textContent = '';
-    if (!email || !password) { errEl.textContent = '請輸入 Email 跟密碼'; return; }
-    btn.disabled = true; btn.textContent = '登入中...';
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    btn.disabled = false; btn.textContent = '登入';
-    if (error) { errEl.textContent = '登入失敗：' + error.message; return; }
-    await onLoggedIn();
-  }
-
-  async function onLoggedIn() {
-    document.getElementById('authGate').classList.remove('show');
-    document.getElementById('browserFrame').style.display = '';
-    const { data: userData } = await sb.auth.getUser();
-    const email = userData?.user?.email || '房東';
-    document.getElementById('sidebarHostEmail').textContent = email;
-    document.getElementById('sidebarAvatarInitial').textContent = email.slice(0, 1).toUpperCase();
-    await loadRealProperties();
-    panelLoadedOnce['p-overview'] = true;
-    loadOverview();
-  }
-
-  async function doLogout() {
-    await sb.auth.signOut();
-    document.getElementById('browserFrame').style.display = 'none';
-    document.getElementById('authGate').classList.add('show');
-    document.getElementById('authEmail').value = '';
-    document.getElementById('authPassword').value = '';
-    REAL_PROPERTIES = [];
-    Object.keys(panelLoadedOnce).forEach(k => delete panelLoadedOnce[k]);
-  }
-
-  async function loadRealProperties(preferredId) {
-    const { data, error } = await sb.from('properties').select('*').order('created_at', { ascending: true });
-    if (error) { alert('載入房源失敗：' + error.message); return; }
-    REAL_PROPERTIES = data || [];
-    populatePropertySelects();
-    const targetId = (preferredId && REAL_PROPERTIES.some(p => p.id === preferredId))
-      ? preferredId
-      : (REAL_PROPERTIES[0] ? REAL_PROPERTIES[0].id : null);
-    if (targetId) {
-      document.getElementById('settingsPropSelect').value = targetId;
-      onSettingsPropertyChange(targetId);
-      document.getElementById('guideProp').value = targetId;
-      loadPropertyStepsReal(targetId);
-    } else {
-      startNewProperty();
-    }
-  }
-
-  function populatePropertySelects() {
-    const opts = REAL_PROPERTIES.map(p => `<option value="${p.id}">${escapeHtml(p.name || '（未命名房源）')}</option>`).join('');
-    document.getElementById('settingsPropSelect').innerHTML = opts || '<option value="">（尚無房源，請先新增）</option>';
-    document.getElementById('guideProp').innerHTML = opts || '<option value="">（尚無房源，請先到「房源設定」新增）</option>';
-  }
-
-  // ===== 日期/時間格式化小工具 =====
-  function todayISO() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
-  function formatDateLong(iso) {
-    const d = new Date(iso + 'T00:00:00');
-    const days = ['日', '一', '二', '三', '四', '五', '六'];
-    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${days[d.getDay()]}）`;
-  }
-  function formatDateShort(iso) {
-    if (!iso) return '—';
-    const d = new Date(iso + 'T00:00:00');
-    return `${d.getMonth() + 1}/${d.getDate()}`;
-  }
-  function formatDateTimeShort(iso) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  }
-  function formatLogTime(iso) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    const now = new Date();
-    const yest = new Date(now); yest.setDate(now.getDate() - 1);
-    const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    if (d.toDateString() === now.toDateString()) return `今日 ${hm}`;
-    if (d.toDateString() === yest.toDateString()) return `昨日 ${hm}`;
-    return `${d.getMonth() + 1}/${d.getDate()} ${hm}`;
-  }
-  function formatRelative(iso) {
-    if (!iso) return '尚未同步過';
-    const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (min < 1) return '剛剛';
-    if (min < 60) return `${min} 分鐘前`;
-    const hr = Math.floor(min / 60);
-    if (hr < 24) return `${hr} 小時前`;
-    return `${Math.floor(hr / 24)} 天前`;
-  }
-  // 訂單狀態:真實系統裡 reservations.status 只可靠區分「取消／未取消」(由
-  // reservation-sync 依 iCal 是否還看得到這筆事件來設定),入住中/已退房/
-  // 即將入住是拿今天日期跟 checkin/checkout_date 比較算出來的,不是資料庫
-  // 欄位本身固定的值。
-  function computeStatus(r) {
-    if (r.status === 'cancelled') return { label: '已取消', cls: 'muted' };
-    const t = todayISO();
-    if (t < r.checkin_date) return { label: '即將入住', cls: 'muted' };
-    if (t > r.checkout_date) return { label: '已退房', cls: 'muted' };
-    return { label: '入住中', cls: 'good' };
-  }
-  function formatPwd(p) {
-    const s = String(p || '');
-    return s.length > 2 ? s.slice(0, -2) + ' ' + s.slice(-2) : s;
-  }
-
-  // 「重新整理」類按鈕的通用包裝:按下去先鎖住、顯示載入中,真正的非同步
-  // 工作做完(不管成功失敗)才恢復——取代以前純裝飾、不會真的做事的 pulse()。
-  async function withRefreshButton(btn, fn) {
-    if (!btn) { await fn(); return; }
-    const original = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="ic" data-icon="refreshCw"></span>載入中...';
-    renderIcons(btn);
-    try { await fn(); } finally { btn.disabled = false; btn.innerHTML = original; renderIcons(btn); }
-  }
-
-  // ===== 總覽面板 =====
-  async function loadOverview(btn) {
-    await withRefreshButton(btn, async () => {
-      const t = todayISO();
-      document.getElementById('ovSubline').textContent = `${formatDateLong(t)}・共 ${REAL_PROPERTIES.length} 個房源`;
-
-      const { data: reservations, error } = await sb.from('reservations')
-        .select('*, properties(name, checkin_time, checkout_time)')
-        .neq('status', 'cancelled')
-        .order('checkin_date', { ascending: true });
-      if (error) {
-        document.getElementById('ovAlertsList').innerHTML = `<div class="alert-row">載入失敗：${escapeHtml(error.message)}</div>`;
-        return;
-      }
-      const list = reservations || [];
-      const checkinToday = list.filter(r => r.checkin_date === t);
-      const checkoutToday = list.filter(r => r.checkout_date === t);
-      const activeNow = list.filter(r => r.checkin_date <= t && r.checkout_date >= t);
-
-      document.getElementById('ovTileCheckin').textContent = checkinToday.length;
-      document.getElementById('ovTileCheckout').textContent = checkoutToday.length;
-      document.getElementById('ovTileActive').textContent = activeNow.length;
-      document.getElementById('ovTileCheckinFoot').textContent = checkinToday.length ? '' : '今天沒有新入住';
-      document.getElementById('ovTileCheckoutFoot').textContent = checkoutToday.length ? '' : '今天沒有退房';
-      const propCount = new Set(activeNow.map(r => r.property_id)).size;
-      document.getElementById('ovTileActiveFoot').textContent = activeNow.length ? `跨 ${propCount} 個房源` : '目前沒有進行中的訂單';
-
-      // ---- 待處理警示:iCal 同步失敗的房源 + 短時間內驗證連續失敗的房客 ----
-      const alerts = [];
-      REAL_PROPERTIES.filter(p => p.last_ical_sync_error).forEach(p => {
-        alerts.push({
-          cls: 'warning', icon: 'refreshCw',
-          title: `${p.name || '（未命名房源）'}・iCal 同步失敗`,
-          desc: p.last_ical_sync_error,
-          time: p.last_ical_sync_at,
-        });
-      });
-
-      const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-      const { data: failedAttempts } = await sb.from('verify_attempts')
-        .select('property_id, phone_last4_input, created_at')
-        .eq('succeeded', false)
-        .gte('created_at', dayAgo)
-        .order('created_at', { ascending: false })
-        .limit(300);
-      const failGroups = {};
-      (failedAttempts || []).forEach(a => {
-        const key = a.property_id + '_' + a.phone_last4_input;
-        if (!failGroups[key]) failGroups[key] = { count: 0, property_id: a.property_id, phone: a.phone_last4_input, latest: a.created_at };
-        failGroups[key].count++;
-      });
-      Object.values(failGroups).filter(g => g.count >= 3).forEach(g => {
-        const propName = (REAL_PROPERTIES.find(p => p.id === g.property_id) || {}).name || '（未命名房源）';
-        alerts.push({
-          cls: 'critical', icon: 'close',
-          title: `${propName}・房客驗證連續失敗 ${g.count} 次`,
-          desc: `手機末4碼 ${g.phone}，可能誤填，建議主動聯繫房客或到「訂單管理」手動核發密碼`,
-          time: g.latest,
-        });
-      });
-
-      document.getElementById('ovTileAlerts').textContent = alerts.length;
-      document.getElementById('ovTileAlertsFoot').textContent = alerts.length ? '需要人工確認' : '目前沒有待處理事項';
-      document.getElementById('ovAlertsList').innerHTML = alerts.length
-        ? alerts.map(a => `
-          <div class="alert-row">
-            <div class="alert-ic ${a.cls}"><span class="ic" data-icon="${a.icon}"></span></div>
-            <div>
-              <div class="alert-title">${escapeHtml(a.title)}</div>
-              <div class="alert-desc">${escapeHtml(a.desc || '')}</div>
-            </div>
-            <div class="alert-time">${formatRelative(a.time)}</div>
-          </div>`).join('')
-        : `<div class="alert-row"><div class="alert-ic" style="background:var(--good-bg);color:var(--good);"><span class="ic" data-icon="check"></span></div><div><div class="alert-title">目前沒有需要人工確認的事項</div></div></div>`;
-
-      // ---- 今日行程 ----
-      const todays = list.filter(r => r.checkin_date === t || r.checkout_date === t);
-      const ids = todays.map(r => r.id);
-      const activePwdSet = new Set(), revokedSet = new Set();
-      if (ids.length) {
-        const { data: pwds } = await sb.from('lock_passwords').select('reservation_id, revoked_at').in('reservation_id', ids);
-        (pwds || []).forEach(p => { if (p.revoked_at) revokedSet.add(p.reservation_id); else activePwdSet.add(p.reservation_id); });
-      }
-      document.getElementById('ovTodayBody').innerHTML = todays.length ? todays.map(r => {
-        const isCheckin = r.checkin_date === t;
-        const time = (isCheckin ? (r.properties?.checkin_time || '15:00') : (r.properties?.checkout_time || '11:00')).slice(0, 5);
-        const label = isCheckin ? `今日 ${time} 入住` : `今日 ${time} 退房`;
-        let badge = activePwdSet.has(r.id)
-          ? `<span class="badge good"><span class="dot"></span>密碼已核發</span>`
-          : (revokedSet.has(r.id)
-            ? `<span class="badge muted"><span class="dot"></span>密碼已撤銷</span>`
-            : `<span class="badge info"><span class="dot"></span>密碼尚未核發</span>`);
-        return `
-          <tr>
-            <td data-label="房源"><div class="prop">${escapeHtml(r.properties?.name || '（未命名房源）')}</div></td>
-            <td class="mono" data-label="房客">•••• ${escapeHtml(r.guest_phone_last4 || '----')}</td>
-            <td class="mono" data-label="行程">${label}</td>
-            <td data-label="狀態">${badge}</td>
-          </tr>`;
-      }).join('') : `<tr><td colspan="4" style="text-align:center;color:var(--ink-muted);padding:20px;">今天沒有入住或退房</td></tr>`;
-
-      renderIcons(document.getElementById('ovAlertsList'));
-      renderIcons(document.getElementById('ovTodayBody'));
-    });
-  }
-
-  // ===== 訂單管理面板 =====
-  async function loadReservationsPanel(btn) {
-    const tbody = document.getElementById('resTableBody');
-    await withRefreshButton(btn, async () => {
-      const { data: reservations, error } = await sb.from('reservations')
-        .select('*, properties(name)')
-        .order('checkin_date', { ascending: false })
-        .limit(200);
-      if (error) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--critical);padding:20px;">載入失敗：${escapeHtml(error.message)}</td></tr>`; return; }
-      if (!reservations || !reservations.length) {
-        document.getElementById('resSubline').textContent = '目前沒有任何訂單';
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--ink-muted);padding:24px;">目前沒有任何訂單資料。訂單由 Airbnb iCal 自動同步產生，也可以到「系統同步」頁手動觸發同步，或在 Supabase 後台手動建立測試訂單。</td></tr>`;
-        return;
-      }
-      document.getElementById('resSubline').textContent = `共 ${reservations.length} 筆訂單（最近 200 筆）`;
-      const ids = reservations.map(r => r.id);
-      const { data: passwords } = await sb.from('lock_passwords').select('*').in('reservation_id', ids);
-      const activeByRes = {}, revokedByRes = {};
-      (passwords || []).forEach(p => {
-        if (p.revoked_at) revokedByRes[p.reservation_id] = true;
-        else activeByRes[p.reservation_id] = p;
-      });
-      tbody.innerHTML = reservations.map(r => reservationRowHtml(r, activeByRes[r.id], !activeByRes[r.id] && revokedByRes[r.id])).join('');
-      renderIcons(tbody);
-    });
-  }
-
-  function reservationRowHtml(r, activePwd, wasRevoked) {
-    const st = computeStatus(r);
-    const propName = r.properties?.name || '（未命名房源）';
-    let pwdCell, actionsCell;
-    if (activePwd) {
-      pwdCell = '已核發';
-      actionsCell = `
-        <button class="mini-btn" onclick="viewPassword('${r.id}', this)">查看</button>
-        <button class="mini-btn danger" onclick="revokePassword('${activePwd.id}', this)">撤銷</button>`;
-    } else if (wasRevoked) {
-      pwdCell = '— 已撤銷';
-      actionsCell = `<button class="mini-btn" disabled style="opacity:.4;">查看</button>`;
-    } else {
-      pwdCell = '尚未核發';
-      actionsCell = r.status === 'cancelled'
-        ? `<button class="mini-btn" disabled style="opacity:.4;">已取消</button>`
-        : `<button class="mini-btn brand" onclick="manualIssuePassword('${r.id}', this)">手動核發</button>`;
-    }
-    return `
-      <tr>
-        <td data-label="房源"><div class="prop">${escapeHtml(propName)}</div></td>
-        <td class="mono" data-label="房客">•••• ${escapeHtml(r.guest_phone_last4 || '----')}</td>
-        <td class="mono" data-label="入住">${formatDateShort(r.checkin_date)}</td>
-        <td class="mono" data-label="退房">${formatDateShort(r.checkout_date)}</td>
-        <td data-label="狀態"><span class="badge ${st.cls}"><span class="dot"></span>${st.label}</span></td>
-        <td class="mono" data-label="密碼">${pwdCell}</td>
-        <td class="row-actions">${actionsCell}</td>
-      </tr>`;
-  }
-
-  async function manualIssuePassword(reservationId, btn) {
-    await withRefreshButton(btn, async () => {
-      const { ok, data } = await callFn('tuya-issue-password', { reservation_id: reservationId });
-      if (!ok) { alert('核發失敗：' + (data.message || data.error || '未知錯誤')); return; }
-      await loadReservationsPanel();
-      openPwdModal(formatPwd(data.password), `有效期間 ${formatDateTimeShort(data.effective_time)} – ${formatDateTimeShort(data.invalid_time)}`);
-    });
-  }
-
-  async function viewPassword(reservationId, btn) {
-    await withRefreshButton(btn, async () => {
-      const { ok, data } = await callFn('tuya-get-password', { reservation_id: reservationId });
-      if (!ok) { alert('查詢失敗：' + (data.message || data.error || '未知錯誤')); return; }
-      openPwdModal(formatPwd(data.password), `有效期間 ${formatDateTimeShort(data.effective_time)} – ${formatDateTimeShort(data.invalid_time)}`);
-    });
-  }
-
-  async function revokePassword(lockPasswordId, btn) {
-    if (!confirm('確定要撤銷這組密碼嗎？撤銷後房客會立刻無法用這組密碼開門。')) return;
-    await withRefreshButton(btn, async () => {
-      const { ok, data } = await callFn('tuya-revoke-password', { lock_password_id: lockPasswordId });
-      if (!ok) { alert('撤銷失敗：' + (data.message || data.error || '未知錯誤')); return; }
-      await loadReservationsPanel();
-    });
-  }
-
-  // ===== 開門紀錄面板 =====
-  const DOOR_LOG_META = {
-    password_issued: { icon: 'lock', cls: 'lock', title: '房間門鎖密碼已核發' },
-    password_revoked: { icon: 'lock', cls: 'lock', title: '房間門鎖密碼已撤銷' },
-    door_opened: { icon: 'door', cls: 'door', title: '一樓大門開啟' },
-    lock_unlocked: { icon: 'lock', cls: 'lock', title: '房間門鎖解鎖' },
-  };
-  const ACTOR_LABEL = { guest: '房客自助操作', host: '房東手動操作', system: '系統自動' };
-
-  async function loadDoorLogs(btn) {
-    const card = document.getElementById('logsCard');
-    await withRefreshButton(btn, async () => {
-      const { data: logs, error } = await sb.from('door_access_logs')
-        .select('*, properties(name), reservations(guest_phone_last4)')
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) { card.innerHTML = `<div class="log-row">載入失敗：${escapeHtml(error.message)}</div>`; return; }
-      if (!logs || !logs.length) {
-        card.innerHTML = `<div class="log-row"><div class="log-main"><div class="log-title">目前還沒有任何開門紀錄</div><div class="log-sub">房客驗證後核發密碼、開門等操作都會顯示在這裡</div></div></div>`;
-        return;
-      }
-      card.innerHTML = logs.map(logRowHtml).join('');
-      renderIcons(card);
-    });
-  }
-
-  function logRowHtml(log) {
-    const meta = DOOR_LOG_META[log.action] || { icon: 'door', cls: 'door', title: log.action };
-    const propName = log.properties?.name || '（未命名房源）';
-    const phone = log.reservations?.guest_phone_last4;
-    const subParts = [ACTOR_LABEL[log.actor] || log.actor];
-    if (phone) subParts.push(`訂單 •••• ${phone}`);
-    return `
-      <div class="log-row">
-        <div class="log-ic ${meta.cls}"><span class="ic" data-icon="${meta.icon}"></span></div>
-        <div class="log-main">
-          <div class="log-title">${escapeHtml(meta.title)}・${escapeHtml(propName)}</div>
-          <div class="log-sub">${escapeHtml(subParts.join('・'))}</div>
-        </div>
-        <div class="log-time">${formatLogTime(log.created_at)}</div>
-      </div>`;
-  }
-
-  // ===== 系統同步面板 =====
-  async function loadSyncPanel(btn) {
-    const grid = document.getElementById('syncGrid');
-    await withRefreshButton(btn, async () => {
-      const { data: props, error } = await sb.from('properties').select('*').order('created_at', { ascending: true });
-      if (error) { grid.innerHTML = `<div class="sync-card">載入失敗：${escapeHtml(error.message)}</div>`; return; }
-      REAL_PROPERTIES = props || [];
-      populatePropertySelects();
-
-      const icalCards = REAL_PROPERTIES.map(syncCardHtml).join('');
-      const total = REAL_PROPERTIES.length;
-      const tuyaCount = REAL_PROPERTIES.filter(p => p.tuya_lock_device_id).length;
-      const ewelinkCount = REAL_PROPERTIES.filter(p => p.ewelink_door_device_id).length;
-      grid.innerHTML = icalCards + `
-        <div class="sync-card">
-          <div class="sync-card-top">
-            <div><div class="name">Tuya 門鎖裝置</div><div class="meta">已設定門鎖 device_id 的房源</div></div>
-            <span class="badge ${tuyaCount > 0 ? 'good' : 'muted'}"><span class="dot"></span>${tuyaCount} / ${total} 個房源</span>
-          </div>
-          <div class="meta">在「房源設定」填入門鎖 device_id 後即可核發密碼</div>
-        </div>
-        <div class="sync-card">
-          <div class="sync-card-top">
-            <div><div class="name">易微聯大門裝置</div><div class="meta">已設定大門 device_id 的房源</div></div>
-            <span class="badge ${ewelinkCount > 0 ? 'good' : 'muted'}"><span class="dot"></span>${ewelinkCount} / ${total} 個房源</span>
-          </div>
-          <div class="meta">eWeLink 開發者帳號審核中，即使已填裝置 ID，房客端「一樓大門」按鈕目前仍會顯示尚未完成的提示</div>
-        </div>`;
-      renderIcons(grid);
-    });
-  }
-
-  function syncCardHtml(p) {
-    const name = escapeHtml(p.name || '（未命名房源）');
-    if (!p.ical_url) {
-      return `<div class="sync-card">
-        <div class="sync-card-top">
-          <div><div class="name">${name}</div><div class="meta">Airbnb iCal 行事曆</div></div>
-          <span class="badge muted"><span class="dot"></span>尚未設定</span>
-        </div>
-        <div class="meta">請到「房源設定」填入 iCal 連結才能自動同步訂單</div>
-      </div>`;
-    }
-    const hasError = !!p.last_ical_sync_error;
-    const badge = hasError
-      ? `<span class="badge critical"><span class="dot"></span>同步異常</span>`
-      : (p.last_ical_sync_at ? `<span class="badge good"><span class="dot"></span>同步正常</span>` : `<span class="badge muted"><span class="dot"></span>尚未同步過</span>`);
-    const metaLine = hasError
-      ? `上次嘗試：${formatRelative(p.last_ical_sync_at)} · ${escapeHtml(p.last_ical_sync_error)}`
-      : `上次同步：${formatRelative(p.last_ical_sync_at)}`;
-    return `<div class="sync-card">
-      <div class="sync-card-top">
-        <div><div class="name">${name}</div><div class="meta">Airbnb iCal 行事曆</div></div>
-        ${badge}
-      </div>
-      <div class="meta">${metaLine}</div>
-      <button class="sync-now" onclick="syncPropertyNow('${p.id}', this)">立即同步</button>
-    </div>`;
-  }
-
-  async function syncPropertyNow(propertyId, btn) {
-    const original = btn.textContent;
-    btn.disabled = true; btn.textContent = '同步中...';
-    const { ok, data } = await callFn('reservation-sync', { property_id: propertyId });
-    if (!ok) { btn.disabled = false; btn.textContent = original; alert('同步失敗：' + (data.message || data.error || '未知錯誤')); return; }
-    await loadSyncPanel();
-  }
-
-  async function syncAllNow(btn) {
-    await withRefreshButton(btn, async () => {
-      const { ok, data } = await callFn('reservation-sync', {});
-      if (!ok) { alert('同步失敗：' + (data.message || data.error || '未知錯誤')); return; }
-      await loadSyncPanel();
-    });
-  }
-
-  // ===== 房源設定面板 =====
-  function onSettingsPropertyChange(id) {
-    currentSettingsPropertyId = id || null;
-    document.getElementById('settingsError').textContent = '';
-    const p = REAL_PROPERTIES.find(x => x.id === id) || {};
-    document.getElementById('setName').value = p.name || '';
-    document.getElementById('setAddress').value = p.address || '';
-    document.getElementById('setCheckinTime').value = (p.checkin_time || '15:00').slice(0, 5);
-    document.getElementById('setCheckoutTime').value = (p.checkout_time || '11:00').slice(0, 5);
-    document.getElementById('setWifiName').value = p.wifi_name || '';
-    document.getElementById('setWifiPassword').value = p.wifi_password || '';
-    document.getElementById('setIcalUrl').value = p.ical_url || '';
-    document.getElementById('setTuyaDeviceId').value = p.tuya_lock_device_id || '';
-    document.getElementById('setPwdLength').value = String(p.tuya_lock_password_length || 7);
-    document.getElementById('setLockPwdHint').value = p.lock_password_hint || '';
-    const phoneParts = splitHostPhone(p.host_phone);
-    document.getElementById('setHostPhoneCountry').value = phoneParts.code;
-    document.getElementById('setHostPhone').value = phoneParts.number;
-    document.getElementById('setEwelinkId').value = p.ewelink_door_device_id || '';
-    // 只有「正在編輯一個既有房源」才顯示刪除鈕,新增房源(還沒存檔前)沒有東西可刪
-    document.getElementById('settingsDeleteBtn').style.display = currentSettingsPropertyId ? '' : 'none';
-    currentPropertyPhotos = Array.isArray(p.photo_urls) ? p.photo_urls.slice(0, 3) : [];
-    renderPropertyPhotoSlots();
-  }
-
-  // ===== 房源照片(最多 3 張,存進 properties.photo_urls,實際檔案存在
-  // Supabase Storage 的 property-photos 這個 bucket,路徑是 {property_id}/xxx,
-  // 詳見 migration_add_property_photos.sql 裡的 bucket + RLS 設定)=====
-  let currentPropertyPhotos = [];
-
-  function renderPropertyPhotoSlots() {
-    const grid = document.getElementById('propPhotoGrid');
-    if (!currentSettingsPropertyId) {
-      grid.innerHTML = '<div class="prop-photo-empty-note">請先儲存房源基本資料(至少填房源名稱並按「儲存房源設定」),才能上傳照片。</div>';
-      return;
-    }
-    const slots = [];
-    for (let i = 0; i < 3; i++) {
-      const url = currentPropertyPhotos[i];
-      if (url) {
-        slots.push(`
-          <div class="prop-photo-slot filled">
-            <img src="${escapeHtml(url)}" alt="">
-            <button type="button" class="prop-photo-remove" onclick="deletePropertyPhoto(${i})" title="移除"><span class="ic" data-icon="close"></span></button>
-          </div>`);
-      } else {
-        slots.push(`
-          <div class="prop-photo-slot" onclick="this.querySelector('input[type=file]').click()">
-            <input type="file" accept="image/*" style="display:none" onchange="handlePropertyPhotoUpload(this)">
-            <div class="prop-photo-placeholder"><span class="ic" data-icon="camera"></span>上傳照片</div>
-          </div>`);
-      }
-    }
-    grid.innerHTML = slots.join('');
-    renderIcons(grid);
-  }
-
-  async function handlePropertyPhotoUpload(input) {
-    const file = input.files[0];
-    if (!file || !currentSettingsPropertyId) return;
-    if (currentPropertyPhotos.length >= 3) return;
-    const errEl = document.getElementById('propPhotoError');
-    errEl.textContent = '';
-
-    const slotEl = input.closest('.prop-photo-slot');
-    const busyTag = document.createElement('div');
-    busyTag.className = 'prop-photo-uploading';
-    busyTag.textContent = '上傳中...';
-    slotEl.appendChild(busyTag);
-
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-    const path = `${currentSettingsPropertyId}/${Date.now()}.${ext}`;
-    const { error: upErr } = await sb.storage.from('property-photos').upload(path, file, { upsert: true, cacheControl: '3600' });
-    if (upErr) {
-      errEl.textContent = '照片上傳失敗：' + upErr.message;
-      busyTag.remove();
-      return;
-    }
-    const { data: pub } = sb.storage.from('property-photos').getPublicUrl(path);
-    currentPropertyPhotos.push(pub.publicUrl);
-    await persistPropertyPhotos();
-    renderPropertyPhotoSlots();
-  }
-
-  async function deletePropertyPhoto(index) {
-    if (!currentSettingsPropertyId) return;
-    const url = currentPropertyPhotos[index];
-    currentPropertyPhotos.splice(index, 1);
-    renderPropertyPhotoSlots();
-    await persistPropertyPhotos();
-    // 同時清掉 Storage 裡的實體檔案,避免留下沒人指到的孤兒檔案——清不掉也沒關係,
-    // 反正 photo_urls 已經不會再指到它,不影響房客端顯示。
-    if (url) {
-      try {
-        const marker = '/property-photos/';
-        const idx = url.indexOf(marker);
-        if (idx !== -1) await sb.storage.from('property-photos').remove([url.slice(idx + marker.length)]);
-      } catch (e) { /* 靜默失敗即可 */ }
-    }
-  }
-
-  async function persistPropertyPhotos() {
-    const errEl = document.getElementById('propPhotoError');
-    const { error } = await sb.from('properties').update({ photo_urls: currentPropertyPhotos }).eq('id', currentSettingsPropertyId);
-    if (error) errEl.textContent = '照片清單儲存失敗：' + error.message;
-  }
-
-  function startNewProperty() {
-    currentSettingsPropertyId = null;
-    document.getElementById('settingsPropSelect').value = '';
-    onSettingsPropertyChange(null);
-    showPanel('p-settings', document.querySelector('[data-p="p-settings"]'));
-  }
-
-  // ===== 刪除房源(真的會 cascade 刪掉這個房源的訂單/密碼/開門紀錄,所以要
-  // 求手動輸入房源名稱確認,不是單純按一下就刪掉那種輕量確認)=====
-  function openDeletePropertyModal() {
-    if (!currentSettingsPropertyId) return;
-    const p = REAL_PROPERTIES.find(x => x.id === currentSettingsPropertyId);
-    if (!p) return;
-    document.getElementById('deletePropName').textContent = p.name || '（未命名房源）';
-    document.getElementById('deletePropConfirmInput').value = '';
-    document.getElementById('deletePropConfirmBtn').disabled = true;
-    document.getElementById('deletePropError').textContent = '';
-    document.getElementById('deletePropModal').classList.add('show');
-  }
-
-  function closeDeletePropertyModal() {
-    document.getElementById('deletePropModal').classList.remove('show');
-  }
-
-  function checkDeletePropConfirmInput() {
-    const p = REAL_PROPERTIES.find(x => x.id === currentSettingsPropertyId);
-    const target = p ? (p.name || '') : '';
-    const typed = document.getElementById('deletePropConfirmInput').value;
-    document.getElementById('deletePropConfirmBtn').disabled = !(target && typed === target);
-  }
-
-  async function confirmDeleteProperty() {
-    const errEl = document.getElementById('deletePropError');
-    const btn = document.getElementById('deletePropConfirmBtn');
-    const idToDelete = currentSettingsPropertyId;
-    if (!idToDelete) return;
-
-    errEl.textContent = '';
-    btn.disabled = true; btn.textContent = '刪除中...';
-    const { error } = await sb.from('properties').delete().eq('id', idToDelete);
-    btn.textContent = '確認永久刪除';
-
-    if (error) {
-      errEl.textContent = '刪除失敗：' + error.message;
-      btn.disabled = false;
-      return;
-    }
-    closeDeletePropertyModal();
-    await loadRealProperties();
-  }
-
-  async function savePropertySettings() {
-    const errEl = document.getElementById('settingsError');
-    const toast = document.getElementById('settingsSavedToast');
-    const btn = document.getElementById('settingsSaveBtn');
-    errEl.textContent = '';
-
-    const payload = {
-      name: document.getElementById('setName').value.trim(),
-      address: document.getElementById('setAddress').value.trim() || null,
-      checkin_time: document.getElementById('setCheckinTime').value || '15:00',
-      checkout_time: document.getElementById('setCheckoutTime').value || '11:00',
-      wifi_name: document.getElementById('setWifiName').value.trim() || null,
-      wifi_password: document.getElementById('setWifiPassword').value.trim() || null,
-      ical_url: document.getElementById('setIcalUrl').value.trim() || null,
-      tuya_lock_device_id: document.getElementById('setTuyaDeviceId').value.trim() || null,
-      tuya_lock_password_length: parseInt(document.getElementById('setPwdLength').value, 10) || 7,
-      lock_password_hint: document.getElementById('setLockPwdHint').value.trim() || null,
-      host_phone: combineHostPhone(),
-      ewelink_door_device_id: document.getElementById('setEwelinkId').value.trim() || null,
+  // 動態產生 manifest,讓「加到主畫面」的捷徑能記住這位房客專屬的網址(含 token)
+  (function setupManifest() {
+    const iconUrl192 = new URL('icon-192.png', window.location.href).href;
+    const iconUrl512 = new URL('icon-512.png', window.location.href).href;
+    const iconUrl192Mask = new URL('icon-192-maskable.png', window.location.href).href;
+    const iconUrl512Mask = new URL('icon-512-maskable.png', window.location.href).href;
+    const manifest = {
+      name: 'My Power Bill — The Assembly Tainan',
+      short_name: 'My Power Bill',
+      start_url: window.location.href,
+      display: 'standalone',
+      background_color: '#f4f6f8',
+      theme_color: '#1976d2',
+      icons: [
+        { src: iconUrl192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: iconUrl512, sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: iconUrl192Mask, sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+        { src: iconUrl512Mask, sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+      ]
     };
-    if (!payload.name) { errEl.textContent = '請填寫房源名稱'; return; }
-
-    btn.disabled = true; btn.textContent = '儲存中...';
-    try {
-      let savedId = currentSettingsPropertyId;
-      if (savedId) {
-        const { error } = await sb.from('properties').update(payload).eq('id', savedId);
-        if (error) throw error;
-      } else {
-        const { data: userData, error: userErr } = await sb.auth.getUser();
-        if (userErr) throw userErr;
-        payload.host_id = userData.user.id;
-        const { data, error } = await sb.from('properties').insert(payload).select().single();
-        if (error) throw error;
-        savedId = data.id;
-      }
-      await loadRealProperties(savedId);
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 1800);
-    } catch (err) {
-      errEl.textContent = '儲存失敗：' + err.message;
-    } finally {
-      btn.disabled = false; btn.textContent = '儲存房源設定';
-    }
-  }
-
-  // ===== 入住引導編輯器 =====
-  // 對應 properties.checkin_steps(guest-verify 驗證成功後回傳給房客 PWA)。
-  // 房間門鎖密碼是系統動態核發的,故意不放進這個可編輯清單裡。
-  // 2026-08 確認:房客端支援 繁中/English 兩種語言,入住指示不是自動翻譯,
-  // 是「房東自己填每個語言版本」;真實資料庫裡的格式是
-  // { title:{zh,en}, desc:{zh,en}, code },跟房客 PWA 的 GUIDE_STEPS
-  // 完全對齊(語言在內層、title/desc 在外層),這裡讀寫都要用這個形狀。
-  // 2026-08 拿掉步驟「圖示」欄位:房東直接上傳照片就好,不用再多選一個
-  // 通用圖示,兩邊(host 後台 + 房客 PWA)都已經改成用照片呈現。
-  function loadPropertyStepsReal(propId) {
-    currentGuidePropertyId = propId || null;
-    document.getElementById('stepsContainer').innerHTML = '';
-    document.getElementById('guideSavedToast').classList.remove('show');
-    const p = REAL_PROPERTIES.find(x => x.id === propId);
-    const steps = (p && Array.isArray(p.checkin_steps)) ? p.checkin_steps : [];
-    steps.forEach(s => addStep(s));
-    if (!steps.length) addStep();
-  }
-
-  function collectStepsFromDOM() {
-    return Array.from(document.querySelectorAll('#stepsContainer .guide-step-editor')).map(card => {
-      const titleZh = card.querySelector('.gse-title-input[data-lang="zh"]').value.trim();
-      const descZh = card.querySelector('.gse-desc-input[data-lang="zh"]').value.trim();
-      const titleEn = card.querySelector('.gse-title-input[data-lang="en"]').value.trim();
-      const descEn = card.querySelector('.gse-desc-input[data-lang="en"]').value.trim();
-      const codeOn = card.querySelector('.gse-code-toggle').checked;
-      const code = card.querySelector('.gse-code-input').value.trim();
-      return {
-        title: { zh: titleZh, en: titleEn },
-        desc: { zh: descZh, en: descEn },
-        code: (codeOn && code) ? code : null,
-      };
-    });
-  }
-
-  function switchStepLang(btn, lang) {
-    const card = btn.closest('.guide-step-editor');
-    card.querySelectorAll('.gse-lang-tab').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-    card.querySelectorAll('.gse-lang-pane').forEach(p => p.classList.toggle('active', p.dataset.lang === lang));
-    syncStepPreview(card);
-  }
-
-  function addStep(prefill) {
-    const tpl = document.getElementById('stepEditorTemplate');
-    const node = tpl.content.cloneNode(true);
-    document.getElementById('stepsContainer').appendChild(node);
-    const card = document.getElementById('stepsContainer').lastElementChild;
-    renderIcons(card); // <template> 裡的 [data-icon] 在複製前是 inert 的,複製進真實 DOM 後才需要換成 SVG
-
-    if (prefill) {
-      card.querySelector('.gse-title-input[data-lang="zh"]').value = prefill.title?.zh || '';
-      card.querySelector('.gse-desc-input[data-lang="zh"]').value = prefill.desc?.zh || '';
-      card.querySelector('.gse-title-input[data-lang="en"]').value = prefill.title?.en || '';
-      card.querySelector('.gse-desc-input[data-lang="en"]').value = prefill.desc?.en || '';
-      if (prefill.code) {
-        card.querySelector('.gse-code-toggle').checked = true;
-        card.querySelector('.gse-code-row').style.display = 'block';
-        card.querySelector('.gse-code-input').value = prefill.code;
-      }
-    }
-    renumberSteps();
-    syncStepPreview(card);
-  }
-
-  function removeStep(btn) {
-    const container = document.getElementById('stepsContainer');
-    btn.closest('.guide-step-editor').remove();
-    renumberSteps();
-    if (!container.children.length) addStep();
-  }
-
-  function moveStep(btn, dir) {
-    const card = btn.closest('.guide-step-editor');
-    if (dir === -1 && card.previousElementSibling) {
-      card.parentNode.insertBefore(card, card.previousElementSibling);
-    } else if (dir === 1 && card.nextElementSibling) {
-      card.parentNode.insertBefore(card.nextElementSibling, card);
-    }
-    renumberSteps();
-  }
-
-  function renumberSteps() {
-    document.querySelectorAll('#stepsContainer .guide-step-editor').forEach((card, i) => {
-      card.querySelector('.gse-num').textContent = i + 1;
-    });
-  }
-
-  function toggleCodeField(checkbox) {
-    const card = checkbox.closest('.guide-step-editor');
-    card.querySelector('.gse-code-row').style.display = checkbox.checked ? 'block' : 'none';
-    syncStepPreview(card);
-  }
-
-  function handlePhotoUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const card = input.closest('.guide-step-editor');
-    const img = card.querySelector('.gse-photo-preview');
-    const placeholder = card.querySelector('.gse-photo-placeholder');
-    img.src = URL.createObjectURL(file);
-    img.style.display = 'block';
-    placeholder.style.display = 'none';
-    syncStepPreview(card);
-  }
-
-  function syncStepPreview(card) {
-    const activeTab = card.querySelector('.gse-lang-tab.active');
-    const lang = activeTab ? activeTab.dataset.lang : 'zh';
-
-    const title = card.querySelector(`.gse-title-input[data-lang="${lang}"]`).value.trim();
-    const desc = card.querySelector(`.gse-desc-input[data-lang="${lang}"]`).value.trim();
-    const codeOn = card.querySelector('.gse-code-toggle').checked;
-    const code = card.querySelector('.gse-code-input').value.trim();
-    const photoImg = card.querySelector('.gse-photo-preview');
-    const hasPhoto = photoImg.style.display === 'block' && photoImg.getAttribute('src');
-
-    const pv = card.querySelector('.guide-preview-card');
-    pv.querySelector('.guide-preview-title').textContent = title || (lang === 'zh' ? '（尚未輸入標題）' : '(No title yet)');
-    pv.querySelector('.guide-preview-desc').textContent = desc || (lang === 'zh' ? '（尚未輸入說明文字）' : '(No description yet)');
-
-    const pvPhoto = pv.querySelector('.guide-preview-photo');
-    pvPhoto.innerHTML = hasPhoto ? `<img src="${photoImg.src}">` : `<span class="ic" data-icon="camera"></span>`;
-    if (!hasPhoto) renderIcons(pvPhoto);
-
-    const pvCode = pv.querySelector('.guide-preview-code');
-    if (codeOn && code) {
-      pvCode.style.display = 'block';
-      pvCode.querySelector('.val').textContent = code;
-    } else {
-      pvCode.style.display = 'none';
-    }
-
-    const langLabel = card.querySelector('.gse-preview-lang-label');
-    if (langLabel) langLabel.textContent = lang === 'zh' ? '中文' : 'English';
-  }
-
-  async function saveGuide() {
-    if (!currentGuidePropertyId) { alert('請先到「房源設定」新增一個房源'); return; }
-    const toast = document.getElementById('guideSavedToast');
-    const btn = document.querySelector('.guide-save-btn');
-    const original = btn.textContent;
-    const steps = collectStepsFromDOM();
-
-    btn.disabled = true; btn.textContent = '儲存中...';
-    const { error } = await sb.from('properties').update({ checkin_steps: steps }).eq('id', currentGuidePropertyId);
-    btn.disabled = false; btn.textContent = original;
-
-    if (error) { alert('儲存失敗：' + error.message); return; }
-    // 同步更新本地快取,避免切換房源再切回來時看到舊資料
-    const p = REAL_PROPERTIES.find(x => x.id === currentGuidePropertyId);
-    if (p) p.checkin_steps = steps;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 1800);
-  }
-
-  // ===== PWA:讓房東也可以把後台加到主畫面(手機/平板)、以 App 的方式全螢幕
-  // 打開,跟房客端 PWA 同一套做法。Service Worker 只能在 https(或
-  // localhost)下註冊,file:// 本機測試時會安靜失敗,不影響其他功能。 =====
-  function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return;
-    try {
-      const swUrl = location.pathname.replace(/[^/]+$/, '') + 'service-worker-host.js';
-      navigator.serviceWorker.register(swUrl).catch(() => {});
-    } catch (e) { /* 忽略 */ }
-  }
-  registerServiceWorker();
-
-  // ===== 頁面載入:檢查有沒有現成的登入 session,沒有就顯示登入畫面 =====
-  (async function initAuthState() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      await onLoggedIn();
-    } else {
-      document.getElementById('authGate').classList.add('show');
-    }
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    document.getElementById('dynamic-manifest').setAttribute('href', URL.createObjectURL(blob));
   })();
+
+  async function loadUsage(attempt) {
+    attempt = attempt || 1;
+    const card = document.getElementById('card');
+
+    if (!token) {
+      card.innerHTML = `<div class="error">This link is missing your access token.<br>Please use the personal link provided by your host.</div>`;
+      return;
+    }
+
+    // 先看本機有沒有上次成功抓到的資料,有的話先顯示,不要讓房客對著空白 Loading 等
+    const cacheKey = 'cached_view_' + token;
+    if (attempt === 1) {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          renderView_(JSON.parse(cached), true);
+        } catch (e) { /* 快取壞掉就忽略,照常走正常流程 */ }
+      }
+    }
+
+    try {
+      const res = await fetch(API_BASE + '?token=' + encodeURIComponent(token));
+      const data = await res.json();
+
+      if (data.error) {
+        // 如果已經有快取畫面顯示著,連線失敗就不要蓋掉它,悄悄放棄這次更新就好
+        if (!localStorage.getItem(cacheKey)) {
+          card.innerHTML = `<div class="error">${data.message}</div>`;
+        }
+        return;
+      }
+
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      renderView_(data, false);
+
+    } catch (e) {
+      // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
+      if (attempt < 3) {
+        setTimeout(function () { loadUsage(attempt + 1); }, attempt * 2000);
+        return;
+      }
+      // 有快取畫面顯示著的話,連線失敗也不要蓋掉它
+      if (!localStorage.getItem(cacheKey)) {
+        card.innerHTML = `
+          <div class="error">
+            Connection failed. Please try again.
+            <div style="margin-top:12px;">
+              <button onclick="loadUsage()" style="padding:8px 20px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">Retry</button>
+            </div>
+          </div>`;
+      }
+    }
+  }
+
+  function renderView_(data, isStale) {
+    const card = document.getElementById('card');
+    const updated = new Date(data.updated_at);
+    const timeStr = updated.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const staleNotice = isStale
+      ? `<div style="text-align:center; font-size:11px; color:#1976d2; margin-bottom:8px;">Showing last known data — updating...</div>`
+      : '';
+
+    if (data.status === 'checked_out') {
+      // ---- 已退房:顯示封存的最終帳單 ----
+      card.innerHTML = `
+        ${staleNotice}
+        <span class="badge badge-closed">STAY COMPLETED</span>
+        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
+        <h1>${data.room_name} — Final Usage<span class="cn">${data.room_name} 最終用電量</span></h1>
+
+        <div class="reading-row">
+          <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+          <span>Final reading: ${data.final_reading_kwh.toFixed(2)} kWh</span>
+        </div>
+
+        <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+        <div class="label">Total electricity used during your stay</div>
+
+        <div class="cost-box">
+          <div>
+            <div class="label">Total Cost<span class="cn">總電費</span></div>
+          </div>
+          <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+        </div>
+
+        <div class="closed-note">
+          Your stay has ended. This is your final electricity summary.
+        </div>
+
+        <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
+      `;
+      return;
+    }
+
+    // ---- 入住中:顯示即時數據 ----
+    const isActive = data.power_kw !== null && data.power_kw > 0.01;
+
+    card.innerHTML = `
+      ${staleNotice}
+      <span class="badge badge-active">CURRENT STAY</span>
+      ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
+      <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+
+      <div class="reading-row">
+        <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+        <span>Current reading: ${data.current_reading_kwh.toFixed(2)} kWh</span>
+      </div>
+
+      <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+      <div class="label">Electricity used during your stay so far</div>
+
+      <div class="cost-box">
+        <div>
+          <div class="label">Estimated Cost<span class="cn">預估電費</span></div>
+        </div>
+        <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+      </div>
+
+      <div class="live-section">
+        <div class="live-heading">
+          <span class="dot ${isActive ? 'dot-active' : ''}"></span>
+          Live Power Usage Right Now
+          <span class="cn">即時用電狀況</span>
+        </div>
+        <div class="live-grid">
+          <div class="live-item">
+            <div class="live-value">${data.voltage_v ?? '—'}</div>
+            <div class="live-label">Voltage (V)<span class="cn">電壓</span></div>
+          </div>
+          <div class="live-item">
+            <div class="live-value">${data.current_a ?? '—'}</div>
+            <div class="live-label">Current (A)<span class="cn">電流</span></div>
+          </div>
+          <div class="live-item">
+            <div class="live-value">${data.power_kw ?? '—'}</div>
+            <div class="live-label">Power (kW)<span class="cn">功率</span></div>
+          </div>
+        </div>
+        <div class="live-hint">
+          ${isActive
+            ? 'Electricity is currently being used in this room.'
+            : 'No significant power draw right now.'}
+        </div>
+      </div>
+
+      ${renderDoorCodeSection_(data)}
+
+      <div class="meta">
+        Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}
+      </div>
+    `;
+  }
+
+  /**
+   * 門鎖密碼區塊:
+   * - 房間沒開通門鎖功能 → 不顯示這個區塊
+   * - 這台裝置本機有存密碼 → 直接顯示密碼(不用重問伺服器,伺服器也沒存)
+   * - 伺服器顯示已設定、但這台裝置沒有存(例如換了裝置) → 顯示提示 + 可以重設
+   * - 還沒設定過 → 顯示輸入欄位讓房客自己選一組
+   */
+  function renderDoorCodeSection_(data) {
+    if (!data.door_code_available) return '';
+    doorCodeLength_ = data.door_code_length || 7;
+
+    const savedCode = localStorage.getItem('door_code_' + token);
+
+    if (data.door_code_set && savedCode) {
+      return `
+        <div class="live-section">
+          <div class="live-heading">🔑 Your Door Code<span class="cn">你的門鎖密碼</span></div>
+          <div class="kwh" style="font-size:34px; margin-top:6px;">${savedCode}</div>
+          <div class="live-hint">Valid for your entire stay — use this code to unlock your room door.</div>
+          <div style="text-align:center; margin-top:10px;">
+            <button onclick="toggleDoorCodeForm_()" style="width:auto; padding:6px 16px; font-size:12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#666; cursor:pointer;">Change Code</button>
+          </div>
+          <div id="doorCodeFormWrap" style="display:none; margin-top:12px;">
+            ${doorCodeInputForm_('Update Code')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (data.door_code_set && !savedCode) {
+      return `
+        <div class="live-section">
+          <div class="live-heading">🔑 Door Code<span class="cn">門鎖密碼</span></div>
+          <div class="live-hint" style="margin-bottom:8px;">A code was already set for this stay, but it isn't saved on this device. Set a new one below (this replaces the old one).</div>
+          ${doorCodeInputForm_('Set Code')}
+        </div>
+      `;
+    }
+
+    // 還沒設定過
+    return `
+      <div class="live-section">
+        <div class="live-heading">🔑 Set Your Door Code<span class="cn">設定門鎖密碼</span></div>
+        <div class="live-hint" style="margin-bottom:8px;">Choose a ${doorCodeLength_}-digit code to unlock your room during your stay.</div>
+        ${doorCodeInputForm_('Set Code')}
+      </div>
+    `;
+  }
+
+  let doorCodeLength_ = 7; // 預設值,實際會被伺服器回傳的 door_code_length 覆蓋
+
+  function doorCodeInputForm_(buttonLabel) {
+    return `
+      <div style="display:flex; gap:8px; width:100%;">
+        <input type="tel" inputmode="numeric" id="doorCodeInput" maxlength="${doorCodeLength_}"
+          placeholder="${doorCodeLength_} digits" style="flex:1; min-width:0; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:16px; letter-spacing:2px; box-sizing:border-box;">
+        <button onclick="submitDoorCode()" id="doorCodeSubmitBtn"
+          style="width:auto; flex-shrink:0; white-space:nowrap; padding:0 16px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">${buttonLabel}</button>
+      </div>
+      <div id="doorCodeError" style="color:#c62828; font-size:12px; margin-top:6px;"></div>
+    `;
+  }
+
+  function toggleDoorCodeForm_() {
+    const wrap = document.getElementById('doorCodeFormWrap');
+    if (wrap) wrap.style.display = (wrap.style.display === 'none') ? 'block' : 'none';
+  }
+
+  async function submitDoorCode() {
+    const input = document.getElementById('doorCodeInput');
+    const errorBox = document.getElementById('doorCodeError');
+    const btn = document.getElementById('doorCodeSubmitBtn');
+    const code = input.value.trim();
+
+    if (!(new RegExp('^\\d{' + doorCodeLength_ + '}$')).test(code)) {
+      errorBox.textContent = 'Code must be exactly ' + doorCodeLength_ + ' digits.';
+      return;
+    }
+
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Setting...';
+    errorBox.textContent = '';
+
+    try {
+      const res = await fetch(API_BASE + '?action=set_door_code&token=' + encodeURIComponent(token) + '&code=' + encodeURIComponent(code));
+      const data = await res.json();
+
+      if (data.error) {
+        errorBox.textContent = data.message;
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+        return;
+      }
+
+      // 成功了:密碼只存在這台裝置本機,不會傳回伺服器儲存
+      localStorage.setItem('door_code_' + token, data.code);
+      loadUsage(); // 重新整理畫面,這次會直接顯示密碼
+
+    } catch (e) {
+      errorBox.textContent = 'Connection failed. Please try again.';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }
+
+  loadUsage();
+  // 每 60 秒自動刷新一次(僅在入住中才有意義,已退房的畫面不會變)
+  setInterval(loadUsage, 60000);
+
+  // ---- 提示房客「加到主畫面」----
+  (function showInstallHint() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const dismissed = localStorage.getItem('install_hint_dismissed_' + token);
+    if (isStandalone || dismissed) return;
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const text = isIOS
+      ? 'Tip: Tap the Share icon below, then "Add to Home Screen" to check your usage anytime like an app.'
+      : 'Tip: Tap the ⋮ menu above, then "Add to Home Screen" to check your usage anytime like an app.';
+
+    document.getElementById('installHintText').textContent = text;
+    document.getElementById('installHint').style.display = 'flex';
+  })();
+
+  function dismissInstallHint() {
+    localStorage.setItem('install_hint_dismissed_' + token, '1');
+    document.getElementById('installHint').style.display = 'none';
+  }
 </script>
+
 </body>
 </html>
