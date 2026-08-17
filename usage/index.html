@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Electricity Usage — The Assembly Tainan</title>
+<title>The Assembly Tainan — Guest Portal</title>
 
-<!-- 讓手機「加到主畫面」時看起來像一個 App -->
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,7 +20,7 @@
     font-family: -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
     background: #f4f6f8;
     color: #1a1a1a;
-    padding: 24px 16px;
+    padding: 24px 16px 90px;
   }
   .card {
     max-width: 420px;
@@ -31,195 +30,71 @@
     padding: 28px 24px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
-  h1 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0 0 4px;
-    color: #555;
-  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; color: #555; }
   .cn { font-size: 11px; color: #aaa; display: block; font-weight: 400; margin-top: 2px; }
-  .kwh {
-    font-size: 48px;
-    font-weight: 700;
-    margin: 16px 0 0;
-    color: #1976d2;
-  }
+  .kwh { font-size: 48px; font-weight: 700; margin: 16px 0 0; color: #1976d2; }
   .kwh .unit { font-size: 18px; color: #999; margin-left: 4px; }
   .label { font-size: 13px; color: #888; margin-top: 4px; }
-  .cost-box {
-    margin-top: 24px;
-    padding: 16px;
-    background: #f0f7ff;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  .cost-box { margin-top: 24px; padding: 16px; background: #f0f7ff; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
   .cost-box .amount { font-size: 24px; font-weight: 700; color: #d84315; }
-  .meta {
-    margin-top: 20px;
-    font-size: 12px;
-    color: #aaa;
-    text-align: center;
-  }
-  .greeting {
-    font-size: 15px;
-    font-weight: 500;
-    color: #1976d2;
-    margin-bottom: 10px;
-  }
-  .reading-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #aaa;
-    margin-top: 14px;
-  }
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 999px;
-    margin-bottom: 10px;
-  }
+  .meta { margin-top: 20px; font-size: 12px; color: #aaa; text-align: center; }
+  .greeting { font-size: 15px; font-weight: 500; color: #1976d2; margin-bottom: 10px; }
+  .reading-row { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 14px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-bottom: 10px; }
   .badge-active { background: #e8f5e9; color: #2e7d32; }
   .badge-closed { background: #eeeeee; color: #757575; }
-  .live-section {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-  }
-  .live-heading {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #ccc;
-    flex-shrink: 0;
-  }
-  .dot-active {
-    background: #43a047;
-    animation: pulse 1.6s infinite;
-  }
+  .live-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #eee; }
+  .live-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .live-heading { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .dot-active { background: #43a047; animation: pulse 1.6s infinite; }
   @keyframes pulse {
     0%   { box-shadow: 0 0 0 0 rgba(67,160,71, 0.5); }
     70%  { box-shadow: 0 0 0 7px rgba(67,160,71, 0); }
     100% { box-shadow: 0 0 0 0 rgba(67,160,71, 0); }
   }
-  .live-grid {
-    margin-top: 12px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    text-align: center;
-  }
-  .live-item {
-    background: #fafafa;
-    border-radius: 10px;
-    padding: 10px 4px;
-  }
+  .live-grid { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+  .live-item { background: #fafafa; border-radius: 10px; padding: 10px 4px; }
   .live-value { font-size: 18px; font-weight: 700; color: #333; }
   .live-label { font-size: 11px; color: #999; margin-top: 2px; }
-  .live-hint {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #888;
-    text-align: center;
-  }
-  .closed-note {
-    margin-top: 16px;
-    padding: 12px 14px;
-    background: #f7f7f7;
-    border-radius: 10px;
-    font-size: 12px;
-    color: #888;
-    text-align: center;
-  }
-  .error {
-    color: #c62828;
-    text-align: center;
-    padding: 20px 0;
-    font-size: 14px;
-  }
-  .loading {
-    text-align: center;
-    color: #999;
-    padding: 40px 0;
-  }
-  .loading-hint {
-    font-size: 12px;
-    color: #bbb;
-    margin-top: 8px;
-  }
+  .live-hint { margin-top: 10px; font-size: 12px; color: #888; text-align: center; }
+  .closed-note { margin-top: 16px; padding: 12px 14px; background: #f7f7f7; border-radius: 10px; font-size: 12px; color: #888; text-align: center; }
+  .error { color: #c62828; text-align: center; padding: 20px 0; font-size: 14px; }
+  .loading { text-align: center; color: #999; padding: 40px 0; }
+  .loading-hint { font-size: 12px; color: #bbb; margin-top: 8px; }
   .install-hint {
-    max-width: 420px;
-    margin: 12px auto 0;
-    background: #fff8e1;
-    border: 1px solid #ffe082;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 12.5px;
-    color: #6d5300;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    max-width: 420px; margin: 12px auto 0; background: #fff8e1; border: 1px solid #ffe082;
+    border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #6d5300;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
-  .install-hint button {
-    background: none;
-    border: none;
-    color: #6d5300;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    flex-shrink: 0;
-    padding: 0;
+  .install-hint button { background: none; border: none; color: #6d5300; font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .door-code-display { font-size: 34px; margin-top: 6px; }
+
+  .tab-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+    border-top: 1px solid #e5e5e5; display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index: 100; padding-bottom: env(safe-area-inset-bottom, 0);
   }
-  .door-section {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-  }
-  .door-heading {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-  }
-  .door-code-display {
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: #1976d2;
-    text-align: center;
-    margin: 14px 0 6px;
-    background: #f0f7ff;
-    border-radius: 10px;
-    padding: 12px;
-  }
-  .door-hint {
-    font-size: 12px;
-    color: #888;
-    margin-top: 6px;
-  }
-  .door-reset-btn {
-    margin-top: 10px;
-    width: auto;
-    background: none;
-    border: 1px solid #ddd;
-    color: #888;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-  }
+  .tab-btn { flex: 1; background: none; border: none; padding: 10px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #999; }
+  .tab-btn .tab-icon { font-size: 20px; line-height: 1; }
+  .tab-btn .tab-label { font-size: 11px; font-weight: 500; }
+  .tab-btn.active { color: #1976d2; }
+
+  .info-section { margin-bottom: 24px; }
+  .info-section:last-child { margin-bottom: 0; }
+  .info-heading { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .wifi-box { background: #f0f7ff; border-radius: 12px; padding: 14px 16px; }
+  .wifi-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .wifi-row .wifi-label { font-size: 12px; color: #888; }
+  .wifi-row .wifi-value { font-size: 15px; font-weight: 600; color: #1a1a1a; font-family: monospace; }
+  .copy-btn { width: auto; padding: 4px 10px; font-size: 11px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #666; cursor: pointer; }
+  .rules-list { margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.9; color: #444; }
+  .place-item { background: #fafafa; border-radius: 10px; padding: 10px 14px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .place-item .place-info { flex: 1; min-width: 0; }
+  .place-item .place-category { font-size: 10.5px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+  .place-item .place-name { font-size: 14px; font-weight: 600; color: #333; margin-top: 1px; }
+  .maps-btn { width: auto; flex-shrink: 0; padding: 7px 12px; font-size: 12px; font-weight: 600; border: none; border-radius: 8px; background: #1976d2; color: #fff; text-decoration: none; display: inline-block; }
+  .garbage-schedule { font-size: 13.5px; color: #444; line-height: 1.7; margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -236,22 +111,71 @@
   <button onclick="dismissInstallHint()" aria-label="Dismiss">&times;</button>
 </div>
 
+<div class="tab-bar">
+  <button class="tab-btn" id="tabBtn-doorcode" onclick="switchTab('doorcode')">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg></span>
+    <span class="tab-label">Door Code</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-electricity" onclick="switchTab('electricity')">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg></span>
+    <span class="tab-label">Electricity</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-info" onclick="switchTab('info')">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none"/></svg></span>
+    <span class="tab-label">Info</span>
+  </button>
+</div>
+
 <script>
-  // 這個網址不用改,已經指向你的 Apps Script 部署
+  // ============================================================
+  // 「實用資訊」(WiFi/房規/垃圾/周邊)現在改成從試算表讀取,
+  // 直接去 Bookings 試算表的 Settings 分頁、NearbyPlaces 分頁編輯就好,
+  // 不用再改這個檔案。
+  // ============================================================
+
   const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
 
-  // 從網址讀取這位房客的專屬 token,例如 ?token=roomb-0812-tw
+  // 線條風格 SVG 圖示,用 currentColor 讓顏色自動跟著外層文字顏色走
+  const ICONS = {
+    key: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg>',
+    bolt: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+    info: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none"/></svg>',
+    wifi: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a17 17 0 0 1 20 0"/><path d="M5.5 12.5a12 12 0 0 1 13 0"/><path d="M9 16.5a6.5 6.5 0 0 1 6 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>',
+    clipboard: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
+    trash: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+    pin: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+  };
+  function icon_(name) {
+    return `<span style="display:inline-flex; vertical-align:-2px;">${ICONS[name]}</span>`;
+  }
+
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
 
-  // 動態產生 manifest,讓「加到主畫面」的捷徑能記住這位房客專屬的網址(含 token)
+  let activeTab = 'electricity';
+  let lastData = null;
+  let infoData = null; // 「實用資訊」的資料,抓過一次就存起來,分頁間切換不用重複打 API
+  let doorCodeLength_ = 7;
+
+  function mapsUrl_(query) {
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    ['doorcode', 'electricity', 'info'].forEach(function (t) {
+      document.getElementById('tabBtn-' + t).classList.toggle('active', t === tab);
+    });
+    renderActiveTab_();
+  }
+
   (function setupManifest() {
     const iconUrl192 = new URL('icon-192.png', window.location.href).href;
     const iconUrl512 = new URL('icon-512.png', window.location.href).href;
     const iconUrl192Mask = new URL('icon-192-maskable.png', window.location.href).href;
     const iconUrl512Mask = new URL('icon-512-maskable.png', window.location.href).href;
     const manifest = {
-      name: 'My Power Bill — The Assembly Tainan',
+      name: 'The Assembly Tainan — Guest Portal',
       short_name: 'My Power Bill',
       start_url: window.location.href,
       display: 'standalone',
@@ -270,21 +194,20 @@
 
   async function loadUsage(attempt) {
     attempt = attempt || 1;
-    const card = document.getElementById('card');
 
     if (!token) {
-      card.innerHTML = `<div class="error">This link is missing your access token.<br>Please use the personal link provided by your host.</div>`;
+      document.getElementById('card').innerHTML = `<div class="error">This link is missing your access token.<br>Please use the personal link provided by your host.</div>`;
       return;
     }
 
-    // 先看本機有沒有上次成功抓到的資料,有的話先顯示,不要讓房客對著空白 Loading 等
     const cacheKey = 'cached_view_' + token;
-    if (attempt === 1) {
+    if (attempt === 1 && !lastData) {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         try {
-          renderView_(JSON.parse(cached), true);
-        } catch (e) { /* 快取壞掉就忽略,照常走正常流程 */ }
+          lastData = JSON.parse(cached);
+          renderActiveTab_(true);
+        } catch (e) { /* ignore */ }
       }
     }
 
@@ -293,25 +216,23 @@
       const data = await res.json();
 
       if (data.error) {
-        // 如果已經有快取畫面顯示著,連線失敗就不要蓋掉它,悄悄放棄這次更新就好
         if (!localStorage.getItem(cacheKey)) {
-          card.innerHTML = `<div class="error">${data.message}</div>`;
+          document.getElementById('card').innerHTML = `<div class="error">${data.message}</div>`;
         }
         return;
       }
 
       localStorage.setItem(cacheKey, JSON.stringify(data));
-      renderView_(data, false);
+      lastData = data;
+      renderActiveTab_(false);
 
     } catch (e) {
-      // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
       if (attempt < 3) {
         setTimeout(function () { loadUsage(attempt + 1); }, attempt * 2000);
         return;
       }
-      // 有快取畫面顯示著的話,連線失敗也不要蓋掉它
       if (!localStorage.getItem(cacheKey)) {
-        card.innerHTML = `
+        document.getElementById('card').innerHTML = `
           <div class="error">
             Connection failed. Please try again.
             <div style="margin-top:12px;">
@@ -322,7 +243,20 @@
     }
   }
 
-  function renderView_(data, isStale) {
+  function renderActiveTab_(isStale) {
+    if (activeTab === 'info') {
+      loadInfoTab_();
+      return;
+    }
+    if (!lastData) return;
+    if (activeTab === 'electricity') {
+      renderElectricityTab_(lastData, !!isStale);
+    } else if (activeTab === 'doorcode') {
+      renderDoorCodeTab_(lastData, !!isStale);
+    }
+  }
+
+  function renderElectricityTab_(data, isStale) {
     const card = document.getElementById('card');
     const updated = new Date(data.updated_at);
     const timeStr = updated.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -331,7 +265,6 @@
       : '';
 
     if (data.status === 'checked_out') {
-      // ---- 已退房:顯示封存的最終帳單 ----
       card.innerHTML = `
         ${staleNotice}
         <span class="badge badge-closed">STAY COMPLETED</span>
@@ -347,22 +280,16 @@
         <div class="label">Total electricity used during your stay</div>
 
         <div class="cost-box">
-          <div>
-            <div class="label">Total Cost<span class="cn">總電費</span></div>
-          </div>
+          <div><div class="label">Total Cost<span class="cn">總電費</span></div></div>
           <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
         </div>
 
-        <div class="closed-note">
-          Your stay has ended. This is your final electricity summary.
-        </div>
-
+        <div class="closed-note">Your stay has ended. This is your final electricity summary.</div>
         <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
       `;
       return;
     }
 
-    // ---- 入住中:顯示即時數據 ----
     const isActive = data.power_kw !== null && data.power_kw > 0.01;
 
     card.innerHTML = `
@@ -380,9 +307,7 @@
       <div class="label">Electricity used during your stay so far</div>
 
       <div class="cost-box">
-        <div>
-          <div class="label">Estimated Cost<span class="cn">預估電費</span></div>
-        </div>
+        <div><div class="label">Estimated Cost<span class="cn">預估電費</span></div></div>
         <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
       </div>
 
@@ -407,70 +332,71 @@
           </div>
         </div>
         <div class="live-hint">
-          ${isActive
-            ? 'Electricity is currently being used in this room.'
-            : 'No significant power draw right now.'}
+          ${isActive ? 'Electricity is currently being used in this room.' : 'No significant power draw right now.'}
         </div>
       </div>
 
-      ${renderDoorCodeSection_(data)}
-
-      <div class="meta">
-        Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}
-      </div>
+      <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}</div>
     `;
   }
 
-  /**
-   * 門鎖密碼區塊:
-   * - 房間沒開通門鎖功能 → 不顯示這個區塊
-   * - 這台裝置本機有存密碼 → 直接顯示密碼(不用重問伺服器,伺服器也沒存)
-   * - 伺服器顯示已設定、但這台裝置沒有存(例如換了裝置) → 顯示提示 + 可以重設
-   * - 還沒設定過 → 顯示輸入欄位讓房客自己選一組
-   */
-  function renderDoorCodeSection_(data) {
-    if (!data.door_code_available) return '';
-    doorCodeLength_ = data.door_code_length || 7;
+  function renderDoorCodeTab_(data, isStale) {
+    const card = document.getElementById('card');
+    const staleNotice = isStale
+      ? `<div style="text-align:center; font-size:11px; color:#1976d2; margin-bottom:8px;">Showing last known data — updating...</div>`
+      : '';
 
+    if (!data.door_code_available) {
+      card.innerHTML = `
+        ${staleNotice}
+        <h1>Door Code<span class="cn">門鎖密碼</span></h1>
+        <div class="closed-note">Door code setup is not available for this room. Please contact your host for entry instructions.</div>
+      `;
+      return;
+    }
+
+    if (data.status === 'checked_out') {
+      card.innerHTML = `
+        ${staleNotice}
+        <h1>Door Code<span class="cn">門鎖密碼</span></h1>
+        <div class="closed-note">Your stay has ended and your door code has been deactivated. Thank you for staying with us!</div>
+      `;
+      return;
+    }
+
+    doorCodeLength_ = data.door_code_length || 7;
     const savedCode = localStorage.getItem('door_code_' + token);
 
+    let bodyHtml;
     if (data.door_code_set && savedCode) {
-      return `
-        <div class="live-section">
-          <div class="live-heading">🔑 Your Door Code<span class="cn">你的門鎖密碼</span></div>
-          <div class="kwh" style="font-size:34px; margin-top:6px;">${savedCode}</div>
-          <div class="live-hint">Valid for your entire stay — use this code to unlock your room door.</div>
-          <div style="text-align:center; margin-top:10px;">
-            <button onclick="toggleDoorCodeForm_()" style="width:auto; padding:6px 16px; font-size:12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#666; cursor:pointer;">Change Code</button>
-          </div>
-          <div id="doorCodeFormWrap" style="display:none; margin-top:12px;">
-            ${doorCodeInputForm_('Update Code')}
-          </div>
+      bodyHtml = `
+        <div class="kwh door-code-display">${savedCode}</div>
+        <div class="live-hint">Valid for your entire stay — use this code to unlock your room door.</div>
+        <div style="text-align:center; margin-top:14px;">
+          <button onclick="toggleDoorCodeForm_()" style="width:auto; padding:6px 16px; font-size:12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#666; cursor:pointer;">Change Code</button>
+        </div>
+        <div id="doorCodeFormWrap" style="display:none; margin-top:12px;">
+          ${doorCodeInputForm_('Update Code')}
         </div>
       `;
-    }
-
-    if (data.door_code_set && !savedCode) {
-      return `
-        <div class="live-section">
-          <div class="live-heading">🔑 Door Code<span class="cn">門鎖密碼</span></div>
-          <div class="live-hint" style="margin-bottom:8px;">A code was already set for this stay, but it isn't saved on this device. Set a new one below (this replaces the old one).</div>
-          ${doorCodeInputForm_('Set Code')}
-        </div>
+    } else if (data.door_code_set && !savedCode) {
+      bodyHtml = `
+        <div class="live-hint" style="margin-bottom:8px;">A code was already set for this stay, but it isn't saved on this device. Set a new one below (this replaces the old one).</div>
+        ${doorCodeInputForm_('Set Code')}
       `;
-    }
-
-    // 還沒設定過
-    return `
-      <div class="live-section">
-        <div class="live-heading">🔑 Set Your Door Code<span class="cn">設定門鎖密碼</span></div>
+    } else {
+      bodyHtml = `
         <div class="live-hint" style="margin-bottom:8px;">Choose a ${doorCodeLength_}-digit code to unlock your room during your stay.</div>
         ${doorCodeInputForm_('Set Code')}
-      </div>
+      `;
+    }
+
+    card.innerHTML = `
+      ${staleNotice}
+      <h1>${icon_('key')} ${data.room_name} Door Code<span class="cn">門鎖密碼</span></h1>
+      <div class="live-section" style="margin-top:16px;">${bodyHtml}</div>
     `;
   }
-
-  let doorCodeLength_ = 7; // 預設值,實際會被伺服器回傳的 door_code_length 覆蓋
 
   function doorCodeInputForm_(buttonLabel) {
     return `
@@ -516,9 +442,8 @@
         return;
       }
 
-      // 成功了:密碼只存在這台裝置本機,不會傳回伺服器儲存
       localStorage.setItem('door_code_' + token, data.code);
-      loadUsage(); // 重新整理畫面,這次會直接顯示密碼
+      loadUsage();
 
     } catch (e) {
       errorBox.textContent = 'Connection failed. Please try again.';
@@ -527,11 +452,125 @@
     }
   }
 
+  const INFO_CACHE_KEY = 'cached_info_data';
+
+  async function loadInfoTab_() {
+    const card = document.getElementById('card');
+
+    // 已經抓過就直接畫,不用每次切分頁都重問伺服器
+    if (infoData) {
+      renderInfoTab_(infoData);
+      return;
+    }
+
+    // 先看本機有沒有存過上次的資料,有的話先顯示,體感比較快
+    const cached = localStorage.getItem(INFO_CACHE_KEY);
+    if (cached) {
+      try {
+        infoData = JSON.parse(cached);
+        renderInfoTab_(infoData);
+      } catch (e) { /* ignore */ }
+    } else {
+      card.innerHTML = `<div class="loading">Loading...</div>`;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '?action=get_info');
+      const data = await res.json();
+      if (data.error) {
+        if (!infoData) card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      infoData = data;
+      localStorage.setItem(INFO_CACHE_KEY, JSON.stringify(data));
+      if (activeTab === 'info') renderInfoTab_(data);
+    } catch (e) {
+      if (!infoData) {
+        card.innerHTML = `<div class="error">Connection failed. <button onclick="loadInfoTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+      }
+    }
+  }
+
+  function renderInfoTab_(data) {
+    const card = document.getElementById('card');
+
+    const rulesHtml = (data.house_rules || []).map(function (r) { return `<li>${r}</li>`; }).join('');
+
+    const placesByCategory = {};
+    (data.nearby_places || []).forEach(function (p) {
+      if (!placesByCategory[p.category]) placesByCategory[p.category] = [];
+      placesByCategory[p.category].push(p);
+    });
+    const placesHtml = Object.keys(placesByCategory).map(function (cat) {
+      return placesByCategory[cat].map(function (p) {
+        return `
+          <div class="place-item">
+            <div class="place-info">
+              <div class="place-category">${cat}</div>
+              <div class="place-name">${p.name}</div>
+            </div>
+            <a class="maps-btn" href="${mapsUrl_(p.maps_query)}" target="_blank" rel="noopener">Map</a>
+          </div>
+        `;
+      }).join('');
+    }).join('');
+
+    card.innerHTML = `
+      <h1 style="margin-bottom:20px;">Useful Information<span class="cn">實用資訊</span></h1>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('wifi')} WiFi<span class="cn" style="margin-left:2px;">無線網路</span></div>
+        <div class="wifi-box">
+          <div class="wifi-row">
+            <span class="wifi-label">Network</span>
+            <span class="wifi-value">${data.wifi_name}</span>
+          </div>
+          <div class="wifi-row">
+            <span class="wifi-label">Password</span>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span class="wifi-value">${data.wifi_password}</span>
+              <button class="copy-btn" onclick="copyText_('${data.wifi_password}', this)">Copy</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('clipboard')} House Rules<span class="cn" style="margin-left:2px;">房間守則</span></div>
+        <ul class="rules-list">${rulesHtml}</ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('trash')} Garbage Disposal<span class="cn" style="margin-left:2px;">垃圾丟棄規則</span></div>
+        <div class="garbage-schedule">${data.garbage_schedule.replace(/\n/g, '<br>')}</div>
+        <div class="place-item">
+          <div class="place-info">
+            <div class="place-category">Location</div>
+            <div class="place-name">${data.garbage_location_name}</div>
+          </div>
+          <a class="maps-btn" href="${mapsUrl_(data.garbage_maps_query)}" target="_blank" rel="noopener">Map</a>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('pin')} Nearby Recommendations<span class="cn" style="margin-left:2px;">周邊推薦</span></div>
+        ${placesHtml}
+      </div>
+    `;
+  }
+
+  function copyText_(text, btn) {
+    navigator.clipboard.writeText(text).then(function () {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  }
+
+  switchTab('electricity');
   loadUsage();
-  // 每 60 秒自動刷新一次(僅在入住中才有意義,已退房的畫面不會變)
   setInterval(loadUsage, 60000);
 
-  // ---- 提示房客「加到主畫面」----
   (function showInstallHint() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const dismissed = localStorage.getItem('install_hint_dismissed_' + token);
