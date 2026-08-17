@@ -158,7 +158,12 @@
   let doorCodeLength_ = 7;
 
   function mapsUrl_(query) {
-    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+    const trimmed = (query || '').trim();
+    // 如果貼的已經是完整網址(例如 Google 地圖分享連結),直接使用,不要再包成搜尋字串
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(trimmed);
   }
 
   function switchTab(tab) {
