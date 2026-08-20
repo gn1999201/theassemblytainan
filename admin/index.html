@@ -142,17 +142,20 @@
     <h1>New Guest Check-in</h1>
     <h2>Automatically reads the current meter and generates a personal link</h2>
     <label>Room</label>
-    <select id="roomSelect"></select>
+    <select id="roomSelect" onchange="onRoomChange_()"></select>
     <label>Guest name (optional)</label>
     <input type="text" id="guestNameInput" placeholder="e.g. William">
-    <label>Starting reading (kWh)</label>
-    <div style="display:flex; gap:8px;">
-      <input type="number" step="0.01" id="checkinReadingInput" placeholder="Tap 'Read Meter' or type manually" style="flex:1;">
-      <button type="button" onclick="readMeterNow()" id="readMeterBtn" style="width:auto; margin-top:0; white-space:nowrap; padding:0 16px;">Read Meter</button>
+    <div id="meterFieldsWrap">
+      <label>Starting reading (kWh)</label>
+      <div style="display:flex; gap:8px;">
+        <input type="number" step="0.01" id="checkinReadingInput" placeholder="Tap 'Read Meter' or type manually" style="flex:1;">
+        <button type="button" onclick="readMeterNow()" id="readMeterBtn" style="width:auto; margin-top:0; white-space:nowrap; padding:0 16px;">Read Meter</button>
+      </div>
+      <div class="meta-hint" id="readMeterStatus" style="font-size:11px; color:#999; margin-top:4px;"></div>
+      <label>Rate (NT$/kWh) — optional</label>
+      <input type="number" step="0.1" id="rateInput" placeholder="Leave blank to use default rate">
     </div>
-    <div class="meta-hint" id="readMeterStatus" style="font-size:11px; color:#999; margin-top:4px;"></div>
-    <label>Rate (NT$/kWh) — optional</label>
-    <input type="number" step="0.1" id="rateInput" placeholder="Leave blank to use default rate">
+    <div id="noMeterNote" style="display:none; font-size:12px; color:#e65100; background:#fff3e0; border-radius:8px; padding:10px 12px; margin-top:6px;">This room doesn't have an electricity meter installed yet — the guest's Electricity tab will show as unavailable, but door code and other features still work normally.</div>
     <label>Check-in date</label>
     <input type="date" id="checkinDatetimeInput">
     <label>Check-out date</label>
@@ -176,6 +179,7 @@
   // 沒有的話,退回看瀏覽器記住的舊值
   const urlParams = new URLSearchParams(window.location.search);
   let adminKey = urlParams.get('admin_key') || localStorage.getItem('admin_key') || '';
+  let roomsWithMeter = []; // 哪些房間有裝電表,沒裝的房間 check-in/check-out 都跳過讀表這步
 
   function unlock() {
     const val = document.getElementById('adminKeyInput').value.trim();
@@ -234,6 +238,7 @@
 
       document.getElementById('lockScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
+      roomsWithMeter = data.rooms_with_meter || [];
       populateRooms(data.rooms);
       loadActiveBookings();
       loadLaundryStatus();
@@ -256,6 +261,14 @@
   function populateRooms(rooms) {
     const sel = document.getElementById('roomSelect');
     sel.innerHTML = rooms.map(r => `<option value="${r}">${r}</option>`).join('');
+    onRoomChange_();
+  }
+
+  function onRoomChange_() {
+    const room = document.getElementById('roomSelect').value;
+    const hasMeter = roomsWithMeter.indexOf(room) !== -1;
+    document.getElementById('meterFieldsWrap').style.display = hasMeter ? '' : 'none';
+    document.getElementById('noMeterNote').style.display = hasMeter ? 'none' : '';
   }
 
   async function readMeterNow(isRetry) {
@@ -405,10 +418,34 @@
   async function checkoutBooking(token, isRetry) {
     pendingCheckoutToken = token;
     const btn = document.getElementById('checkoutBtn_' + cssSafe(token));
+    const bookingRoom = document.querySelector('[data-token="' + token + '"]').dataset.room;
+    const hasMeter = roomsWithMeter.indexOf(bookingRoom) !== -1;
+
+    if (!hasMeter) {
+      const confirmed = confirm('This room has no electricity meter. Check out this guest now? This cannot be undone.');
+      if (!confirmed) return;
+      if (btn) { btn.disabled = true; btn.textContent = 'Checking out...'; }
+      try {
+        const finalizeRes = await fetch(API_BASE + '?action=checkout_booking&token=' + encodeURIComponent(token) +
+          '&admin_key=' + encodeURIComponent(adminKey));
+        const finalizeData = await finalizeRes.json();
+        if (finalizeData.error) {
+          alert(finalizeData.message);
+          if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+        } else {
+          alert('Checked out.');
+        }
+        loadActiveBookings();
+      } catch (e) {
+        alert('Connection failed. Please try again.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+      }
+      return;
+    }
+
     if (btn) { btn.disabled = true; btn.textContent = 'Reading meter...'; }
 
     try {
-      const bookingRoom = document.querySelector('[data-token="' + token + '"]').dataset.room;
       const res = await fetch(API_BASE + '?action=get_current_reading&room=' + encodeURIComponent(bookingRoom) +
         '&admin_key=' + encodeURIComponent(adminKey));
       const data = await res.json();
