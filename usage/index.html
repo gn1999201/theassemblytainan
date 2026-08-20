@@ -533,14 +533,19 @@
         <div class="service-head">
           <div class="service-icon-wrap">${icon_('shirt')}</div>
           <div class="service-title-block">
-            <div class="service-title">Laundry (Wash &amp; Dry)<span class="cn">洗衣服務(洗+烘)</span></div>
+            <div class="service-title">Laundry Service<span class="cn">洗衣服務(洗+烘)</span></div>
             <div class="service-price">NT$${data.laundry_price_ntd} per load</div>
           </div>
         </div>
-        <div class="service-desc">One laundry basket = one load. Use the basket provided in your room. Turnaround time will be confirmed by your host.</div>
+        <ul class="rules-list" style="margin-top:10px; font-size:12.5px; color:#666;">
+          <li><strong>Service Hours:</strong> 09:00 – 18:00 (subject to host availability)</li>
+          <li><strong>How it works:</strong> Place your clothes in the provided basket, leave the basket at the door, and send us a request below.</li>
+          <li><strong>Delicate items:</strong> Please put non-dryable or delicate items in the separate mesh bag provided — we'll air-dry those instead of tumble-drying them.</li>
+          <li><strong>Note:</strong> If your host is traveling or unavailable, please use the 24/7 self-service laundromat nearby (3 min walk).</li>
+        </ul>
         ${data.laundry_available
-          ? `<button class="service-btn" id="laundryBtn" onclick="submitServiceRequest_('laundry')">Request Laundry</button>`
-          : `<button class="service-btn" disabled>Request Laundry</button>
+          ? `<button class="service-btn" id="laundryBtn" onclick="submitServiceRequest_('laundry')" style="margin-top:14px;">Request Laundry</button>`
+          : `<button class="service-btn" disabled style="margin-top:14px;">Request Laundry</button>
              <div class="paused-note">Laundry service is currently unavailable. Please check back later.</div>`
         }
         ${justSent === 'laundry' ? `<div class="sent-note">✓ Request sent — your host has been notified.</div>` : ''}
@@ -555,6 +560,7 @@
           </div>
         </div>
         <div class="service-desc">Includes fresh bed linens, pillowcases &amp; towels, room cleaning, and trash removal. Your host will contact you to schedule a time.</div>
+        <textarea id="cleaningNote" placeholder="Special instructions (optional)" style="width:100%; margin-top:12px; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; min-height:44px; box-sizing:border-box;"></textarea>
         <button class="service-btn" id="cleaningBtn" onclick="submitServiceRequest_('cleaning')">Request Cleaning</button>
         ${justSent === 'cleaning' ? `<div class="sent-note">✓ Request sent — your host will contact you to schedule.</div>` : ''}
       </div>
@@ -563,10 +569,13 @@
 
   async function submitServiceRequest_(serviceType) {
     const btn = document.getElementById(serviceType === 'laundry' ? 'laundryBtn' : 'cleaningBtn');
+    const noteEl = document.getElementById(serviceType === 'laundry' ? 'laundryNote' : 'cleaningNote');
+    const note = noteEl ? noteEl.value.trim() : '';
     if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
 
     try {
-      const res = await fetch(API_BASE + '?action=request_service&token=' + encodeURIComponent(token) + '&service_type=' + serviceType);
+      const res = await fetch(API_BASE + '?action=request_service&token=' + encodeURIComponent(token) +
+        '&service_type=' + serviceType + '&note=' + encodeURIComponent(note));
       const data = await res.json();
       if (data.error) {
         alert(data.message);
