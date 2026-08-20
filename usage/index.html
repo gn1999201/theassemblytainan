@@ -95,6 +95,19 @@
   .place-item .place-name { font-size: 14px; font-weight: 600; color: #333; margin-top: 1px; }
   .maps-btn { width: auto; flex-shrink: 0; padding: 7px 12px; font-size: 12px; font-weight: 600; border: none; border-radius: 8px; background: #1976d2; color: #fff; text-decoration: none; display: inline-block; }
   .garbage-schedule { font-size: 13.5px; color: #444; line-height: 1.7; margin-bottom: 10px; }
+
+  .service-card { border: 1px solid #eee; border-radius: 14px; padding: 18px; margin-top: 14px; }
+  .service-card:first-of-type { margin-top: 0; }
+  .service-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .service-icon-wrap { width: 40px; height: 40px; border-radius: 10px; background: #f0f7ff; color: #1976d2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+  .service-title-block { flex: 1; margin-left: 12px; }
+  .service-title { font-size: 15px; font-weight: 700; color: #333; }
+  .service-price { font-size: 13px; color: #1976d2; font-weight: 700; margin-top: 2px; }
+  .service-desc { font-size: 12.5px; color: #888; line-height: 1.6; margin-top: 10px; }
+  .service-btn { width: 100%; margin-top: 16px; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; background: #1976d2; color: #fff; }
+  .service-btn:disabled { background: #f0f0f0; color: #bbb; cursor: not-allowed; }
+  .paused-note { margin-top: 10px; font-size: 12px; color: #d84315; background: #fff3e0; border-radius: 8px; padding: 8px 12px; text-align: center; }
+  .sent-note { margin-top: 10px; font-size: 12px; color: #2e7d32; background: #e8f5e9; border-radius: 8px; padding: 8px 12px; text-align: center; }
 </style>
 </head>
 <body>
@@ -120,6 +133,10 @@
     <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg></span>
     <span class="tab-label">Electricity</span>
   </button>
+  <button class="tab-btn" id="tabBtn-services" onclick="switchTab('services')" style="display:none;">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 4v16M4 9h4"/></svg></span>
+    <span class="tab-label">Services</span>
+  </button>
   <button class="tab-btn" id="tabBtn-info" onclick="switchTab('info')">
     <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none"/></svg></span>
     <span class="tab-label">Info</span>
@@ -144,6 +161,9 @@
     clipboard: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
     trash: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
     pin: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+    shirt: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l4 2l4-2 4 4-3 3v9H7v-9L4 8z"/></svg>',
+    sparkle: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M19 15l.7 2.1L22 18l-2.3.9L19 21l-.7-2.1L16 18l2.3-.9z"/></svg>',
+    services: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 4v16M4 9h4"/></svg>',
   };
   function icon_(name) {
     return `<span style="display:inline-flex; vertical-align:-2px;">${ICONS[name]}</span>`;
@@ -168,7 +188,7 @@
 
   function switchTab(tab) {
     activeTab = tab;
-    ['doorcode', 'electricity', 'info'].forEach(function (t) {
+    ['doorcode', 'electricity', 'services', 'info'].forEach(function (t) {
       document.getElementById('tabBtn-' + t).classList.toggle('active', t === tab);
     });
     renderActiveTab_();
@@ -211,6 +231,9 @@
       if (cached) {
         try {
           lastData = JSON.parse(cached);
+          if (lastData.room_name === 'The Loft') {
+            document.getElementById('tabBtn-services').style.display = '';
+          }
           renderActiveTab_(true);
         } catch (e) { /* ignore */ }
       }
@@ -229,6 +252,9 @@
 
       localStorage.setItem(cacheKey, JSON.stringify(data));
       lastData = data;
+      if (data.room_name === 'The Loft') {
+        document.getElementById('tabBtn-services').style.display = '';
+      }
       renderActiveTab_(false);
 
     } catch (e) {
@@ -251,6 +277,10 @@
   function renderActiveTab_(isStale) {
     if (activeTab === 'info') {
       loadInfoTab_();
+      return;
+    }
+    if (activeTab === 'services') {
+      loadServicesTab_();
       return;
     }
     if (!lastData) return;
@@ -458,6 +488,88 @@
   }
 
   const INFO_CACHE_KEY = 'cached_info_data';
+
+  // ============================================================
+  // The Loft 專屬:額外服務(洗衣/清潔),只有 room_name === 'The Loft' 才會顯示這個分頁
+  // ============================================================
+  let servicesData = null;
+
+  async function loadServicesTab_() {
+    const card = document.getElementById('card');
+    if (!servicesData) {
+      card.innerHTML = `<div class="loading">Loading...</div>`;
+    }
+    try {
+      const res = await fetch(API_BASE + '?action=get_service_status&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      servicesData = data;
+      if (activeTab === 'services') renderServicesTab_(data, null);
+    } catch (e) {
+      card.innerHTML = `<div class="error">Connection failed. <button onclick="loadServicesTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+    }
+  }
+
+  function renderServicesTab_(data, justSent) {
+    const card = document.getElementById('card');
+
+    card.innerHTML = `
+      <h1>${icon_('services')} Additional Services<span class="cn">額外服務</span></h1>
+      <div class="label" style="margin-bottom:20px;">Request a service below. Your host will be notified right away.</div>
+
+      <div class="service-card">
+        <div class="service-head">
+          <div class="service-icon-wrap">${icon_('shirt')}</div>
+          <div class="service-title-block">
+            <div class="service-title">Laundry (Wash &amp; Dry)<span class="cn">洗衣服務(洗+烘)</span></div>
+            <div class="service-price">NT$${data.laundry_price_ntd} per load</div>
+          </div>
+        </div>
+        <div class="service-desc">One laundry basket = one load. Use the basket provided in your room. Turnaround time will be confirmed by your host.</div>
+        ${data.laundry_available
+          ? `<button class="service-btn" id="laundryBtn" onclick="submitServiceRequest_('laundry')">Request Laundry</button>`
+          : `<button class="service-btn" disabled>Request Laundry</button>
+             <div class="paused-note">Laundry service is currently unavailable. Please check back later.</div>`
+        }
+        ${justSent === 'laundry' ? `<div class="sent-note">✓ Request sent — your host has been notified.</div>` : ''}
+      </div>
+
+      <div class="service-card">
+        <div class="service-head">
+          <div class="service-icon-wrap">${icon_('sparkle')}</div>
+          <div class="service-title-block">
+            <div class="service-title">Room Cleaning<span class="cn">清潔服務</span></div>
+            <div class="service-price">NT$${data.cleaning_price_ntd} per visit</div>
+          </div>
+        </div>
+        <div class="service-desc">Includes fresh bed linens, pillowcases &amp; towels, room cleaning, and trash removal. Your host will contact you to schedule a time.</div>
+        <button class="service-btn" id="cleaningBtn" onclick="submitServiceRequest_('cleaning')">Request Cleaning</button>
+        ${justSent === 'cleaning' ? `<div class="sent-note">✓ Request sent — your host will contact you to schedule.</div>` : ''}
+      </div>
+    `;
+  }
+
+  async function submitServiceRequest_(serviceType) {
+    const btn = document.getElementById(serviceType === 'laundry' ? 'laundryBtn' : 'cleaningBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+    try {
+      const res = await fetch(API_BASE + '?action=request_service&token=' + encodeURIComponent(token) + '&service_type=' + serviceType);
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        renderServicesTab_(servicesData, null);
+        return;
+      }
+      renderServicesTab_(servicesData, serviceType);
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      renderServicesTab_(servicesData, null);
+    }
+  }
 
   async function loadInfoTab_() {
     const card = document.getElementById('card');
