@@ -299,6 +299,15 @@
       ? `<div style="text-align:center; font-size:11px; color:#1976d2; margin-bottom:8px;">Showing last known data — updating...</div>`
       : '';
 
+    if (data.status === 'no_meter') {
+      card.innerHTML = `
+        ${staleNotice}
+        <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+        <div class="closed-note" style="margin-top:16px;">This room doesn't have electricity monitoring set up yet. Please check with your host for details.</div>
+      `;
+      return;
+    }
+
     if (data.status === 'checked_out') {
       card.innerHTML = `
         ${staleNotice}
