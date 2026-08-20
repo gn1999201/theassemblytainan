@@ -94,6 +94,19 @@
     margin: 80px auto 0;
     text-align: center;
   }
+  /* 像燈的開關那種切換鈕 */
+  .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc; transition: .2s; border-radius: 26px;
+  }
+  .switch .slider:before {
+    position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+    background-color: white; transition: .2s; border-radius: 50%;
+  }
+  .switch input:checked + .slider { background-color: #43a047; }
+  .switch input:checked + .slider:before { transform: translateX(20px); }
 </style>
 </head>
 <body>
@@ -109,6 +122,22 @@
 </div>
 
 <div id="mainApp" class="wrap" style="display:none;">
+
+  <div class="card">
+    <h1>Service Settings</h1>
+    <h2>The Loft — Laundry service availability</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+      <div>
+        <div style="font-size:14px; font-weight:600; color:#333;" id="laundryStatusLabel">Loading...</div>
+        <div style="font-size:11px; color:#999; margin-top:2px;">When paused, guests will see a read-only "unavailable" button.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="laundryToggle" onchange="toggleLaundry()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
   <div class="card">
     <h1>New Guest Check-in</h1>
     <h2>Automatically reads the current meter and generates a personal link</h2>
@@ -207,6 +236,7 @@
       document.getElementById('mainApp').style.display = 'block';
       populateRooms(data.rooms);
       loadActiveBookings();
+      loadLaundryStatus();
     } catch (e) {
       // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
       if (attempt < 3) {
@@ -422,6 +452,44 @@
 
   function cssSafe(str) {
     return str.replace(/[^a-zA-Z0-9]/g, '_');
+  }
+
+  // ---- The Loft 洗衣服務開關 ----
+  async function loadLaundryStatus() {
+    try {
+      const res = await fetch(API_BASE + '?action=get_service_status_admin&admin_key=' + encodeURIComponent(adminKey));
+      const data = await res.json();
+      if (data.error) return;
+      applyLaundryUI_(data.laundry_available);
+    } catch (e) {
+      document.getElementById('laundryStatusLabel').textContent = 'Failed to load status';
+    }
+  }
+
+  function applyLaundryUI_(available) {
+    document.getElementById('laundryToggle').checked = available;
+    document.getElementById('laundryStatusLabel').textContent = available ? 'Laundry service: Active' : 'Laundry service: Paused';
+  }
+
+  async function toggleLaundry() {
+    const toggle = document.getElementById('laundryToggle');
+    const wantAvailable = toggle.checked;
+    toggle.disabled = true;
+    try {
+      const res = await fetch(API_BASE + '?action=set_laundry_paused&paused=' + (!wantAvailable) +
+        '&admin_key=' + encodeURIComponent(adminKey));
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        toggle.checked = !wantAvailable; // 恢復原狀
+      } else {
+        applyLaundryUI_(!data.laundry_paused);
+      }
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      toggle.checked = !wantAvailable;
+    }
+    toggle.disabled = false;
   }
 </script>
 
