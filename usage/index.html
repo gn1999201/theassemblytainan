@@ -653,11 +653,12 @@
 // ★ The Loft 專屬: 飲水機換水燈號說明 (只有 The Loft 才會顯示) ★
     const waterDispenserSection = (lastData && lastData.room_name === 'The Loft') ? `
       <div class="info-section">
-        <div class="info-heading">
-          <span style="display:inline-flex; vertical-align:-2px;">
+        <div class="info-heading" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="display:inline-flex; vertical-align:-2px; flex-shrink:0;">
             <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
           </span> 
-          Purified Water Dispenser<span class="cn" style="margin-left:2px;">淨水器換水說明</span>
+          <span>Water Dispenser</span>
+          <span class="cn" style="margin-left:0; white-space:nowrap;">淨水器換水說明</span>
         </div>
         <div style="font-size:13.5px; color:#444; line-height:1.7; margin-top:6px;">
           When the 
