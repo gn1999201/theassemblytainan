@@ -650,7 +650,7 @@
       }).join('');
     }).join('');
 
-  // ★ The Loft 專屬: 飲水機換水燈號說明 (只有 The Loft 才會顯示) ★
+// ★ The Loft 專屬: 飲水機換水燈號說明 (只有 The Loft 才會顯示) ★
     const waterDispenserSection = (lastData && lastData.room_name === 'The Loft') ? `
       <div class="info-section">
         <div class="info-heading">
@@ -662,12 +662,13 @@
         <div style="font-size:13.5px; color:#444; line-height:1.7; margin-top:6px;">
           When the 
           <span style="display:inline-flex; align-items:center; gap:3px; font-weight:600; color:#1a1a1a;">
-            <svg viewBox="0 0 50 65" height="1.15em" style="vertical-align:-3px; fill:none; stroke:#1a1a1a; stroke-linecap:round; stroke-linejoin:round;">
+            "
+            <svg viewBox="-3 -3 56 75" height="1.15em" style="vertical-align:-3px; fill:none; stroke:#1a1a1a; stroke-linecap:round; stroke-linejoin:round;">
               <path d="M 25,2 C 25,2 2,31 2,46 A 23,23 0 0,0 48,46 C 48,31 25,2 25,2 Z" stroke-width="4.5"/>
-              <line x1="25" y1="20" x2="25" y2="36" stroke-width="4.5"/>
-              <circle cx="25" cy="45" r="2.25" fill="#1a1a1a"/>
+              <line x1="25" y1="24" x2="25" y2="40" stroke-width="4.5"/>
+              <circle cx="25" cy="49" r="2.25" fill="#1a1a1a"/>
             </svg>
-            "換水" (Refill Water)
+            換水" (Refill Water)
           </span> 
           light comes on:
           <ol style="margin:6px 0 0; padding-left:20px; color:#555;">
