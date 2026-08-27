@@ -128,13 +128,12 @@
   }
   .power-toggle-btn.off-state { background: #1976d2; }
   .power-toggle-btn.on-state { background: #d84315; }
+  .power-toggle-btn.ac-off-state { background: #F8C888; color: #7a5217; }
+  .power-toggle-btn.ac-on-state { background: #F8C888; color: #7a5217; }
   .power-toggle-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .power-toggle-label { text-align: center; font-size: 13px; color: #666; margin-top: 10px; font-weight: 600; }
   .door-relay-row { display: flex; align-items: center; gap: 12px; }
-  .door-relay-icon {
-    width: 44px; height: 44px; border-radius: 12px; background: #f0f7ff; color: #1976d2;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
+  .door-relay-icon { color: #1976d2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .door-relay-text { flex: 1; min-width: 0; }
   .door-relay-title { font-size: 14.5px; font-weight: 700; color: #333; }
   .door-relay-sub { font-size: 11.5px; color: #999; margin-top: 1px; }
@@ -201,7 +200,6 @@
 
   // 線條風格 SVG 圖示,用 currentColor 讓顏色自動跟著外層文字顏色走
   const ICON_POWER = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>';
-  const ICON_INTERCOM = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="10" y1="6" x2="14" y2="6"/><circle cx="12" cy="14" r="2.5"/></svg>';
 
   const ICONS = {
     key: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg>',
@@ -506,7 +504,7 @@
     const frontDoorHtml = data.front_door_available ? `
       <div class="live-section">
         <div class="door-relay-row">
-          <div class="door-relay-icon">${ICON_INTERCOM}</div>
+          <div class="door-relay-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div>
           <div class="door-relay-text">
             <div class="door-relay-title">Front Door<span class="cn">一樓大門</span></div>
             <div class="door-relay-sub">Remote intercom unlock</div>
@@ -672,7 +670,7 @@
           </div>
         </div>
         <div style="text-align:center; margin-top:28px;">
-          <button class="power-toggle-btn off-state" id="acTurnOnBtn" onclick="submitAcTurnOn_()">${ICON_POWER}</button>
+          <button class="power-toggle-btn ac-off-state" id="acTurnOnBtn" onclick="submitAcTurnOn_()">${ICON_POWER}</button>
           <div class="power-toggle-label" id="acTurnOnLabel">Turn On AC</div>
         </div>
       `;
@@ -708,7 +706,7 @@
           </div>
         </div>
         <div style="text-align:center; margin-top:28px;">
-          <button class="power-toggle-btn on-state" id="acTurnOffBtn" onclick="submitAcTurnOff_()">${ICON_POWER}</button>
+          <button class="power-toggle-btn ac-on-state" id="acTurnOffBtn" onclick="submitAcTurnOff_()">${ICON_POWER}</button>
           <div class="power-toggle-label" id="acTurnOffLabel">Turn Off AC</div>
         </div>
       `;
