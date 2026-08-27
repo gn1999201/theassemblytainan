@@ -616,20 +616,25 @@
 
   async function loadAcTab_() {
     const card = document.getElementById('card');
-    if (!acData) {
+    if (acData) {
+      // 先秒速顯示上次看到的畫面,背景同時偷偷刷新,不會每次切過來都先看到空白 Loading
+      renderAcTab_(acData);
+    } else {
       card.innerHTML = `<div class="loading">Loading...</div>`;
     }
     try {
       const res = await fetch(API_BASE + '?action=get_ac_status&token=' + encodeURIComponent(token));
       const data = await res.json();
       if (data.error) {
-        card.innerHTML = `<div class="error">${data.message}</div>`;
+        if (!acData) card.innerHTML = `<div class="error">${data.message}</div>`;
         return;
       }
       acData = data;
       if (activeTab === 'ac') renderAcTab_(data);
     } catch (e) {
-      card.innerHTML = `<div class="error">Connection failed. <button onclick="loadAcTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+      if (!acData) {
+        card.innerHTML = `<div class="error">Connection failed. <button onclick="loadAcTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+      }
     }
   }
 
@@ -801,9 +806,14 @@
 
   async function loadServicesTab_() {
     const card = document.getElementById('card');
-    if (!servicesData) {
-      card.innerHTML = `<div class="loading">Loading...</div>`;
+
+    // 已經抓過就直接畫,不用每次切分頁都重問伺服器(跟 Info 分頁同一套邏輯)
+    if (servicesData) {
+      renderServicesTab_(servicesData, null);
+      return;
     }
+
+    card.innerHTML = `<div class="loading">Loading...</div>`;
     try {
       const res = await fetch(API_BASE + '?action=get_service_status&token=' + encodeURIComponent(token));
       const data = await res.json();
