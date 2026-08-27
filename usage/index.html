@@ -43,6 +43,7 @@
   .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-bottom: 10px; }
   .badge-active { background: #e8f5e9; color: #2e7d32; }
   .badge-closed { background: #eeeeee; color: #757575; }
+  .badge-other { background: #fff3e0; color: #e65100; }
   .live-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #eee; }
   .live-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
   .live-heading { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px; }
@@ -108,6 +109,31 @@
   .service-btn:disabled { background: #f0f0f0; color: #bbb; cursor: not-allowed; }
   .paused-note { margin-top: 10px; font-size: 12px; color: #d84315; background: #fff3e0; border-radius: 8px; padding: 8px 12px; text-align: center; }
   .sent-note { margin-top: 10px; font-size: 12px; color: #2e7d32; background: #e8f5e9; border-radius: 8px; padding: 8px 12px; text-align: center; }
+
+  .control-row { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .control-row .control-label { font-size: 13px; color: #666; font-weight: 500; }
+  .temp-stepper { display: flex; align-items: center; gap: 14px; }
+  .temp-stepper button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #ddd; background: #fafafa; font-size: 18px; color: #1976d2; cursor: pointer; }
+  .temp-value { font-size: 26px; font-weight: 700; color: #1976d2; min-width: 60px; text-align: center; }
+  .pill-group { display: flex; gap: 6px; }
+  .pill { padding: 6px 12px; border-radius: 999px; border: 1px solid #ddd; background: #fafafa; font-size: 12.5px; color: #666; cursor: pointer; }
+  .pill.active { background: #1976d2; border-color: #1976d2; color: #fff; }
+  .primary-btn { width: 100%; margin-top: 26px; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .btn-turn-on { background: #1976d2; color: #fff; }
+  .btn-turn-off { background: #d84315; color: #fff; }
+  .session-box { margin-top: 6px; background: #f0f7ff; border-radius: 14px; padding: 20px; text-align: center; }
+  .session-timer { font-size: 34px; font-weight: 700; color: #1976d2; font-variant-numeric: tabular-nums; }
+  .session-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .session-cost-row { display: flex; justify-content: space-around; margin-top: 18px; padding-top: 16px; border-top: 1px solid #dce8fa; }
+  .session-cost-item .val { font-size: 18px; font-weight: 700; color: #333; }
+  .session-cost-item .lbl { font-size: 11px; color: #999; margin-top: 2px; }
+  .locked-box { margin-top: 6px; background: #fafafa; border-radius: 14px; padding: 30px 20px; text-align: center; }
+  .locked-icon { color: #bbb; margin-bottom: 10px; }
+  .locked-title { font-size: 15px; font-weight: 600; color: #555; }
+  .locked-sub { font-size: 12.5px; color: #999; margin-top: 6px; line-height: 1.6; }
+  .stay-total-row { display:flex; justify-content:space-between; align-items:center; background:#f7f7f7; border-radius:10px; padding:12px 14px; margin-top:16px; }
+  .stay-total-row .stay-total-label { font-size:12px; color:#888; }
+  .stay-total-row .stay-total-value { font-size:16px; font-weight:700; color:#333; }
 </style>
 </head>
 <body>
@@ -132,6 +158,10 @@
   <button class="tab-btn" id="tabBtn-electricity" onclick="switchTab('electricity')">
     <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg></span>
     <span class="tab-label">Electricity</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-ac" onclick="switchTab('ac')" style="display:none;">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4l2 1l2 -1"/><path d="M12 2v6.5l3 1.72"/><path d="M17.928 6.268l.134 2.232l1.866 1.232"/><path d="M20.66 7l-5.629 3.25l.01 3.458"/><path d="M19.928 14.268l-1.866 1.232l-.134 2.232"/><path d="M20.66 17l-5.629 -3.25l-2.99 1.738"/><path d="M14 20l-2 -1l-2 1"/><path d="M12 22v-6.5l-3 -1.72"/><path d="M6.072 17.732l-.134 -2.232l-1.866 -1.232"/><path d="M3.34 17l5.629 -3.25l-.01 -3.458"/><path d="M4.072 9.732l1.866 -1.232l.134 -2.232"/><path d="M3.34 7l5.629 3.25l2.99 -1.738"/></svg></span>
+    <span class="tab-label">Living AC</span>
   </button>
   <button class="tab-btn" id="tabBtn-services" onclick="switchTab('services')" style="display:none;">
     <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M12.01 18.594l-4.01 2.406v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v5.5"/><path d="M16 19h6"/><path d="M19 16v6"/></svg></span>
@@ -176,6 +206,7 @@
   let lastData = null;
   let infoData = null; // 「實用資訊」的資料,抓過一次就存起來,分頁間切換不用重複打 API
   let doorCodeLength_ = 7;
+  const LIVING_ROOM_AC_RATE_DISPLAY = 5; // 只給畫面文字顯示用,實際計費以後端費率為準
 
   function mapsUrl_(query) {
     const trimmed = (query || '').trim();
@@ -188,7 +219,7 @@
 
   function switchTab(tab) {
     activeTab = tab;
-    ['doorcode', 'electricity', 'services', 'info'].forEach(function (t) {
+    ['doorcode', 'electricity', 'ac', 'services', 'info'].forEach(function (t) {
       document.getElementById('tabBtn-' + t).classList.toggle('active', t === tab);
     });
     renderActiveTab_();
@@ -234,6 +265,9 @@
           if (lastData.room_name === 'The Loft') {
             document.getElementById('tabBtn-services').style.display = '';
           }
+          if (lastData.room_name === 'Room A' || lastData.room_name === 'Room B') {
+            document.getElementById('tabBtn-ac').style.display = '';
+          }
           renderActiveTab_(true);
         } catch (e) { /* ignore */ }
       }
@@ -254,6 +288,9 @@
       lastData = data;
       if (data.room_name === 'The Loft') {
         document.getElementById('tabBtn-services').style.display = '';
+      }
+      if (data.room_name === 'Room A' || data.room_name === 'Room B') {
+        document.getElementById('tabBtn-ac').style.display = '';
       }
       renderActiveTab_(false);
 
@@ -281,6 +318,10 @@
     }
     if (activeTab === 'services') {
       loadServicesTab_();
+      return;
+    }
+    if (activeTab === 'ac') {
+      loadAcTab_();
       return;
     }
     if (!lastData) return;
@@ -435,11 +476,44 @@
       `;
     }
 
+    const frontDoorHtml = data.front_door_available ? `
+      <div class="live-section">
+        <div class="live-heading">Front Door<span class="cn">一樓大門</span></div>
+        <button class="service-btn" id="frontDoorBtn" onclick="submitOpenFrontDoor_()" style="margin-top:10px;">Open Front Door</button>
+        <div id="frontDoorMsg" style="margin-top:8px;"></div>
+      </div>
+    ` : '';
+
     card.innerHTML = `
       ${staleNotice}
       <h1>${data.room_name} Door Code<span class="cn">門鎖密碼</span></h1>
       <div class="live-section" style="margin-top:16px;">${bodyHtml}</div>
+      ${frontDoorHtml}
     `;
+  }
+
+  async function submitOpenFrontDoor_() {
+    const btn = document.getElementById('frontDoorBtn');
+    const msg = document.getElementById('frontDoorMsg');
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Opening...';
+    msg.innerHTML = '';
+
+    try {
+      const res = await fetch(API_BASE + '?action=open_front_door&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        msg.innerHTML = `<div class="paused-note">${data.message}</div>`;
+      } else {
+        msg.innerHTML = `<div class="sent-note">✓ Front door opened.</div>`;
+      }
+    } catch (e) {
+      msg.innerHTML = `<div class="paused-note">Connection failed. Please try again.</div>`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = originalLabel;
   }
 
   function doorCodeInputForm_(buttonLabel) {
@@ -502,6 +576,187 @@
   // The Loft 專屬:額外服務(洗衣/清潔),只有 room_name === 'The Loft' 才會顯示這個分頁
   // ============================================================
   let servicesData = null;
+
+  // ============================================================
+  // Room A/B 專屬:客廳冷氣,只有 room_name === 'Room A' 或 'Room B' 才會顯示這個分頁
+  // ============================================================
+  let acData = null;
+  let acTemp = 25;
+  let acWind = 1;
+  const AC_WINDS = ['Auto', 'Low', 'Med', 'High'];
+
+  async function loadAcTab_() {
+    const card = document.getElementById('card');
+    if (!acData) {
+      card.innerHTML = `<div class="loading">Loading...</div>`;
+    }
+    try {
+      const res = await fetch(API_BASE + '?action=get_ac_status&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      acData = data;
+      if (activeTab === 'ac') renderAcTab_(data);
+    } catch (e) {
+      card.innerHTML = `<div class="error">Connection failed. <button onclick="loadAcTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+    }
+  }
+
+  function formatAcElapsed_(startTimeIso) {
+    const sec = Math.max(0, Math.floor((Date.now() - new Date(startTimeIso).getTime()) / 1000));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function acStayTotalHtml_(data) {
+    if (!data.metering_available) {
+      return `<div class="stay-total-row"><div class="stay-total-label">Usage tracking<span class="cn" style="margin-left:2px;">用電計費</span></div><div class="stay-total-value" style="color:#999; font-size:13px;">Coming online soon</div></div>`;
+    }
+    return `<div class="stay-total-row"><div class="stay-total-label">Your total this stay<span class="cn" style="margin-left:2px;">本次入住累計</span></div><div class="stay-total-value">NT$ ${data.stay_total_cost_ntd} <span style="font-size:11px; font-weight:400; color:#999;">(${data.stay_total_usage_kwh} kWh)</span></div></div>`;
+  }
+
+  function renderAcTab_(data) {
+    const card = document.getElementById('card');
+
+    if (data.status === 'idle') {
+      card.innerHTML = `
+        <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
+        <div class="label">Turn on the living room AC. You'll be billed only for the electricity you use.</div>
+        ${acStayTotalHtml_(data)}
+        <div class="control-block">
+          <div class="control-row">
+            <span class="control-label">Temperature</span>
+            <div class="temp-stepper">
+              <button onclick="adjustAcTempLocal_(-1)">−</button>
+              <span class="temp-value" id="acTempDisplay">${acTemp}°</span>
+              <button onclick="adjustAcTempLocal_(1)">+</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Fan Speed</span>
+            <div class="pill-group" id="acWindGroup">${AC_WINDS.map(function (w, i) { return `<span class="pill ${i === acWind ? 'active' : ''}" onclick="setAcWindLocal_(${i})">${w}</span>`; }).join('')}</div>
+          </div>
+        </div>
+        <button class="primary-btn btn-turn-on" id="acTurnOnBtn" onclick="submitAcTurnOn_()">Turn On AC</button>
+        <div class="rate-note">Billed at NT$${LIVING_ROOM_AC_RATE_DISPLAY}/kWh based on actual meter reading. Turning it on locks it to your stay until you turn it off.</div>
+      `;
+      return;
+    }
+
+    if (data.status === 'in_use_by_you') {
+      const usageDisplay = data.metering_available
+        ? `<div class="session-cost-row"><div class="session-cost-item"><div class="val">${data.usage_so_far_kwh.toFixed(2)} kWh</div><div class="lbl">Used so far</div></div><div class="session-cost-item"><div class="val">NT$ ${data.estimated_cost_so_far_ntd}</div><div class="lbl">Estimated cost</div></div></div>`
+        : `<div class="session-sub" style="margin-top:14px;">Usage tracking coming online soon</div>`;
+
+      card.innerHTML = `
+        <span class="badge badge-active">Running — Billed to you</span>
+        <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
+        <div class="session-box">
+          <div class="session-timer" id="acTimer">${formatAcElapsed_(data.started_at)}</div>
+          <div class="session-sub">Cooling</div>
+          ${usageDisplay}
+        </div>
+        ${acStayTotalHtml_(data)}
+        <div class="control-block">
+          <div class="control-row">
+            <span class="control-label">Temperature</span>
+            <div class="temp-stepper">
+              <button onclick="adjustAcTempLocal_(-1, true)">−</button>
+              <span class="temp-value" id="acTempDisplay">${acTemp}°</span>
+              <button onclick="adjustAcTempLocal_(1, true)">+</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Fan Speed</span>
+            <div class="pill-group" id="acWindGroup">${AC_WINDS.map(function (w, i) { return `<span class="pill ${i === acWind ? 'active' : ''}" onclick="setAcWindLocal_(${i}, true)">${w}</span>`; }).join('')}</div>
+          </div>
+        </div>
+        <button class="primary-btn btn-turn-off" id="acTurnOffBtn" onclick="submitAcTurnOff_()">Turn Off AC</button>
+        <div class="rate-note">Turning off will finalize your usage and cost for this session.</div>
+      `;
+
+      if (window.__acTimerInterval) clearInterval(window.__acTimerInterval);
+      window.__acTimerInterval = setInterval(function () {
+        const el = document.getElementById('acTimer');
+        if (el) el.textContent = formatAcElapsed_(data.started_at);
+      }, 1000);
+      return;
+    }
+
+    if (data.status === 'in_use_by_other') {
+      if (window.__acTimerInterval) clearInterval(window.__acTimerInterval);
+      card.innerHTML = `
+        <span class="badge badge-other">In Use</span>
+        <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
+        <div class="locked-box">
+          <div class="locked-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg></div>
+          <div class="locked-title">Currently in use by another guest</div>
+          <div class="locked-sub">The living room AC is being used right now.<br>Please check back once it's turned off.</div>
+        </div>
+        ${acStayTotalHtml_(data)}
+      `;
+      return;
+    }
+  }
+
+  function adjustAcTempLocal_(delta, isRunning) {
+    acTemp = Math.max(23, Math.min(28, acTemp + delta));
+    document.getElementById('acTempDisplay').textContent = acTemp + '°';
+    if (isRunning) submitAcAdjust_();
+  }
+  function setAcWindLocal_(i, isRunning) {
+    acWind = i;
+    document.querySelectorAll('#acWindGroup .pill').forEach(function (el, idx) {
+      el.classList.toggle('active', idx === i);
+    });
+    if (isRunning) submitAcAdjust_();
+  }
+
+  async function submitAcTurnOn_() {
+    const btn = document.getElementById('acTurnOnBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Turning on...'; }
+    try {
+      const res = await fetch(API_BASE + '?action=ac_turn_on&token=' + encodeURIComponent(token) + '&temp=' + acTemp + '&wind=' + acWind);
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Turn On AC'; }
+        return;
+      }
+      loadAcTab_();
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Turn On AC'; }
+    }
+  }
+
+  async function submitAcAdjust_() {
+    try {
+      await fetch(API_BASE + '?action=ac_adjust&token=' + encodeURIComponent(token) + '&temp=' + acTemp + '&wind=' + acWind);
+    } catch (e) { /* 靜默失敗,房客下次調整會再送一次 */ }
+  }
+
+  async function submitAcTurnOff_() {
+    const btn = document.getElementById('acTurnOffBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Turning off...'; }
+    try {
+      const res = await fetch(API_BASE + '?action=ac_turn_off&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Turn Off AC'; }
+        return;
+      }
+      loadAcTab_();
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Turn Off AC'; }
+    }
+  }
 
   async function loadServicesTab_() {
     const card = document.getElementById('card');
@@ -650,38 +905,6 @@
       }).join('');
     }).join('');
 
-// ★ The Loft 專屬: 飲水機換水燈號說明 (只有 The Loft 才會顯示) ★
-    const waterDispenserSection = (lastData && lastData.room_name === 'The Loft') ? `
-      <div class="info-section">
-        <div class="info-heading" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-          <span style="display:inline-flex; vertical-align:-2px; flex-shrink:0;">
-            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-          </span> 
-          <span>Water Dispenser</span>
-          <span class="cn" style="margin-left:0; white-space:nowrap;">淨水器換水說明</span>
-        </div>
-        <div style="font-size:13.5px; color:#444; line-height:1.7; margin-top:6px;">
-          The dispenser features a built-in RO purification system. 
-          <br>When the 
-          <span style="display:inline-flex; align-items:center; gap:3px; font-weight:600; color:#1a1a1a;">
-            "
-            <svg viewBox="-3 -3 56 75" height="1.15em" style="vertical-align:-3px; fill:none; stroke:#1a1a1a; stroke-linecap:round; stroke-linejoin:round;">
-              <path d="M 25,2 C 25,2 2,31 2,46 A 23,23 0 0,0 48,46 C 48,31 25,2 25,2 Z" stroke-width="4.5"/>
-              <line x1="25" y1="24" x2="25" y2="40" stroke-width="4.5"/>
-              <circle cx="25" cy="49" r="2.25" fill="#1a1a1a"/>
-            </svg>
-            " (Refill Water)
-          </span> 
-          light comes on:
-          <ol style="margin:6px 0 0; padding-left:20px; color:#555;">
-            <li>Discard any remaining wastewater from the tank.</li>
-            <li>Fill the tank with fresh tap water.</li>
-            <li>Place the water tank back into the dispenser.</li>
-          </ol>
-        </div>
-      </div>
-    ` : '';
-
     card.innerHTML = `
       <h1 style="margin-bottom:20px;">Useful Information<span class="cn">實用資訊</span></h1>
 
@@ -701,8 +924,6 @@
           </div>
         </div>
       </div>
-
-      ${waterDispenserSection}
 
       <div class="info-section">
         <div class="info-heading">${icon_('clipboard')} House Rules<span class="cn" style="margin-left:2px;">房間守則</span></div>
