@@ -121,6 +121,23 @@
   .primary-btn { width: 100%; margin-top: 26px; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .btn-turn-on { background: #1976d2; color: #fff; }
   .btn-turn-off { background: #d84315; color: #fff; }
+  .power-toggle-btn {
+    width: 72px; height: 72px; border-radius: 22px; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  }
+  .power-toggle-btn.off-state { background: #1976d2; }
+  .power-toggle-btn.on-state { background: #d84315; }
+  .power-toggle-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .power-toggle-label { text-align: center; font-size: 13px; color: #666; margin-top: 10px; font-weight: 600; }
+  .door-relay-row { display: flex; align-items: center; gap: 12px; }
+  .door-relay-icon {
+    width: 44px; height: 44px; border-radius: 12px; background: #f0f7ff; color: #1976d2;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .door-relay-text { flex: 1; min-width: 0; }
+  .door-relay-title { font-size: 14.5px; font-weight: 700; color: #333; }
+  .door-relay-sub { font-size: 11.5px; color: #999; margin-top: 1px; }
   .session-box { margin-top: 6px; background: #f0f7ff; border-radius: 14px; padding: 20px; text-align: center; }
   .session-timer { font-size: 34px; font-weight: 700; color: #1976d2; font-variant-numeric: tabular-nums; }
   .session-sub { font-size: 12px; color: #888; margin-top: 2px; }
@@ -183,6 +200,9 @@
   const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
 
   // 線條風格 SVG 圖示,用 currentColor 讓顏色自動跟著外層文字顏色走
+  const ICON_POWER = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>';
+  const ICON_INTERCOM = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="10" y1="6" x2="14" y2="6"/><circle cx="12" cy="14" r="2.5"/></svg>';
+
   const ICONS = {
     key: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg>',
     bolt: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
@@ -207,6 +227,13 @@
   let infoData = null; // 「實用資訊」的資料,抓過一次就存起來,分頁間切換不用重複打 API
   let doorCodeLength_ = 7;
   const LIVING_ROOM_AC_RATE_DISPLAY = 5; // 只給畫面文字顯示用,實際計費以後端費率為準
+
+  // 固定小數位數顯示,跟 Tuya App 的格式一致(不然數字尾數的 0 會被 JS 自動吃掉,
+  // 每次重新整理看到的小數位數都不一樣,容易讓人誤以為數字對不上)
+  function fmtNum_(value, decimals) {
+    if (value === null || value === undefined) return '—';
+    return Number(value).toFixed(decimals);
+  }
 
   function mapsUrl_(query) {
     const trimmed = (query || '').trim();
@@ -404,15 +431,15 @@
         </div>
         <div class="live-grid">
           <div class="live-item">
-            <div class="live-value">${data.voltage_v ?? '—'}</div>
+            <div class="live-value">${fmtNum_(data.voltage_v, 1)}</div>
             <div class="live-label">Voltage (V)<span class="cn">電壓</span></div>
           </div>
           <div class="live-item">
-            <div class="live-value">${data.current_a ?? '—'}</div>
+            <div class="live-value">${fmtNum_(data.current_a, 3)}</div>
             <div class="live-label">Current (A)<span class="cn">電流</span></div>
           </div>
           <div class="live-item">
-            <div class="live-value">${data.power_kw ?? '—'}</div>
+            <div class="live-value">${fmtNum_(data.power_kw, 3)}</div>
             <div class="live-label">Power (kW)<span class="cn">功率</span></div>
           </div>
         </div>
@@ -478,8 +505,14 @@
 
     const frontDoorHtml = data.front_door_available ? `
       <div class="live-section">
-        <div class="live-heading">Front Door<span class="cn">一樓大門</span></div>
-        <button class="service-btn" id="frontDoorBtn" onclick="submitOpenFrontDoor_()" style="margin-top:10px;">Open Front Door</button>
+        <div class="door-relay-row">
+          <div class="door-relay-icon">${ICON_INTERCOM}</div>
+          <div class="door-relay-text">
+            <div class="door-relay-title">Front Door<span class="cn">一樓大門</span></div>
+            <div class="door-relay-sub">Remote intercom unlock</div>
+          </div>
+          <button class="power-toggle-btn off-state" id="frontDoorBtn" onclick="submitOpenFrontDoor_()" style="width:52px; height:52px; border-radius:16px; flex-shrink:0;">${ICON_POWER}</button>
+        </div>
         <div id="frontDoorMsg" style="margin-top:8px;"></div>
       </div>
     ` : '';
@@ -496,8 +529,6 @@
     const btn = document.getElementById('frontDoorBtn');
     const msg = document.getElementById('frontDoorMsg');
     btn.disabled = true;
-    const originalLabel = btn.textContent;
-    btn.textContent = 'Opening...';
     msg.innerHTML = '';
 
     try {
@@ -513,7 +544,6 @@
     }
 
     btn.disabled = false;
-    btn.textContent = originalLabel;
   }
 
   function doorCodeInputForm_(buttonLabel) {
@@ -625,7 +655,7 @@
     if (data.status === 'idle') {
       card.innerHTML = `
         <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
-        <div class="label">Turn on the living room AC. You'll be billed only for the electricity you use.</div>
+        <div class="label">Turn on the living room AC. You'll be billed only for the electricity you use, at NT$${LIVING_ROOM_AC_RATE_DISPLAY}/kWh based on actual meter reading. Turning it on locks it to your stay until you turn it off.</div>
         ${acStayTotalHtml_(data)}
         <div class="control-block">
           <div class="control-row">
@@ -641,8 +671,10 @@
             <div class="pill-group" id="acWindGroup">${AC_WINDS.map(function (w, i) { return `<span class="pill ${i === acWind ? 'active' : ''}" onclick="setAcWindLocal_(${i})">${w}</span>`; }).join('')}</div>
           </div>
         </div>
-        <button class="primary-btn btn-turn-on" id="acTurnOnBtn" onclick="submitAcTurnOn_()">Turn On AC</button>
-        <div class="rate-note">Billed at NT$${LIVING_ROOM_AC_RATE_DISPLAY}/kWh based on actual meter reading. Turning it on locks it to your stay until you turn it off.</div>
+        <div style="text-align:center; margin-top:28px;">
+          <button class="power-toggle-btn off-state" id="acTurnOnBtn" onclick="submitAcTurnOn_()">${ICON_POWER}</button>
+          <div class="power-toggle-label" id="acTurnOnLabel">Turn On AC</div>
+        </div>
       `;
       return;
     }
@@ -675,8 +707,10 @@
             <div class="pill-group" id="acWindGroup">${AC_WINDS.map(function (w, i) { return `<span class="pill ${i === acWind ? 'active' : ''}" onclick="setAcWindLocal_(${i}, true)">${w}</span>`; }).join('')}</div>
           </div>
         </div>
-        <button class="primary-btn btn-turn-off" id="acTurnOffBtn" onclick="submitAcTurnOff_()">Turn Off AC</button>
-        <div class="rate-note">Turning off will finalize your usage and cost for this session.</div>
+        <div style="text-align:center; margin-top:28px;">
+          <button class="power-toggle-btn on-state" id="acTurnOffBtn" onclick="submitAcTurnOff_()">${ICON_POWER}</button>
+          <div class="power-toggle-label" id="acTurnOffLabel">Turn Off AC</div>
+        </div>
       `;
 
       if (window.__acTimerInterval) clearInterval(window.__acTimerInterval);
@@ -718,19 +752,23 @@
 
   async function submitAcTurnOn_() {
     const btn = document.getElementById('acTurnOnBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Turning on...'; }
+    const label = document.getElementById('acTurnOnLabel');
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = 'Turning on...';
     try {
       const res = await fetch(API_BASE + '?action=ac_turn_on&token=' + encodeURIComponent(token) + '&temp=' + acTemp + '&wind=' + acWind);
       const data = await res.json();
       if (data.error) {
         alert(data.message);
-        if (btn) { btn.disabled = false; btn.textContent = 'Turn On AC'; }
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = 'Turn On AC';
         return;
       }
       loadAcTab_();
     } catch (e) {
       alert('Connection failed. Please try again.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Turn On AC'; }
+      if (btn) btn.disabled = false;
+      if (label) label.textContent = 'Turn On AC';
     }
   }
 
@@ -742,19 +780,23 @@
 
   async function submitAcTurnOff_() {
     const btn = document.getElementById('acTurnOffBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Turning off...'; }
+    const label = document.getElementById('acTurnOffLabel');
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = 'Turning off...';
     try {
       const res = await fetch(API_BASE + '?action=ac_turn_off&token=' + encodeURIComponent(token));
       const data = await res.json();
       if (data.error) {
         alert(data.message);
-        if (btn) { btn.disabled = false; btn.textContent = 'Turn Off AC'; }
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = 'Turn Off AC';
         return;
       }
       loadAcTab_();
     } catch (e) {
       alert('Connection failed. Please try again.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Turn Off AC'; }
+      if (btn) btn.disabled = false;
+      if (label) label.textContent = 'Turn Off AC';
     }
   }
 
