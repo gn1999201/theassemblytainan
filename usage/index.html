@@ -126,10 +126,11 @@
     display: inline-flex; align-items: center; justify-content: center;
     color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
   }
+  .power-toggle-btn.circle { border-radius: 50%; }
   .power-toggle-btn.off-state { background: #1976d2; }
   .power-toggle-btn.on-state { background: #d84315; }
-  .power-toggle-btn.ac-off-state { background: #F8C888; color: #7a5217; }
-  .power-toggle-btn.ac-on-state { background: #F8C888; color: #7a5217; }
+  .power-toggle-btn.ac-off-state { background: #1976d2; }
+  .power-toggle-btn.ac-on-state { background: #d84315; }
   .power-toggle-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .power-toggle-label { text-align: center; font-size: 13px; color: #666; margin-top: 10px; font-weight: 600; }
   .door-relay-row { display: flex; align-items: center; gap: 12px; }
@@ -670,7 +671,7 @@
           </div>
         </div>
         <div style="text-align:center; margin-top:28px;">
-          <button class="power-toggle-btn ac-off-state" id="acTurnOnBtn" onclick="submitAcTurnOn_()">${ICON_POWER}</button>
+          <button class="power-toggle-btn ac-off-state circle" id="acTurnOnBtn" onclick="submitAcTurnOn_()">${ICON_POWER}</button>
           <div class="power-toggle-label" id="acTurnOnLabel">Turn On AC</div>
         </div>
       `;
@@ -706,7 +707,7 @@
           </div>
         </div>
         <div style="text-align:center; margin-top:28px;">
-          <button class="power-toggle-btn ac-on-state" id="acTurnOffBtn" onclick="submitAcTurnOff_()">${ICON_POWER}</button>
+          <button class="power-toggle-btn ac-on-state circle" id="acTurnOffBtn" onclick="submitAcTurnOff_()">${ICON_POWER}</button>
           <div class="power-toggle-label" id="acTurnOffLabel">Turn Off AC</div>
         </div>
       `;
