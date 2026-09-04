@@ -377,6 +377,16 @@
     }
 
     if (data.status === 'checked_out') {
+      if (data.electricity_included) {
+        card.innerHTML = `
+          ${staleNotice}
+          <span class="badge badge-closed">STAY COMPLETED</span>
+          ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
+          <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+          <div class="closed-note" style="margin-top:16px;">Electricity for this stay was already included in your Airbnb reservation — no additional charge.<span class="cn" style="display:block; margin-top:4px;">已包含在您的 Airbnb 訂單中,無需另外計費</span></div>
+        `;
+        return;
+      }
       card.innerHTML = `
         ${staleNotice}
         <span class="badge badge-closed">STAY COMPLETED</span>
@@ -398,6 +408,17 @@
 
         <div class="closed-note">Your stay has ended. This is your final electricity summary.</div>
         <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
+      `;
+      return;
+    }
+
+    if (data.electricity_included) {
+      card.innerHTML = `
+        ${staleNotice}
+        <span class="badge badge-active">CURRENT STAY</span>
+        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
+        <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+        <div class="closed-note" style="margin-top:16px;">Electricity for this stay is already included in your Airbnb reservation — no additional charge, nothing for you to track here.<span class="cn" style="display:block; margin-top:4px;">已包含在您的 Airbnb 訂單中,無需另外計費</span></div>
       `;
       return;
     }
@@ -640,6 +661,9 @@
   }
 
   function acStayTotalHtml_(data) {
+    if (data.electricity_included) {
+      return `<div class="closed-note" style="margin-top:16px;">Electricity for the living room AC is already included in your Airbnb reservation — no additional charge.<span class="cn" style="display:block; margin-top:4px;">已包含在您的 Airbnb 訂單中,無需另外計費</span></div>`;
+    }
     if (!data.metering_available) {
       return `<div class="stay-total-row"><div class="stay-total-label">Usage tracking<span class="cn" style="margin-left:2px;">用電計費</span></div><div class="stay-total-value" style="color:#999; font-size:13px;">Coming online soon</div></div>`;
     }
@@ -650,9 +674,12 @@
     const card = document.getElementById('card');
 
     if (data.status === 'idle') {
+      const idleLabel = data.electricity_included
+        ? `Turn on the living room AC anytime during your stay — electricity is already included in your Airbnb reservation. Turning it on locks it to your stay until you turn it off.`
+        : `Turn on the living room AC. You'll be billed only for the electricity you use, at NT$${LIVING_ROOM_AC_RATE_DISPLAY}/kWh based on actual meter reading. Turning it on locks it to your stay until you turn it off.`;
       card.innerHTML = `
         <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
-        <div class="label">Turn on the living room AC. You'll be billed only for the electricity you use, at NT$${LIVING_ROOM_AC_RATE_DISPLAY}/kWh based on actual meter reading. Turning it on locks it to your stay until you turn it off.</div>
+        <div class="label">${idleLabel}</div>
         ${acStayTotalHtml_(data)}
         <div class="control-block">
           <div class="control-row">
@@ -677,12 +704,14 @@
     }
 
     if (data.status === 'in_use_by_you') {
-      const usageDisplay = data.metering_available
-        ? `<div class="session-cost-row"><div class="session-cost-item"><div class="val">${data.usage_so_far_kwh.toFixed(2)} kWh</div><div class="lbl">Used so far</div></div><div class="session-cost-item"><div class="val">NT$ ${data.estimated_cost_so_far_ntd}</div><div class="lbl">Estimated cost</div></div></div>`
-        : `<div class="session-sub" style="margin-top:14px;">Usage tracking coming online soon</div>`;
+      const usageDisplay = data.electricity_included
+        ? ''
+        : (data.metering_available
+          ? `<div class="session-cost-row"><div class="session-cost-item"><div class="val">${data.usage_so_far_kwh.toFixed(2)} kWh</div><div class="lbl">Used so far</div></div><div class="session-cost-item"><div class="val">NT$ ${data.estimated_cost_so_far_ntd}</div><div class="lbl">Estimated cost</div></div></div>`
+          : `<div class="session-sub" style="margin-top:14px;">Usage tracking coming online soon</div>`);
 
       card.innerHTML = `
-        <span class="badge badge-active">Running — Billed to you</span>
+        <span class="badge badge-active">${data.electricity_included ? 'Running' : 'Running — Billed to you'}</span>
         <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
         <div class="session-box">
           <div class="session-timer" id="acTimer">${formatAcElapsed_(data.started_at)}</div>
@@ -954,12 +983,12 @@
         <div class="info-heading" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <span style="display:inline-flex; vertical-align:-2px; flex-shrink:0;">
             <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-          </span> 
+          </span>
           <span>Water Dispenser (RO)</span>
           <span class="cn" style="margin-left:0; white-space:nowrap;">淨水器換水說明</span>
         </div>
         <div style="font-size:13.5px; color:#444; line-height:1.7; margin-top:6px;">
-          The dispenser features a <strong>built-in RO purification system</strong>. When the 
+          The dispenser features a <strong>built-in RO purification system</strong>. When the
           <span style="display:inline-flex; align-items:center; gap:3px; font-weight:600; color:#1a1a1a;">
             "
             <svg viewBox="-3 -3 56 75" height="1.15em" style="vertical-align:-3px; fill:none; stroke:#1a1a1a; stroke-linecap:round; stroke-linejoin:round;">
@@ -968,7 +997,7 @@
               <circle cx="25" cy="49" r="2.25" fill="#1a1a1a"/>
             </svg>
             換水" (Refill Water)
-          </span> 
+          </span>
           light comes on:
           <ol style="margin:6px 0 0; padding-left:20px; color:#555;">
             <li>Discard any remaining wastewater from the tank.</li>
