@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Electricity Bookings</title>
+<title>The Assembly Tainan — Guest Portal</title>
 
-<!-- 讓手機「加到主畫面」時看起來像一個 App -->
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bookings Admin">
+<meta name="apple-mobile-web-app-title" content="The Assembly">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1976d2">
 <link id="dynamic-manifest" rel="manifest">
@@ -21,189 +20,247 @@
     font-family: -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
     background: #f4f6f8;
     color: #1a1a1a;
-    padding: 24px 16px;
+    padding: 24px 16px 90px;
   }
-  .wrap { max-width: 480px; margin: 0 auto; }
   .card {
+    max-width: 420px;
+    margin: 0 auto;
     background: #fff;
     border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
-  h1 { font-size: 20px; margin: 0 0 4px; }
-  h2 { font-size: 15px; margin: 0 0 14px; color: #444; }
-  label { display: block; font-size: 12px; color: #888; margin: 12px 0 4px; }
-  select, input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; color: #555; }
+  .cn { font-size: 11px; color: #aaa; display: block; font-weight: 400; margin-top: 2px; }
+  .kwh { font-size: 48px; font-weight: 700; margin: 16px 0 0; color: #1976d2; }
+  .kwh .unit { font-size: 18px; color: #999; margin-left: 4px; }
+  .label { font-size: 13px; color: #888; margin-top: 4px; }
+  .cost-box { margin-top: 24px; padding: 16px; background: #f0f7ff; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .cost-box .amount { font-size: 24px; font-weight: 700; color: #d84315; }
+  .meta { margin-top: 20px; font-size: 12px; color: #aaa; text-align: center; }
+  .greeting { font-size: 15px; font-weight: 500; color: #1976d2; margin-bottom: 10px; }
+  .reading-row { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 14px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-bottom: 10px; }
+  .badge-active { background: #e8f5e9; color: #2e7d32; }
+  .badge-closed { background: #eeeeee; color: #757575; }
+  .badge-other { background: #fff3e0; color: #e65100; }
+  .live-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #eee; }
+  .live-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .live-heading { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .dot-active { background: #43a047; animation: pulse 1.6s infinite; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(67,160,71, 0.5); }
+    70%  { box-shadow: 0 0 0 7px rgba(67,160,71, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(67,160,71, 0); }
   }
-  button {
-    margin-top: 16px;
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: #1976d2;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
+  .live-grid { margin-top: 12px; display: grid; grid-template-columns: 1fr; gap: 8px; text-align: center; }
+  .live-grid .live-value { font-size: 22px; }
+  .live-item { background: #fafafa; border-radius: 10px; padding: 10px 4px; }
+  .live-value { font-size: 18px; font-weight: 700; color: #333; }
+  .live-label { font-size: 11px; color: #999; margin-top: 2px; }
+  .live-hint { margin-top: 10px; font-size: 12px; color: #888; text-align: center; }
+  .closed-note { margin-top: 16px; padding: 12px 14px; background: #f7f7f7; border-radius: 10px; font-size: 12px; color: #888; text-align: center; }
+  .error { color: #c62828; text-align: center; padding: 20px 0; font-size: 14px; }
+  .loading { text-align: center; color: #999; padding: 40px 0; }
+  .loading-hint { font-size: 12px; color: #bbb; margin-top: 8px; }
+  .install-hint {
+    max-width: 420px; margin: 12px auto 0; background: #fff8e1; border: 1px solid #ffe082;
+    border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #6d5300;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
-  button:disabled { background: #bbb; cursor: default; }
-  button.secondary { background: #43a047; }
-  button.danger { background: #d84315; }
-  .result {
-    margin-top: 14px;
-    padding: 14px;
-    background: #f0f7ff;
-    border-radius: 10px;
-    font-size: 13px;
-    word-break: break-all;
+  .install-hint button { background: none; border: none; color: #6d5300; font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .door-code-display { font-size: 34px; margin-top: 6px; }
+
+  .tab-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+    border-top: 1px solid #e5e5e5; display: flex; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index: 100; padding-bottom: env(safe-area-inset-bottom, 0);
   }
-  .result a { color: #1976d2; }
-  .copy-btn {
-    margin-top: 8px;
-    width: auto;
-    display: inline-block;
-    padding: 6px 14px;
-    font-size: 12px;
-    background: #333;
+  .tab-btn { flex: 1; background: none; border: none; padding: 10px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #999; }
+  .tab-btn .tab-icon { font-size: 20px; line-height: 1; }
+  .tab-btn .tab-label { font-size: 11px; font-weight: 500; }
+  .tab-btn.active { color: #1976d2; }
+
+  .info-section { margin-bottom: 24px; }
+  .info-section:last-child { margin-bottom: 0; }
+  .info-heading { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .wifi-box { background: #f0f7ff; border-radius: 12px; padding: 14px 16px; }
+  .wifi-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .wifi-row .wifi-label { font-size: 12px; color: #888; }
+  .wifi-row .wifi-value { font-size: 15px; font-weight: 600; color: #1a1a1a; font-family: monospace; }
+  .copy-btn { width: auto; padding: 4px 10px; font-size: 11px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #666; cursor: pointer; }
+  .rules-list { margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.9; color: #444; }
+  .place-item { background: #fafafa; border-radius: 10px; padding: 10px 14px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .place-item .place-info { flex: 1; min-width: 0; }
+  .place-item .place-category { font-size: 10.5px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+  .place-item .place-name { font-size: 14px; font-weight: 600; color: #333; margin-top: 1px; }
+  .maps-btn { width: auto; flex-shrink: 0; padding: 7px 12px; font-size: 12px; font-weight: 600; border: none; border-radius: 8px; background: #1976d2; color: #fff; text-decoration: none; display: inline-block; }
+  .garbage-schedule { font-size: 13.5px; color: #444; line-height: 1.7; margin-bottom: 10px; }
+
+  .service-card { border: 1px solid #eee; border-radius: 14px; padding: 18px; margin-top: 14px; }
+  .service-card:first-of-type { margin-top: 0; }
+  .service-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .service-icon-wrap { width: 40px; height: 40px; border-radius: 10px; background: #f0f7ff; color: #1976d2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+  .service-title-block { flex: 1; margin-left: 12px; }
+  .service-title { font-size: 15px; font-weight: 700; color: #333; }
+  .service-price { font-size: 13px; color: #1976d2; font-weight: 700; margin-top: 2px; }
+  .service-desc { font-size: 12.5px; color: #888; line-height: 1.6; margin-top: 10px; }
+  .service-btn { width: 100%; margin-top: 16px; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; background: #1976d2; color: #fff; }
+  .service-btn:disabled { background: #f0f0f0; color: #bbb; cursor: not-allowed; }
+  .paused-note { margin-top: 10px; font-size: 12px; color: #d84315; background: #fff3e0; border-radius: 8px; padding: 8px 12px; text-align: center; }
+  .sent-note { margin-top: 10px; font-size: 12px; color: #2e7d32; background: #e8f5e9; border-radius: 8px; padding: 8px 12px; text-align: center; }
+
+  .control-row { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .control-row .control-label { font-size: 13px; color: #666; font-weight: 500; }
+  .temp-stepper { display: flex; align-items: center; gap: 14px; }
+  .temp-stepper button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #ddd; background: #fafafa; font-size: 18px; color: #1976d2; cursor: pointer; }
+  .temp-value { font-size: 26px; font-weight: 700; color: #1976d2; min-width: 60px; text-align: center; }
+  .pill-group { display: flex; gap: 6px; }
+  .pill { padding: 6px 12px; border-radius: 999px; border: 1px solid #ddd; background: #fafafa; font-size: 12.5px; color: #666; cursor: pointer; }
+  .pill.active { background: #1976d2; border-color: #1976d2; color: #fff; }
+  .primary-btn { width: 100%; margin-top: 26px; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .btn-turn-on { background: #1976d2; color: #fff; }
+  .btn-turn-off { background: #d84315; color: #fff; }
+  .power-toggle-btn {
+    width: 72px; height: 72px; border-radius: 22px; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
   }
-  .booking-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
-  }
-  .booking-item:last-child { border-bottom: none; }
-  .booking-item .name { font-weight: 600; font-size: 14px; }
-  .booking-item .meta { font-size: 12px; color: #888; margin-top: 2px; }
-  .booking-item button {
-    margin-top: 8px;
-    margin-right: 8px;
-    width: auto;
-    padding: 6px 16px;
-    font-size: 13px;
-  }
-  .empty { color: #999; font-size: 13px; text-align: center; padding: 20px 0; }
-  .error { color: #c62828; font-size: 13px; margin-top: 10px; }
-  .lock-screen {
-    max-width: 320px;
-    margin: 80px auto 0;
-    text-align: center;
-  }
-  /* 像燈的開關那種切換鈕 */
-  .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .switch .slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #ccc; transition: .2s; border-radius: 26px;
-  }
-  .switch .slider:before {
-    position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
-    background-color: white; transition: .2s; border-radius: 50%;
-  }
-  .switch input:checked + .slider { background-color: #43a047; }
-  .switch input:checked + .slider:before { transform: translateX(20px); }
+  .power-toggle-btn.circle { border-radius: 50%; }
+  .power-toggle-btn.off-state { background: #1976d2; }
+  .power-toggle-btn.on-state { background: #d84315; }
+  .power-toggle-btn.ac-off-state { background: #1976d2; }
+  .power-toggle-btn.ac-on-state { background: #d84315; }
+  .power-toggle-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .power-toggle-label { text-align: center; font-size: 13px; color: #666; margin-top: 10px; font-weight: 600; }
+  .door-relay-row { display: flex; align-items: center; gap: 12px; }
+  .door-relay-icon { color: #1976d2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .door-relay-text { flex: 1; min-width: 0; }
+  .door-relay-title { font-size: 14.5px; font-weight: 700; color: #333; }
+  .door-relay-sub { font-size: 11.5px; color: #999; margin-top: 1px; }
+  .session-box { margin-top: 6px; background: #f0f7ff; border-radius: 14px; padding: 20px; text-align: center; }
+  .session-timer { font-size: 34px; font-weight: 700; color: #1976d2; font-variant-numeric: tabular-nums; }
+  .session-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .session-cost-row { display: flex; justify-content: space-around; margin-top: 18px; padding-top: 16px; border-top: 1px solid #dce8fa; }
+  .session-cost-item .val { font-size: 18px; font-weight: 700; color: #333; }
+  .session-cost-item .lbl { font-size: 11px; color: #999; margin-top: 2px; }
+  .locked-box { margin-top: 6px; background: #fafafa; border-radius: 14px; padding: 30px 20px; text-align: center; }
+  .locked-icon { color: #bbb; margin-bottom: 10px; }
+  .locked-title { font-size: 15px; font-weight: 600; color: #555; }
+  .locked-sub { font-size: 12.5px; color: #999; margin-top: 6px; line-height: 1.6; }
+  .stay-total-row { display:flex; justify-content:space-between; align-items:center; background:#f7f7f7; border-radius:10px; padding:12px 14px; margin-top:16px; }
+  .stay-total-row .stay-total-label { font-size:12px; color:#888; }
+  .stay-total-row .stay-total-value { font-size:16px; font-weight:700; color:#333; }
 </style>
 </head>
 <body>
 
-<div id="lockScreen" class="lock-screen">
-  <div class="card">
-    <h1>Admin Access</h1>
-    <label>Admin key</label>
-    <input type="password" id="adminKeyInput" placeholder="Enter your admin key">
-    <button onclick="unlock()">Unlock</button>
-    <div class="error" id="lockError"></div>
+<div class="card" id="card">
+  <div class="loading">
+    Loading...
+    <div class="loading-hint">This may take a moment, please wait</div>
   </div>
 </div>
 
-<div id="mainApp" class="wrap" style="display:none;">
+<div class="install-hint" id="installHint" style="display:none;">
+  <span id="installHintText"></span>
+  <button onclick="dismissInstallHint()" aria-label="Dismiss">&times;</button>
+</div>
 
-  <div class="card">
-    <h1>Service Settings</h1>
-    <h2>The Loft — Laundry service availability</h2>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-      <div>
-        <div style="font-size:14px; font-weight:600; color:#333;" id="laundryStatusLabel">Loading...</div>
-        <div style="font-size:11px; color:#999; margin-top:2px;">When paused, guests will see a read-only "unavailable" button.</div>
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="laundryToggle" onchange="toggleLaundry()">
-        <span class="slider"></span>
-      </label>
-    </div>
-  </div>
-
-  <div class="card">
-    <h1>New Guest Check-in</h1>
-    <h2>Automatically reads the current meter and generates a personal link</h2>
-    <label>Room</label>
-    <select id="roomSelect" onchange="onRoomChange_()"></select>
-    <label>Guest name (optional)</label>
-    <input type="text" id="guestNameInput" placeholder="e.g. William">
-    <div id="meterFieldsWrap">
-      <label>Starting reading (kWh)</label>
-      <div style="display:flex; gap:8px;">
-        <input type="number" step="0.01" id="checkinReadingInput" placeholder="Tap 'Read Meter' or type manually" style="flex:1;">
-        <button type="button" onclick="readMeterNow()" id="readMeterBtn" style="width:auto; margin-top:0; white-space:nowrap; padding:0 16px;">Read Meter</button>
-      </div>
-      <div class="meta-hint" id="readMeterStatus" style="font-size:11px; color:#999; margin-top:4px;"></div>
-      <label>Rate (NT$/kWh) — optional</label>
-      <input type="number" step="0.1" id="rateInput" placeholder="Leave blank to use default rate">
-    </div>
-    <div id="noMeterNote" style="display:none; font-size:12px; color:#e65100; background:#fff3e0; border-radius:8px; padding:10px 12px; margin-top:6px;">This room doesn't have an electricity meter installed yet — the guest's Electricity tab will show as unavailable, but door code and other features still work normally.</div>
-    <label>Check-in date</label>
-    <input type="date" id="checkinDatetimeInput">
-    <label>Check-out date</label>
-    <input type="date" id="checkoutDatetimeInput">
-    <div style="font-size:11px; color:#999; margin-top:4px;">Door code (if this room has a smart lock) activates at 12:00 AM on check-in day and deactivates at 12:00 PM on check-out day.</div>
-    <button onclick="createBooking()" id="createBtn">Generate Link</button>
-    <div id="createResult"></div>
-  </div>
-
-  <div class="card">
-    <h1>Current Stays</h1>
-    <h2>Tap Check Out to close a stay and lock in the final reading</h2>
-    <div id="activeList"><div class="empty">Loading...</div></div>
-  </div>
+<div class="tab-bar">
+  <button class="tab-btn" id="tabBtn-doorcode" onclick="switchTab('doorcode')">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg></span>
+    <span class="tab-label">Door Code</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-electricity" onclick="switchTab('electricity')">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg></span>
+    <span class="tab-label">Electricity</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-ac" onclick="switchTab('ac')" style="display:none;">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4l2 1l2 -1"/><path d="M12 2v6.5l3 1.72"/><path d="M17.928 6.268l.134 2.232l1.866 1.232"/><path d="M20.66 7l-5.629 3.25l.01 3.458"/><path d="M19.928 14.268l-1.866 1.232l-.134 2.232"/><path d="M20.66 17l-5.629 -3.25l-2.99 1.738"/><path d="M14 20l-2 -1l-2 1"/><path d="M12 22v-6.5l-3 -1.72"/><path d="M6.072 17.732l-.134 -2.232l-1.866 -1.232"/><path d="M3.34 17l5.629 -3.25l-.01 -3.458"/><path d="M4.072 9.732l1.866 -1.232l.134 -2.232"/><path d="M3.34 7l5.629 3.25l2.99 -1.738"/></svg></span>
+    <span class="tab-label">Living AC</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-services" onclick="switchTab('services')" style="display:none;">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M12.01 18.594l-4.01 2.406v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v5.5"/><path d="M16 19h6"/><path d="M19 16v6"/></svg></span>
+    <span class="tab-label">Services</span>
+  </button>
+  <button class="tab-btn" id="tabBtn-info" onclick="switchTab('info')">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none"/></svg></span>
+    <span class="tab-label">Info</span>
+  </button>
 </div>
 
 <script>
+  // ============================================================
+  // 「實用資訊」(WiFi/房規/垃圾/周邊)現在改成從試算表讀取,
+  // 直接去 Bookings 試算表的 Settings 分頁、NearbyPlaces 分頁編輯就好,
+  // 不用再改這個檔案。
+  // ============================================================
+
   const API_BASE = 'https://script.google.com/macros/s/AKfycbxUb1u_77tPxJ4GU_Q7ZvpNq5CmKNyKQ1lfQ5ZhMZPijCowbqU-mC7roKnMU-Z3wnXxig/exec';
 
-  // 優先看網址裡有沒有帶 admin_key(這個比瀏覽器儲存空間更可靠,不會被系統自動清掉)
-  // 沒有的話,退回看瀏覽器記住的舊值
-  const urlParams = new URLSearchParams(window.location.search);
-  let adminKey = urlParams.get('admin_key') || localStorage.getItem('admin_key') || '';
-  let roomsWithMeter = []; // 哪些房間有裝電表,沒裝的房間 check-in/check-out 都跳過讀表這步
+  // 線條風格 SVG 圖示,用 currentColor 讓顏色自動跟著外層文字顏色走
+  const ICON_POWER = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>';
 
-  function unlock() {
-    const val = document.getElementById('adminKeyInput').value.trim();
-    if (!val) return;
-    adminKey = val;
-    verifyAndEnter();
+  const ICONS = {
+    key: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg>',
+    bolt: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+    info: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none"/></svg>',
+    wifi: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a17 17 0 0 1 20 0"/><path d="M5.5 12.5a12 12 0 0 1 13 0"/><path d="M9 16.5a6.5 6.5 0 0 1 6 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>',
+    clipboard: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
+    trash: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+    pin: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+    shirt: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l4 2l4-2 4 4-3 3v9H7v-9L4 8z"/></svg>',
+    sparkle: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M19 15l.7 2.1L22 18l-2.3.9L19 21l-.7-2.1L16 18l2.3-.9z"/></svg>',
+    services: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M12.01 18.594l-4.01 2.406v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v5.5"/><path d="M16 19h6"/><path d="M19 16v6"/></svg>',
+  };
+  function icon_(name) {
+    return `<span style="display:inline-flex; vertical-align:-2px;">${ICONS[name]}</span>`;
   }
 
-  // 動態產生 manifest,讓「加到主畫面」的捷徑網址裡直接帶著 admin_key,
-  // 這樣就算瀏覽器清掉本機儲存的密碼,捷徑本身還是能直接登入,不用重新輸入
-  function setupManifest_() {
-    const baseUrl = new URL(window.location.href);
-    if (adminKey) {
-      baseUrl.searchParams.set('admin_key', adminKey);
-    }
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
 
+  let activeTab = 'electricity';
+  let lastData = null;
+  let infoData = null; // 「實用資訊」的資料,抓過一次就存起來,分頁間切換不用重複打 API
+  let doorCodeLength_ = 7;
+  const LIVING_ROOM_AC_RATE_DISPLAY = 5; // 只給畫面文字顯示用,實際計費以後端費率為準
+
+  // 固定小數位數顯示,跟 Tuya App 的格式一致(不然數字尾數的 0 會被 JS 自動吃掉,
+  // 每次重新整理看到的小數位數都不一樣,容易讓人誤以為數字對不上)
+  function fmtNum_(value, decimals) {
+    if (value === null || value === undefined) return '—';
+    return Number(value).toFixed(decimals);
+  }
+
+  function mapsUrl_(query) {
+    const trimmed = (query || '').trim();
+    // 如果貼的已經是完整網址(例如 Google 地圖分享連結),直接使用,不要再包成搜尋字串
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(trimmed);
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    ['doorcode', 'electricity', 'ac', 'services', 'info'].forEach(function (t) {
+      document.getElementById('tabBtn-' + t).classList.toggle('active', t === tab);
+    });
+    renderActiveTab_();
+  }
+
+  (function setupManifest() {
     const iconUrl192 = new URL('icon-192.png', window.location.href).href;
     const iconUrl512 = new URL('icon-512.png', window.location.href).href;
     const iconUrl192Mask = new URL('icon-192-maskable.png', window.location.href).href;
     const iconUrl512Mask = new URL('icon-512-maskable.png', window.location.href).href;
     const manifest = {
-      name: 'Bookings Admin — The Assembly Tainan',
-      short_name: 'Bookings Admin',
-      start_url: baseUrl.href,
+      name: 'The Assembly Tainan — Guest Portal',
+      short_name: 'The Assembly',
+      start_url: window.location.href,
       display: 'standalone',
       background_color: '#f4f6f8',
       theme_color: '#1976d2',
@@ -216,317 +273,813 @@
     };
     const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
     document.getElementById('dynamic-manifest').setAttribute('href', URL.createObjectURL(blob));
-  }
-  setupManifest_();
+  })();
 
-  async function verifyAndEnter(attempt) {
+  async function loadUsage(attempt) {
     attempt = attempt || 1;
-    try {
-      const res = await fetch(API_BASE + '?action=list_rooms&admin_key=' + encodeURIComponent(adminKey));
-      const data = await res.json();
-      if (data.error) {
-        document.getElementById('lockError').textContent = 'Incorrect admin key.';
-        return;
-      }
-      localStorage.setItem('admin_key', adminKey);
-      // 密碼確認有效後,把它也悄悄放進網址列(不會整頁重新整理),
-      // 這樣「加到主畫面」抓到的網址就會自動帶著它
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set('admin_key', adminKey);
-      window.history.replaceState({}, '', newUrl);
-      setupManifest_();
 
-      document.getElementById('lockScreen').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      roomsWithMeter = data.rooms_with_meter || [];
-      populateRooms(data.rooms);
-      loadActiveBookings();
-      loadLaundryStatus();
-    } catch (e) {
-      // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
-      if (attempt < 3) {
-        document.getElementById('lockError').textContent = 'Connecting... (attempt ' + (attempt + 1) + ' of 3)';
-        setTimeout(function () { verifyAndEnter(attempt + 1); }, attempt * 1500);
-        return;
-      }
-      document.getElementById('lockError').textContent = 'Connection failed after several attempts. Please try again.';
-    }
-  }
-
-  // 如果網址或瀏覽器已經有記住的 admin_key,直接嘗試自動登入,不用等使用者按 Unlock
-  if (adminKey) {
-    verifyAndEnter();
-  }
-
-  function populateRooms(rooms) {
-    const sel = document.getElementById('roomSelect');
-    sel.innerHTML = rooms.map(r => `<option value="${r}">${r}</option>`).join('');
-    onRoomChange_();
-  }
-
-  function onRoomChange_() {
-    const room = document.getElementById('roomSelect').value;
-    const hasMeter = roomsWithMeter.indexOf(room) !== -1;
-    document.getElementById('meterFieldsWrap').style.display = hasMeter ? '' : 'none';
-    document.getElementById('noMeterNote').style.display = hasMeter ? 'none' : '';
-  }
-
-  async function readMeterNow(isRetry) {
-    const room = document.getElementById('roomSelect').value;
-    const btn = document.getElementById('readMeterBtn');
-    const status = document.getElementById('readMeterStatus');
-
-    btn.disabled = true;
-    btn.textContent = '...';
-    if (!isRetry) status.textContent = 'Reading meter, this can take a few seconds...';
-
-    try {
-      const res = await fetch(API_BASE + '?action=get_current_reading&room=' + encodeURIComponent(room) +
-        '&admin_key=' + encodeURIComponent(adminKey));
-      const data = await res.json();
-      if (data.error) {
-        status.innerHTML = `<span style="color:#c62828;">${data.message}</span>`;
-      } else {
-        document.getElementById('checkinReadingInput').value = data.reading_kwh.toFixed(2);
-        status.innerHTML = `<span style="color:#2e7d32;">✓ Read successfully</span>`;
-      }
-    } catch (e) {
-      // 這是唯讀動作,失敗不會有副作用,放心自動重試
-      if (!isRetry) {
-        status.textContent = 'Retrying...';
-        setTimeout(function () { readMeterNow(true); }, 1500);
-        return;
-      }
-      status.innerHTML = `<span style="color:#c62828;">Failed to read meter. Tap "Read Meter" to try again.</span>`;
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Read Meter';
-    }
-  }
-
-  function buildLocalDateTime_(dateStr, hour) {
-    if (!dateStr) return null;
-    const parts = dateStr.split('-').map(Number);
-    return new Date(parts[0], parts[1] - 1, parts[2], hour, 0, 0);
-  }
-
-  async function createBooking() {
-    const btn = document.getElementById('createBtn');
-    const room = document.getElementById('roomSelect').value;
-    const guestName = document.getElementById('guestNameInput').value.trim();
-    const manualReading = document.getElementById('checkinReadingInput').value.trim();
-    const rate = document.getElementById('rateInput').value.trim();
-    const checkinDateStr = document.getElementById('checkinDatetimeInput').value;
-    const checkoutDateStr = document.getElementById('checkoutDatetimeInput').value;
-    const resultBox = document.getElementById('createResult');
-
-    // 入住日 00:00 生效, 退房日 12:00 失效
-    const checkinDT = buildLocalDateTime_(checkinDateStr, 0);
-    const checkoutDT = buildLocalDateTime_(checkoutDateStr, 12);
-
-    if (checkinDT && checkoutDT && checkoutDT <= checkinDT) {
-      resultBox.innerHTML = `<div class="error">Check-out must be after check-in.</div>`;
+    if (!token) {
+      document.getElementById('card').innerHTML = `<div class="error">This link is missing your access token.<br>Please use the personal link provided by your host.</div>`;
       return;
     }
 
-    btn.disabled = true;
-    btn.textContent = manualReading ? 'Creating...' : 'Reading meter...';
-    resultBox.innerHTML = '';
+    const cacheKey = 'cached_view_' + token;
+    if (attempt === 1 && !lastData) {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          lastData = JSON.parse(cached);
+          if (lastData.room_name === 'The Loft') {
+            document.getElementById('tabBtn-services').style.display = '';
+          }
+          if (lastData.room_name === 'Room A' || lastData.room_name === 'Room B') {
+            document.getElementById('tabBtn-ac').style.display = '';
+          }
+          renderActiveTab_(true);
+        } catch (e) { /* ignore */ }
+      }
+    }
 
     try {
-      let url = API_BASE + '?action=create_booking&room=' + encodeURIComponent(room) +
-        '&guest_name=' + encodeURIComponent(guestName) + '&admin_key=' + encodeURIComponent(adminKey);
-      if (manualReading) {
-        url += '&checkin_reading=' + encodeURIComponent(manualReading);
-      }
-      if (rate) {
-        url += '&rate=' + encodeURIComponent(rate);
-      }
-      if (checkinDT) {
-        url += '&checkin_datetime=' + encodeURIComponent(checkinDT.toISOString());
-      }
-      if (checkoutDT) {
-        url += '&checkout_datetime=' + encodeURIComponent(checkoutDT.toISOString());
-      }
-      const res = await fetch(url);
+      const res = await fetch(API_BASE + '?token=' + encodeURIComponent(token));
       const data = await res.json();
 
       if (data.error) {
-        resultBox.innerHTML = `<div class="error">${data.message}</div>`;
-      } else {
-        resultBox.innerHTML = `
-          <div class="result">
-            ${data.already_existed ? '<strong style="color:#d84315;">⚠ An active booking for this guest already existed — showing that link instead of creating a duplicate.</strong><br><br>' : ''}
-            <strong>${data.room}${data.guest_name ? ' — ' + data.guest_name : ''}</strong><br>
-            Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh ${data.was_manual_reading ? '(manually entered)' : '(auto-read from meter)'}<br>
-            Rate: NT$${data.rate_per_kwh}/kWh<br>
-            ${data.door_code_available ? '' : '<span style="color:#999;">(Door code setup not available for this room yet)</span><br>'}
-            Link: <a href="${data.guest_link}" target="_blank">${data.guest_link}</a>
-            <br><button class="copy-btn" onclick="copyLink('${data.guest_link}')">Copy Link</button>
-          </div>`;
-        document.getElementById('guestNameInput').value = '';
-        document.getElementById('checkinReadingInput').value = '';
-        document.getElementById('rateInput').value = '';
-        document.getElementById('checkinDatetimeInput').value = '';
-        document.getElementById('checkoutDatetimeInput').value = '';
-        loadActiveBookings();
-      }
-    } catch (e) {
-      resultBox.innerHTML = `<div class="error">Connection failed, but the request may have still gone through on the server.<br><strong>Check "Current Stays" below before clicking Generate Link again</strong> — retrying may create a duplicate booking.</div>`;
-      loadActiveBookings();
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Generate Link';
-    }
-  }
-
-  function copyLink(link) {
-    navigator.clipboard.writeText(link);
-  }
-
-  async function loadActiveBookings(attempt) {
-    attempt = attempt || 1;
-    const list = document.getElementById('activeList');
-    try {
-      const res = await fetch(API_BASE + '?action=list_active&admin_key=' + encodeURIComponent(adminKey));
-      const data = await res.json();
-      if (data.error || !data.active_bookings.length) {
-        list.innerHTML = `<div class="empty">No current stays.</div>`;
-        return;
-      }
-      list.innerHTML = data.active_bookings.map(b => `
-        <div class="booking-item" data-token="${b.token}" data-room="${b.room}">
-          <div class="name">${b.room}${b.guest_name ? ' — ' + b.guest_name : ''}</div>
-          <div class="meta">Token: ${b.token} · Check-in reading: ${b.checkin_reading_kwh.toFixed(2)} kWh</div>
-          ${(b.checkin_datetime || b.checkout_datetime) ? `<div class="meta">Stay: ${b.checkin_datetime ? new Date(b.checkin_datetime).toLocaleString() : '—'} → ${b.checkout_datetime ? new Date(b.checkout_datetime).toLocaleString() : '—'}</div>` : ''}
-          ${b.door_code_available ? `<div class="meta">Door code: ${b.door_code_set ? '✓ Set by guest' : 'Not set yet'}</div>` : ''}
-          <button class="copy-btn" onclick="copyLink('${b.guest_link}')">Copy Link</button>
-          <button class="danger" id="checkoutBtn_${b.token.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="checkoutBooking('${b.token}')">Check Out</button>
-        </div>
-      `).join('');
-    } catch (e) {
-      if (attempt < 3) {
-        setTimeout(function () { loadActiveBookings(attempt + 1); }, attempt * 1500);
-        return;
-      }
-      list.innerHTML = `<div class="error">Failed to load current stays. <button onclick="loadActiveBookings()" style="width:auto; padding:6px 14px; font-size:12px;">Retry</button></div>`;
-    }
-  }
-
-  let pendingCheckoutToken = null;
-
-  async function checkoutBooking(token, isRetry) {
-    pendingCheckoutToken = token;
-    const btn = document.getElementById('checkoutBtn_' + cssSafe(token));
-    const bookingRoom = document.querySelector('[data-token="' + token + '"]').dataset.room;
-    const hasMeter = roomsWithMeter.indexOf(bookingRoom) !== -1;
-
-    if (!hasMeter) {
-      const confirmed = confirm('This room has no electricity meter. Check out this guest now? This cannot be undone.');
-      if (!confirmed) return;
-      if (btn) { btn.disabled = true; btn.textContent = 'Checking out...'; }
-      try {
-        const finalizeRes = await fetch(API_BASE + '?action=checkout_booking&token=' + encodeURIComponent(token) +
-          '&admin_key=' + encodeURIComponent(adminKey));
-        const finalizeData = await finalizeRes.json();
-        if (finalizeData.error) {
-          alert(finalizeData.message);
-          if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
-        } else {
-          alert('Checked out.');
+        if (!localStorage.getItem(cacheKey)) {
+          document.getElementById('card').innerHTML = `<div class="error">${data.message}</div>`;
         }
-        loadActiveBookings();
-      } catch (e) {
-        alert('Connection failed. Please try again.');
-        if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+        return;
       }
+
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      lastData = data;
+      if (data.room_name === 'The Loft') {
+        document.getElementById('tabBtn-services').style.display = '';
+      }
+      if (data.room_name === 'Room A' || data.room_name === 'Room B') {
+        document.getElementById('tabBtn-ac').style.display = '';
+      }
+      renderActiveTab_(false);
+
+    } catch (e) {
+      if (attempt < 3) {
+        setTimeout(function () { loadUsage(attempt + 1); }, attempt * 2000);
+        return;
+      }
+      if (!localStorage.getItem(cacheKey)) {
+        document.getElementById('card').innerHTML = `
+          <div class="error">
+            Connection failed. Please try again.
+            <div style="margin-top:12px;">
+              <button onclick="loadUsage()" style="padding:8px 20px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">Retry</button>
+            </div>
+          </div>`;
+      }
+    }
+  }
+
+  function renderActiveTab_(isStale) {
+    if (activeTab === 'info') {
+      loadInfoTab_();
+      return;
+    }
+    if (activeTab === 'services') {
+      loadServicesTab_();
+      return;
+    }
+    if (activeTab === 'ac') {
+      loadAcTab_();
+      return;
+    }
+    if (!lastData) return;
+    if (activeTab === 'electricity') {
+      renderElectricityTab_(lastData, !!isStale);
+    } else if (activeTab === 'doorcode') {
+      renderDoorCodeTab_(lastData, !!isStale);
+    }
+  }
+
+  function renderElectricityTab_(data, isStale) {
+    const card = document.getElementById('card');
+    const updated = new Date(data.updated_at);
+    const timeStr = updated.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const staleNotice = isStale
+      ? `<div style="text-align:center; font-size:11px; color:#1976d2; margin-bottom:8px;">Showing last known data — updating...</div>`
+      : '';
+
+    if (data.status === 'no_meter') {
+      card.innerHTML = `
+        ${staleNotice}
+        <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+        <div class="closed-note" style="margin-top:16px;">This room doesn't have electricity monitoring set up yet. Please check with your host for details.</div>
+      `;
       return;
     }
 
-    if (btn) { btn.disabled = true; btn.textContent = 'Reading meter...'; }
+    if (data.status === 'checked_out') {
+      if (data.electricity_included) {
+        card.innerHTML = `
+          ${staleNotice}
+          <span class="badge badge-closed">STAY COMPLETED</span>
+          ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
+          <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+          <div class="closed-note" style="margin-top:16px;">Electricity for this stay was already included in your Airbnb reservation — no additional charge.<span class="cn" style="display:block; margin-top:4px;">已包含在您的 Airbnb 訂單中,無需另外計費</span></div>
+        `;
+        return;
+      }
+      card.innerHTML = `
+        ${staleNotice}
+        <span class="badge badge-closed">STAY COMPLETED</span>
+        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, thank you for staying with us!</div>` : ''}
+        <h1>${data.room_name} — Final Usage<span class="cn">${data.room_name} 最終用電量</span></h1>
+
+        <div class="reading-row">
+          <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+          <span>Final reading: ${data.final_reading_kwh.toFixed(2)} kWh</span>
+        </div>
+
+        <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+        <div class="label">Total electricity used during your stay</div>
+
+        <div class="cost-box">
+          <div><div class="label">Total Cost<span class="cn">總電費</span></div></div>
+          <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+        </div>
+
+        <div class="closed-note">Your stay has ended. This is your final electricity summary.</div>
+        <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh</div>
+      `;
+      return;
+    }
+
+    if (data.electricity_included) {
+      card.innerHTML = `
+        ${staleNotice}
+        <span class="badge badge-active">CURRENT STAY</span>
+        ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
+        <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+        <div class="closed-note" style="margin-top:16px;">Electricity for this stay is already included in your Airbnb reservation — no additional charge, nothing for you to track here.<span class="cn" style="display:block; margin-top:4px;">已包含在您的 Airbnb 訂單中,無需另外計費</span></div>
+      `;
+      return;
+    }
+
+    const isActive = data.power_kw !== null && data.power_kw > 0.01;
+
+    card.innerHTML = `
+      ${staleNotice}
+      <span class="badge badge-active">CURRENT STAY</span>
+      ${data.guest_name ? `<div class="greeting">Dear ${data.guest_name}, welcome!</div>` : ''}
+      <h1>${data.room_name} — Electricity Usage<span class="cn">${data.room_name} 用電量</span></h1>
+
+      <div class="reading-row">
+        <span>Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh</span>
+        <span>Current reading: ${data.current_reading_kwh.toFixed(2)} kWh</span>
+      </div>
+
+      <div class="kwh">${data.usage_kwh.toFixed(2)}<span class="unit">kWh</span></div>
+      <div class="label">Electricity used during your stay so far</div>
+
+      <div class="cost-box">
+        <div><div class="label">Estimated Cost<span class="cn">預估電費</span></div></div>
+        <div class="amount">NT$ ${data.estimated_cost_ntd}</div>
+      </div>
+
+      <div class="live-section">
+        <div class="live-heading">
+          <span class="dot ${isActive ? 'dot-active' : ''}"></span>
+          Live Power Usage Right Now
+          <span class="cn">即時用電狀況</span>
+        </div>
+        <div class="live-grid">
+          <div class="live-item">
+            <div class="live-value">${fmtNum_(data.power_kw, 3)}</div>
+            <div class="live-label">Power (kW)<span class="cn">功率</span></div>
+          </div>
+        </div>
+        <div class="live-hint">
+          ${isActive ? 'Electricity is currently being used in this room.' : 'No significant power draw right now.'}
+        </div>
+      </div>
+
+      <div class="meta">Rate: NT$${data.rate_per_kwh}/kWh &nbsp;·&nbsp; Last updated ${timeStr}</div>
+    `;
+  }
+
+  function renderDoorCodeTab_(data, isStale) {
+    const card = document.getElementById('card');
+    const staleNotice = isStale
+      ? `<div style="text-align:center; font-size:11px; color:#1976d2; margin-bottom:8px;">Showing last known data — updating...</div>`
+      : '';
+
+    if (!data.door_code_available) {
+      card.innerHTML = `
+        ${staleNotice}
+        <h1>Door Code<span class="cn">門鎖密碼</span></h1>
+        <div class="closed-note">Door code setup is not available for this room. Please contact your host for entry instructions.</div>
+      `;
+      return;
+    }
+
+    if (data.status === 'checked_out') {
+      card.innerHTML = `
+        ${staleNotice}
+        <h1>Door Code<span class="cn">門鎖密碼</span></h1>
+        <div class="closed-note">Your stay has ended and your door code has been deactivated. Thank you for staying with us!</div>
+      `;
+      return;
+    }
+
+    doorCodeLength_ = data.door_code_length || 7;
+    const savedCode = localStorage.getItem('door_code_' + token);
+
+    let bodyHtml;
+    if (data.door_code_set && savedCode) {
+      bodyHtml = `
+        <div class="kwh door-code-display">${savedCode}</div>
+        <div class="live-hint">Valid for your entire stay — use this code to unlock your room door.</div>
+        <div style="text-align:center; margin-top:14px;">
+          <button onclick="toggleDoorCodeForm_()" style="width:auto; padding:6px 16px; font-size:12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#666; cursor:pointer;">Change Code</button>
+        </div>
+        <div id="doorCodeFormWrap" style="display:none; margin-top:12px;">
+          ${doorCodeInputForm_('Update Code')}
+        </div>
+      `;
+    } else if (data.door_code_set && !savedCode) {
+      bodyHtml = `
+        <div class="live-hint" style="margin-bottom:8px;">A code was already set for this stay, but it isn't saved on this device. Set a new one below (this replaces the old one).</div>
+        ${doorCodeInputForm_('Set Code')}
+      `;
+    } else {
+      bodyHtml = `
+        <div class="live-hint" style="margin-bottom:8px;">Choose a ${doorCodeLength_}-digit code to unlock your room during your stay.</div>
+        ${doorCodeInputForm_('Set Code')}
+      `;
+    }
+
+    const frontDoorHtml = data.front_door_available ? `
+      <div class="live-section">
+        <div class="door-relay-row">
+          <div class="door-relay-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div>
+          <div class="door-relay-text">
+            <div class="door-relay-title">Front Door<span class="cn">一樓大門</span></div>
+            <div class="door-relay-sub">Remote intercom unlock</div>
+          </div>
+          <button class="power-toggle-btn off-state" id="frontDoorBtn" onclick="submitOpenFrontDoor_()" style="width:52px; height:52px; border-radius:16px; flex-shrink:0;">${ICON_POWER}</button>
+        </div>
+        <div id="frontDoorMsg" style="margin-top:8px;"></div>
+      </div>
+    ` : '';
+
+    card.innerHTML = `
+      ${staleNotice}
+      <h1>${data.room_name} Door Code<span class="cn">門鎖密碼</span></h1>
+      <div class="live-section" style="margin-top:16px;">${bodyHtml}</div>
+      ${frontDoorHtml}
+    `;
+  }
+
+  async function submitOpenFrontDoor_() {
+    const btn = document.getElementById('frontDoorBtn');
+    const msg = document.getElementById('frontDoorMsg');
+    btn.disabled = true;
+    msg.innerHTML = '';
 
     try {
-      const res = await fetch(API_BASE + '?action=get_current_reading&room=' + encodeURIComponent(bookingRoom) +
-        '&admin_key=' + encodeURIComponent(adminKey));
+      const res = await fetch(API_BASE + '?action=open_front_door&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        msg.innerHTML = `<div class="paused-note">${data.message}</div>`;
+      } else {
+        msg.innerHTML = `<div class="sent-note">✓ Front door opened.</div>`;
+      }
+    } catch (e) {
+      msg.innerHTML = `<div class="paused-note">Connection failed. Please try again.</div>`;
+    }
+
+    btn.disabled = false;
+  }
+
+  function doorCodeInputForm_(buttonLabel) {
+    return `
+      <div style="display:flex; gap:8px; width:100%;">
+        <input type="tel" inputmode="numeric" id="doorCodeInput" maxlength="${doorCodeLength_}"
+          placeholder="${doorCodeLength_} digits" style="flex:1; min-width:0; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:16px; letter-spacing:2px; box-sizing:border-box;">
+        <button onclick="submitDoorCode()" id="doorCodeSubmitBtn"
+          style="width:auto; flex-shrink:0; white-space:nowrap; padding:0 16px; border:none; border-radius:8px; background:#1976d2; color:#fff; font-size:14px; cursor:pointer;">${buttonLabel}</button>
+      </div>
+      <div id="doorCodeError" style="color:#c62828; font-size:12px; margin-top:6px;"></div>
+    `;
+  }
+
+  function toggleDoorCodeForm_() {
+    const wrap = document.getElementById('doorCodeFormWrap');
+    if (wrap) wrap.style.display = (wrap.style.display === 'none') ? 'block' : 'none';
+  }
+
+  async function submitDoorCode() {
+    const input = document.getElementById('doorCodeInput');
+    const errorBox = document.getElementById('doorCodeError');
+    const btn = document.getElementById('doorCodeSubmitBtn');
+    const code = input.value.trim();
+
+    if (!(new RegExp('^\\d{' + doorCodeLength_ + '}$')).test(code)) {
+      errorBox.textContent = 'Code must be exactly ' + doorCodeLength_ + ' digits.';
+      return;
+    }
+
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Setting...';
+    errorBox.textContent = '';
+
+    try {
+      const res = await fetch(API_BASE + '?action=set_door_code&token=' + encodeURIComponent(token) + '&code=' + encodeURIComponent(code));
       const data = await res.json();
 
       if (data.error) {
-        alert(data.message);
-        if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+        errorBox.textContent = data.message;
+        btn.disabled = false;
+        btn.textContent = originalLabel;
         return;
       }
 
-      const confirmed = confirm(
-        `Final meter reading: ${data.reading_kwh.toFixed(2)} kWh\n\nCheck out this guest with this reading? This cannot be undone.`
-      );
-      if (!confirmed) {
-        if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
-        return;
-      }
-
-      // 這一步只是寫入試算表,速度快,失敗率低
-      const finalizeRes = await fetch(API_BASE + '?action=checkout_booking&token=' + encodeURIComponent(token) +
-        '&final_reading=' + encodeURIComponent(data.reading_kwh) + '&admin_key=' + encodeURIComponent(adminKey));
-      const finalizeData = await finalizeRes.json();
-
-      if (finalizeData.error) {
-        alert(finalizeData.message);
-      } else {
-        alert(`Checked out. Final usage: ${finalizeData.usage_kwh.toFixed(2)} kWh — NT$${finalizeData.estimated_cost_ntd}`);
-      }
-      loadActiveBookings();
+      localStorage.setItem('door_code_' + token, data.code);
+      loadUsage();
 
     } catch (e) {
-      // 讀電表這步失敗可以放心重試(還沒寫入任何資料)
-      if (!isRetry) {
-        setTimeout(function () { checkoutBooking(token, true); }, 1500);
-        return;
-      }
-      alert('Connection failed while reading the meter. Please try again — nothing has been written yet, so it is safe to retry.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Check Out'; }
+      errorBox.textContent = 'Connection failed. Please try again.';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     }
   }
 
-  function cssSafe(str) {
-    return str.replace(/[^a-zA-Z0-9]/g, '_');
-  }
+  const INFO_CACHE_KEY = 'cached_info_data';
 
-  // ---- The Loft 洗衣服務開關 ----
-  async function loadLaundryStatus() {
+  // ============================================================
+  // The Loft 專屬:額外服務(洗衣/清潔),只有 room_name === 'The Loft' 才會顯示這個分頁
+  // ============================================================
+  let servicesData = null;
+
+  // ============================================================
+  // Room A/B 專屬:客廳冷氣,只有 room_name === 'Room A' 或 'Room B' 才會顯示這個分頁
+  // ============================================================
+  let acData = null;
+  let acTemp = 25;
+  let acWind = 1;
+  const AC_WINDS = ['Auto', 'Low', 'Med', 'High'];
+
+  async function loadAcTab_() {
+    const card = document.getElementById('card');
+    if (acData) {
+      // 先秒速顯示上次看到的畫面,背景同時偷偷刷新,不會每次切過來都先看到空白 Loading
+      renderAcTab_(acData);
+    } else {
+      card.innerHTML = `<div class="loading">Loading...</div>`;
+    }
     try {
-      const res = await fetch(API_BASE + '?action=get_service_status_admin&admin_key=' + encodeURIComponent(adminKey));
+      const res = await fetch(API_BASE + '?action=get_ac_status&token=' + encodeURIComponent(token));
       const data = await res.json();
-      if (data.error) return;
-      applyLaundryUI_(data.laundry_available);
+      if (data.error) {
+        if (!acData) card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      acData = data;
+      if (activeTab === 'ac') renderAcTab_(data);
     } catch (e) {
-      document.getElementById('laundryStatusLabel').textContent = 'Failed to load status';
+      if (!acData) {
+        card.innerHTML = `<div class="error">Connection failed. <button onclick="loadAcTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+      }
     }
   }
 
-  function applyLaundryUI_(available) {
-    document.getElementById('laundryToggle').checked = available;
-    document.getElementById('laundryStatusLabel').textContent = available ? 'Laundry service: Active' : 'Laundry service: Paused';
+  function formatAcElapsed_(startTimeIso) {
+    const sec = Math.max(0, Math.floor((Date.now() - new Date(startTimeIso).getTime()) / 1000));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
-  async function toggleLaundry() {
-    const toggle = document.getElementById('laundryToggle');
-    const wantAvailable = toggle.checked;
-    toggle.disabled = true;
+  function acStayTotalHtml_(data) {
+    if (data.electricity_included) {
+      return `<div class="closed-note" style="margin-top:16px;">Electricity for the living room AC is already included in your Airbnb reservation — no additional charge.<span class="cn" style="display:block; margin-top:4px;">已包含在您的 Airbnb 訂單中,無需另外計費</span></div>`;
+    }
+    if (!data.metering_available) {
+      return `<div class="stay-total-row"><div class="stay-total-label">Usage tracking<span class="cn" style="margin-left:2px;">用電計費</span></div><div class="stay-total-value" style="color:#999; font-size:13px;">Coming online soon</div></div>`;
+    }
+    return `<div class="stay-total-row"><div class="stay-total-label">Your total this stay<span class="cn" style="margin-left:2px;">本次入住累計</span></div><div class="stay-total-value">NT$ ${data.stay_total_cost_ntd} <span style="font-size:11px; font-weight:400; color:#999;">(${data.stay_total_usage_kwh} kWh)</span></div></div>`;
+  }
+
+  function renderAcTab_(data) {
+    const card = document.getElementById('card');
+
+    if (data.status === 'idle') {
+      const idleLabel = data.electricity_included
+        ? `Turn on the living room AC anytime during your stay — electricity is already included in your Airbnb reservation. Turning it on locks it to your stay until you turn it off.`
+        : `Turn on the living room AC. You'll be billed only for the electricity you use, at NT$${LIVING_ROOM_AC_RATE_DISPLAY}/kWh based on actual meter reading. Turning it on locks it to your stay until you turn it off.`;
+      card.innerHTML = `
+        <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
+        <div class="label">${idleLabel}</div>
+        ${acStayTotalHtml_(data)}
+        <div class="control-block">
+          <div class="control-row">
+            <span class="control-label">Temperature</span>
+            <div class="temp-stepper">
+              <button onclick="adjustAcTempLocal_(-1)">−</button>
+              <span class="temp-value" id="acTempDisplay">${acTemp}°</span>
+              <button onclick="adjustAcTempLocal_(1)">+</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Fan Speed</span>
+            <div class="pill-group" id="acWindGroup">${AC_WINDS.map(function (w, i) { return `<span class="pill ${i === acWind ? 'active' : ''}" onclick="setAcWindLocal_(${i})">${w}</span>`; }).join('')}</div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:28px;">
+          <button class="power-toggle-btn ac-off-state circle" id="acTurnOnBtn" onclick="submitAcTurnOn_()">${ICON_POWER}</button>
+          <div class="power-toggle-label" id="acTurnOnLabel">Turn On AC</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (data.status === 'in_use_by_you') {
+      const usageDisplay = data.electricity_included
+        ? ''
+        : (data.metering_available
+          ? `<div class="session-cost-row"><div class="session-cost-item"><div class="val">${data.usage_so_far_kwh.toFixed(2)} kWh</div><div class="lbl">Used so far</div></div><div class="session-cost-item"><div class="val">NT$ ${data.estimated_cost_so_far_ntd}</div><div class="lbl">Estimated cost</div></div></div>`
+          : `<div class="session-sub" style="margin-top:14px;">Usage tracking coming online soon</div>`);
+
+      card.innerHTML = `
+        <span class="badge badge-active">${data.electricity_included ? 'Running' : 'Running — Billed to you'}</span>
+        <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
+        <div class="session-box">
+          <div class="session-timer" id="acTimer">${formatAcElapsed_(data.started_at)}</div>
+          <div class="session-sub">Cooling</div>
+          ${usageDisplay}
+        </div>
+        ${acStayTotalHtml_(data)}
+        <div class="control-block">
+          <div class="control-row">
+            <span class="control-label">Temperature</span>
+            <div class="temp-stepper">
+              <button onclick="adjustAcTempLocal_(-1, true)">−</button>
+              <span class="temp-value" id="acTempDisplay">${acTemp}°</span>
+              <button onclick="adjustAcTempLocal_(1, true)">+</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Fan Speed</span>
+            <div class="pill-group" id="acWindGroup">${AC_WINDS.map(function (w, i) { return `<span class="pill ${i === acWind ? 'active' : ''}" onclick="setAcWindLocal_(${i}, true)">${w}</span>`; }).join('')}</div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:28px;">
+          <button class="power-toggle-btn ac-on-state circle" id="acTurnOffBtn" onclick="submitAcTurnOff_()">${ICON_POWER}</button>
+          <div class="power-toggle-label" id="acTurnOffLabel">Turn Off AC</div>
+        </div>
+      `;
+
+      if (window.__acTimerInterval) clearInterval(window.__acTimerInterval);
+      window.__acTimerInterval = setInterval(function () {
+        const el = document.getElementById('acTimer');
+        if (el) el.textContent = formatAcElapsed_(data.started_at);
+      }, 1000);
+      return;
+    }
+
+    if (data.status === 'in_use_by_other') {
+      if (window.__acTimerInterval) clearInterval(window.__acTimerInterval);
+      card.innerHTML = `
+        <span class="badge badge-other">In Use</span>
+        <h1>Living Room AC<span class="cn">客廳冷氣</span></h1>
+        <div class="locked-box">
+          <div class="locked-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg></div>
+          <div class="locked-title">Currently in use by another guest</div>
+          <div class="locked-sub">The living room AC is being used right now.<br>Please check back once it's turned off.</div>
+        </div>
+        ${acStayTotalHtml_(data)}
+      `;
+      return;
+    }
+  }
+
+  function adjustAcTempLocal_(delta, isRunning) {
+    acTemp = Math.max(23, Math.min(28, acTemp + delta));
+    document.getElementById('acTempDisplay').textContent = acTemp + '°';
+    if (isRunning) submitAcAdjust_();
+  }
+  function setAcWindLocal_(i, isRunning) {
+    acWind = i;
+    document.querySelectorAll('#acWindGroup .pill').forEach(function (el, idx) {
+      el.classList.toggle('active', idx === i);
+    });
+    if (isRunning) submitAcAdjust_();
+  }
+
+  async function submitAcTurnOn_() {
+    const btn = document.getElementById('acTurnOnBtn');
+    const label = document.getElementById('acTurnOnLabel');
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = 'Turning on...';
     try {
-      const res = await fetch(API_BASE + '?action=set_laundry_paused&paused=' + (!wantAvailable) +
-        '&admin_key=' + encodeURIComponent(adminKey));
+      const res = await fetch(API_BASE + '?action=ac_turn_on&token=' + encodeURIComponent(token) + '&temp=' + acTemp + '&wind=' + acWind);
       const data = await res.json();
       if (data.error) {
         alert(data.message);
-        toggle.checked = !wantAvailable; // 恢復原狀
-      } else {
-        applyLaundryUI_(!data.laundry_paused);
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = 'Turn On AC';
+        return;
       }
+      loadAcTab_();
     } catch (e) {
       alert('Connection failed. Please try again.');
-      toggle.checked = !wantAvailable;
+      if (btn) btn.disabled = false;
+      if (label) label.textContent = 'Turn On AC';
     }
-    toggle.disabled = false;
+  }
+
+  async function submitAcAdjust_() {
+    try {
+      await fetch(API_BASE + '?action=ac_adjust&token=' + encodeURIComponent(token) + '&temp=' + acTemp + '&wind=' + acWind);
+    } catch (e) { /* 靜默失敗,房客下次調整會再送一次 */ }
+  }
+
+  async function submitAcTurnOff_() {
+    const btn = document.getElementById('acTurnOffBtn');
+    const label = document.getElementById('acTurnOffLabel');
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = 'Turning off...';
+    try {
+      const res = await fetch(API_BASE + '?action=ac_turn_off&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = 'Turn Off AC';
+        return;
+      }
+      loadAcTab_();
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      if (btn) btn.disabled = false;
+      if (label) label.textContent = 'Turn Off AC';
+    }
+  }
+
+  async function loadServicesTab_() {
+    const card = document.getElementById('card');
+
+    // 已經抓過就直接畫,不用每次切分頁都重問伺服器(跟 Info 分頁同一套邏輯)
+    if (servicesData) {
+      renderServicesTab_(servicesData, null);
+      return;
+    }
+
+    card.innerHTML = `<div class="loading">Loading...</div>`;
+    try {
+      const res = await fetch(API_BASE + '?action=get_service_status&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      servicesData = data;
+      if (activeTab === 'services') renderServicesTab_(data, null);
+    } catch (e) {
+      card.innerHTML = `<div class="error">Connection failed. <button onclick="loadServicesTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+    }
+  }
+
+  function renderServicesTab_(data, justSent) {
+    const card = document.getElementById('card');
+
+    card.innerHTML = `
+      <h1>Additional Services<span class="cn">額外服務</span></h1>
+      <div class="label" style="margin-bottom:20px;">Request a service below. Your host will be notified right away.</div>
+
+      <div class="service-card">
+        <div class="service-head">
+          <div class="service-icon-wrap">${icon_('shirt')}</div>
+          <div class="service-title-block">
+            <div class="service-title">Laundry Service<span class="cn">洗衣服務(洗+烘)</span></div>
+            <div class="service-price">NT$${data.laundry_price_ntd} per load</div>
+          </div>
+        </div>
+        <ul class="rules-list" style="margin-top:10px; font-size:12.5px; color:#666;">
+          <li><strong>Service Hours:</strong> 09:00 – 18:00 (subject to host availability)</li>
+          <li><strong>How it works:</strong> Place your clothes in the provided basket, leave the basket at the door, and send us a request below.</li>
+          <li><strong>Delicate items:</strong> Please put non-dryable or delicate items in the separate mesh bag provided — we'll air-dry those instead of tumble-drying them.</li>
+          <li><strong>Note:</strong> If your host is traveling or unavailable, please use the 24/7 self-service laundromat nearby (3 min walk).</li>
+        </ul>
+        ${data.laundry_available
+          ? `<button class="service-btn" id="laundryBtn" onclick="submitServiceRequest_('laundry')" style="margin-top:14px;">Request Laundry</button>`
+          : `<button class="service-btn" disabled style="margin-top:14px;">Request Laundry</button>
+             <div class="paused-note">Laundry service is currently unavailable. Please check back later.</div>`
+        }
+        ${justSent === 'laundry' ? `<div class="sent-note">✓ Request sent — your host has been notified.</div>` : ''}
+      </div>
+
+      <div class="service-card">
+        <div class="service-head">
+          <div class="service-icon-wrap">${icon_('sparkle')}</div>
+          <div class="service-title-block">
+            <div class="service-title">Room Cleaning<span class="cn">清潔服務</span></div>
+            <div class="service-price">NT$${data.cleaning_price_ntd} per visit</div>
+          </div>
+        </div>
+        <div class="service-desc">Includes fresh bed linens, pillowcases &amp; towels, room cleaning, and trash removal. Your host will contact you to schedule a time.</div>
+        <textarea id="cleaningNote" placeholder="Special instructions (optional)" style="width:100%; margin-top:12px; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; min-height:44px; box-sizing:border-box;"></textarea>
+        <button class="service-btn" id="cleaningBtn" onclick="submitServiceRequest_('cleaning')">Request Cleaning</button>
+        ${justSent === 'cleaning' ? `<div class="sent-note">✓ Request sent — your host will contact you to schedule.</div>` : ''}
+      </div>
+    `;
+  }
+
+  async function submitServiceRequest_(serviceType) {
+    const btn = document.getElementById(serviceType === 'laundry' ? 'laundryBtn' : 'cleaningBtn');
+    const noteEl = document.getElementById(serviceType === 'laundry' ? 'laundryNote' : 'cleaningNote');
+    const note = noteEl ? noteEl.value.trim() : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+    try {
+      const res = await fetch(API_BASE + '?action=request_service&token=' + encodeURIComponent(token) +
+        '&service_type=' + serviceType + '&note=' + encodeURIComponent(note));
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        renderServicesTab_(servicesData, null);
+        return;
+      }
+      renderServicesTab_(servicesData, serviceType);
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      renderServicesTab_(servicesData, null);
+    }
+  }
+
+  async function loadInfoTab_() {
+    const card = document.getElementById('card');
+
+    // 已經抓過就直接畫,不用每次切分頁都重問伺服器
+    if (infoData) {
+      renderInfoTab_(infoData);
+      return;
+    }
+
+    // 先看本機有沒有存過上次的資料,有的話先顯示,體感比較快
+    const cached = localStorage.getItem(INFO_CACHE_KEY);
+    if (cached) {
+      try {
+        infoData = JSON.parse(cached);
+        renderInfoTab_(infoData);
+      } catch (e) { /* ignore */ }
+    } else {
+      card.innerHTML = `<div class="loading">Loading...</div>`;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '?action=get_info');
+      const data = await res.json();
+      if (data.error) {
+        if (!infoData) card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      infoData = data;
+      localStorage.setItem(INFO_CACHE_KEY, JSON.stringify(data));
+      if (activeTab === 'info') renderInfoTab_(data);
+    } catch (e) {
+      if (!infoData) {
+        card.innerHTML = `<div class="error">Connection failed. <button onclick="loadInfoTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+      }
+    }
+  }
+
+  function renderInfoTab_(data) {
+    const card = document.getElementById('card');
+
+    const rulesHtml = (data.house_rules || []).map(function (r) { return `<li>${r}</li>`; }).join('');
+
+    const placesByCategory = {};
+    (data.nearby_places || []).forEach(function (p) {
+      if (!placesByCategory[p.category]) placesByCategory[p.category] = [];
+      placesByCategory[p.category].push(p);
+    });
+    const placesHtml = Object.keys(placesByCategory).map(function (cat) {
+      return placesByCategory[cat].map(function (p) {
+        return `
+          <div class="place-item">
+            <div class="place-info">
+              <div class="place-category">${cat}</div>
+              <div class="place-name">${p.name}</div>
+            </div>
+            <a class="maps-btn" href="${mapsUrl_(p.maps_query)}" target="_blank" rel="noopener">Map</a>
+          </div>
+        `;
+      }).join('');
+    }).join('');
+// ★ The Loft 專屬: 飲水機換水燈號說明 (只有 The Loft 才會顯示) ★
+    const waterDispenserSection = (lastData && lastData.room_name === 'The Loft') ? `
+      <div class="info-section">
+        <div class="info-heading" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="display:inline-flex; vertical-align:-2px; flex-shrink:0;">
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          </span>
+          <span>Water Dispenser (RO)</span>
+          <span class="cn" style="margin-left:0; white-space:nowrap;">淨水器換水說明</span>
+        </div>
+        <div style="font-size:13.5px; color:#444; line-height:1.7; margin-top:6px;">
+          The dispenser features a <strong>built-in RO purification system</strong>. When the
+          <span style="display:inline-flex; align-items:center; gap:3px; font-weight:600; color:#1a1a1a;">
+            "
+            <svg viewBox="-3 -3 56 75" height="1.15em" style="vertical-align:-3px; fill:none; stroke:#1a1a1a; stroke-linecap:round; stroke-linejoin:round;">
+              <path d="M 25,2 C 25,2 2,31 2,46 A 23,23 0 0,0 48,46 C 48,31 25,2 25,2 Z" stroke-width="4.5"/>
+              <line x1="25" y1="24" x2="25" y2="40" stroke-width="4.5"/>
+              <circle cx="25" cy="49" r="2.25" fill="#1a1a1a"/>
+            </svg>
+            換水" (Refill Water)
+          </span>
+          light comes on:
+          <ol style="margin:6px 0 0; padding-left:20px; color:#555;">
+            <li>Discard any remaining wastewater from the tank.</li>
+            <li>Fill the raw water tank with tap water (it will automatically filter via RO).</li>
+            <li>Place the tank back into the dispenser.</li>
+          </ol>
+        </div>
+      </div>
+    ` : '';
+    card.innerHTML = `
+      <h1 style="margin-bottom:20px;">Useful Information<span class="cn">實用資訊</span></h1>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('wifi')} WiFi<span class="cn" style="margin-left:2px;">無線網路</span></div>
+        <div class="wifi-box">
+          <div class="wifi-row">
+            <span class="wifi-label">Network</span>
+            <span class="wifi-value">${data.wifi_name}</span>
+          </div>
+          <div class="wifi-row">
+            <span class="wifi-label">Password</span>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span class="wifi-value">${data.wifi_password}</span>
+              <button class="copy-btn" onclick="copyText_('${data.wifi_password}', this)">Copy</button>
+            </span>
+          </div>
+        </div>
+      </div>
+      ${waterDispenserSection}
+      <div class="info-section">
+        <div class="info-heading">${icon_('clipboard')} House Rules<span class="cn" style="margin-left:2px;">房間守則</span></div>
+        <ul class="rules-list">${rulesHtml}</ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('trash')} Garbage Disposal<span class="cn" style="margin-left:2px;">垃圾丟棄規則</span></div>
+        <div class="garbage-schedule">${data.garbage_schedule.replace(/\n/g, '<br>')}</div>
+        <div class="place-item">
+          <div class="place-info">
+            <div class="place-category">Location</div>
+            <div class="place-name">${data.garbage_location_name}</div>
+          </div>
+          <a class="maps-btn" href="${mapsUrl_(data.garbage_maps_query)}" target="_blank" rel="noopener">Map</a>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-heading">${icon_('pin')} Nearby Recommendations<span class="cn" style="margin-left:2px;">周邊推薦</span></div>
+        ${placesHtml}
+      </div>
+    `;
+  }
+
+  function copyText_(text, btn) {
+    navigator.clipboard.writeText(text).then(function () {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  }
+
+  switchTab('electricity');
+  loadUsage();
+  setInterval(loadUsage, 60000);
+
+  (function showInstallHint() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const dismissed = localStorage.getItem('install_hint_dismissed_' + token);
+    if (isStandalone || dismissed) return;
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const text = isIOS
+      ? 'Tip: Tap the Share icon below, then "Add to Home Screen" to check your usage anytime like an app.'
+      : 'Tip: Tap the ⋮ menu above, then "Add to Home Screen" to check your usage anytime like an app.';
+
+    document.getElementById('installHintText').textContent = text;
+    document.getElementById('installHint').style.display = 'flex';
+  })();
+
+  function dismissInstallHint() {
+    localStorage.setItem('install_hint_dismissed_' + token, '1');
+    document.getElementById('installHint').style.display = 'none';
   }
 </script>
 
