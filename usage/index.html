@@ -181,6 +181,10 @@
     <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4l2 1l2 -1"/><path d="M12 2v6.5l3 1.72"/><path d="M17.928 6.268l.134 2.232l1.866 1.232"/><path d="M20.66 7l-5.629 3.25l.01 3.458"/><path d="M19.928 14.268l-1.866 1.232l-.134 2.232"/><path d="M20.66 17l-5.629 -3.25l-2.99 1.738"/><path d="M14 20l-2 -1l-2 1"/><path d="M12 22v-6.5l-3 -1.72"/><path d="M6.072 17.732l-.134 -2.232l-1.866 -1.232"/><path d="M3.34 17l5.629 -3.25l-.01 -3.458"/><path d="M4.072 9.732l1.866 -1.232l.134 -2.232"/><path d="M3.34 7l5.629 3.25l2.99 -1.738"/></svg></span>
     <span class="tab-label">Living AC</span>
   </button>
+  <button class="tab-btn" id="tabBtn-billing" onclick="switchTab('billing')" style="display:none;">
+    <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v18l-3-2-3 2-3-2-3 2V2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg></span>
+    <span class="tab-label">Billing</span>
+  </button>
   <button class="tab-btn" id="tabBtn-services" onclick="switchTab('services')" style="display:none;">
     <span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M12.01 18.594l-4.01 2.406v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v5.5"/><path d="M16 19h6"/><path d="M19 16v6"/></svg></span>
     <span class="tab-label">Services</span>
@@ -246,7 +250,7 @@
 
   function switchTab(tab) {
     activeTab = tab;
-    ['doorcode', 'electricity', 'ac', 'services', 'info'].forEach(function (t) {
+    ['doorcode', 'electricity', 'ac', 'billing', 'services', 'info'].forEach(function (t) {
       document.getElementById('tabBtn-' + t).classList.toggle('active', t === tab);
     });
     renderActiveTab_();
@@ -295,6 +299,9 @@
           if (lastData.room_name === 'Room A' || lastData.room_name === 'Room B') {
             document.getElementById('tabBtn-ac').style.display = '';
           }
+          if (lastData.monthly_billing_enabled) {
+            document.getElementById('tabBtn-billing').style.display = '';
+          }
           renderActiveTab_(true);
         } catch (e) { /* ignore */ }
       }
@@ -318,6 +325,9 @@
       }
       if (data.room_name === 'Room A' || data.room_name === 'Room B') {
         document.getElementById('tabBtn-ac').style.display = '';
+      }
+      if (data.monthly_billing_enabled) {
+        document.getElementById('tabBtn-billing').style.display = '';
       }
       renderActiveTab_(false);
 
@@ -349,6 +359,10 @@
     }
     if (activeTab === 'ac') {
       loadAcTab_();
+      return;
+    }
+    if (activeTab === 'billing') {
+      loadBillingTab_();
       return;
     }
     if (!lastData) return;
@@ -824,6 +838,101 @@
       if (btn) btn.disabled = false;
       if (label) label.textContent = 'Turn Off AC';
     }
+  }
+
+  // ============================================================
+  // 長租房客專屬:月結帳單(電費+房租),只有後端回傳 monthly_billing_enabled
+  // 為 true 時才會顯示這個分頁(後台幫這筆訂房填了 RentAmountNTD 才會開啟)
+  // ============================================================
+  let billingData = null;
+
+  async function loadBillingTab_() {
+    const card = document.getElementById('card');
+    if (billingData) {
+      renderBillingTab_(billingData);
+    } else {
+      card.innerHTML = `<div class="loading">Loading...</div>`;
+    }
+    try {
+      const res = await fetch(API_BASE + '?action=get_monthly_bills&token=' + encodeURIComponent(token));
+      const data = await res.json();
+      if (data.error) {
+        if (!billingData) card.innerHTML = `<div class="error">${data.message}</div>`;
+        return;
+      }
+      billingData = data;
+      if (activeTab === 'billing') renderBillingTab_(data);
+    } catch (e) {
+      if (!billingData) {
+        card.innerHTML = `<div class="error">Connection failed. <button onclick="loadBillingTab_()" style="width:auto; padding:6px 14px; font-size:12px; border:none; border-radius:6px; background:#1976d2; color:#fff; cursor:pointer;">Retry</button></div>`;
+      }
+    }
+  }
+
+  function fmtDateShort_(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function renderBillingTab_(data) {
+    const card = document.getElementById('card');
+
+    if (!data.bills || !data.bills.length) {
+      card.innerHTML = `
+        <h1>Monthly Bills<span class="cn">月結帳單</span></h1>
+        <div class="label" style="margin-bottom:16px;">Billing cycles are based on your check-in date, not the calendar month.</div>
+        <div class="closed-note">No billing cycles yet. Your first monthly bill will appear here once your first billing cycle is complete.</div>
+      `;
+      return;
+    }
+
+    // 最新一期放最上面,比較符合房客想先看「這期要繳多少」的習慣
+    const billsHtml = data.bills.slice().reverse().map(function (b) { return billCardHtml_(b); }).join('');
+
+    card.innerHTML = `
+      <h1>Monthly Bills<span class="cn">月結帳單</span></h1>
+      <div class="label" style="margin-bottom:16px;">Billing cycles are based on your check-in date, not the calendar month.</div>
+      ${billsHtml}
+    `;
+  }
+
+  function billCardHtml_(b) {
+    const period = fmtDateShort_(b.cycle_start) + ' – ' + fmtDateShort_(b.cycle_end);
+    const isPaid = b.status === 'paid' || b.locked;
+
+    const electricityRow = b.electricity_included
+      ? `<div class="reading-row"><span>Electricity</span><span>Included in rent</span></div>`
+      : (b.electricity_usage_kwh !== null && b.electricity_usage_kwh !== undefined
+        ? `<div class="reading-row"><span>Electricity (${b.electricity_usage_kwh.toFixed(2)} kWh)</span><span>NT$ ${b.electricity_cost_ntd}</span></div>`
+        : '');
+
+    const paidInfo = isPaid
+      ? `<div class="closed-note" style="margin-top:12px; text-align:left;">
+          Received NT$${Number(b.paid_amount_ntd).toLocaleString()}${b.paid_method ? ' via ' + b.paid_method : ''} on ${fmtDateShort_(b.paid_at)}.
+          ${b.paid_note ? '<br>Note: ' + b.paid_note : ''}
+        </div>`
+      : '';
+
+    return `
+      <div class="service-card">
+        <div class="service-head">
+          <div class="service-title-block" style="margin-left:0;">
+            <div class="service-title">Cycle ${b.cycle_index}<span class="cn" style="margin-left:6px;">第 ${b.cycle_index} 期</span></div>
+            <div class="live-hint" style="margin-top:2px; text-align:left;">${period}</div>
+          </div>
+          <span class="badge ${isPaid ? 'badge-active' : 'badge-other'}">${isPaid ? 'Paid' : 'Unpaid'}</span>
+        </div>
+        <div style="margin-top:12px;">
+          ${electricityRow}
+          <div class="reading-row"><span>Rent</span><span>NT$ ${Number(b.rent_amount_ntd).toLocaleString()}</span></div>
+        </div>
+        <div class="cost-box" style="margin-top:12px;">
+          <div><div class="label">Total<span class="cn">總額</span></div></div>
+          <div class="amount">NT$ ${Number(b.total_amount_ntd).toLocaleString()}</div>
+        </div>
+        ${paidInfo}
+      </div>
+    `;
   }
 
   async function loadServicesTab_() {
