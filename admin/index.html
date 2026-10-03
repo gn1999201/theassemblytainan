@@ -107,6 +107,20 @@
   }
   .switch input:checked + .slider { background-color: #43a047; }
   .switch input:checked + .slider:before { transform: translateX(20px); }
+
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; flex-shrink: 0; }
+  .badge-paid { background: #e8f5e9; color: #2e7d32; }
+  .badge-unpaid { background: #fff3e0; color: #e65100; }
+  .bill-group { padding: 14px 0; border-bottom: 1px solid #eee; }
+  .bill-group:last-child { border-bottom: none; }
+  .bill-group-head .name { font-weight: 600; font-size: 14px; }
+  .bill-group-head .meta { font-size: 12px; color: #888; margin-top: 2px; }
+  .bill-cycle { background: #fafafa; border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+  .bill-cycle.paid { background: #f7faf7; }
+  .bill-cycle-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 4px; gap: 10px; }
+  .bill-cycle .meta { font-size: 12px; color: #777; margin: 3px 0; }
+  .receive-form label { margin: 10px 0 4px; }
+  .receive-form input { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -165,6 +179,9 @@
     <label>Check-out date</label>
     <input type="date" id="checkoutDatetimeInput">
     <div style="font-size:11px; color:#999; margin-top:4px;">Door code (if this room has a smart lock) activates at 12:00 AM on check-in day and deactivates at 12:00 PM on check-out day.</div>
+    <label>Monthly rent (NT$) — optional, for long-term tenants</label>
+    <input type="number" step="1" id="rentAmountInput" placeholder="Leave blank if not applicable">
+    <div style="font-size:11px; color:#999; margin-top:4px;">If filled, a monthly bill (electricity + rent) is generated automatically each billing cycle, based on the check-in date — not the calendar month.</div>
     <button onclick="createBooking()" id="createBtn">Generate Link</button>
     <div id="createResult"></div>
   </div>
@@ -173,6 +190,13 @@
     <h1>Current Stays</h1>
     <h2>Tap Check Out to close a stay and lock in the final reading</h2>
     <div id="activeList"><div class="empty">Loading...</div></div>
+  </div>
+
+  <div class="card">
+    <h1>Monthly Billing</h1>
+    <h2>Long-term tenants with monthly rent set — mark a cycle as received once payment arrives. Once marked, it's locked and can't be edited here.</h2>
+    <button type="button" onclick="generateBillsNow()" id="generateBillsBtn" style="width:auto; padding:6px 14px; font-size:12px; background:#555; margin-top:0;">Generate bills now</button>
+    <div id="billingList" style="margin-top:14px;"><div class="empty">Loading...</div></div>
   </div>
 </div>
 
@@ -246,6 +270,7 @@
       populateRooms(data.rooms);
       loadActiveBookings();
       loadLaundryStatus();
+      loadMonthlyBillingAdmin_();
     } catch (e) {
       // Apps Script 剛啟動時不太穩定,自動重試最多 3 次,間隔越拉越長
       if (attempt < 3) {
@@ -323,6 +348,7 @@
     const electricityIncluded = document.getElementById('electricityIncludedInput').checked;
     const checkinDateStr = document.getElementById('checkinDatetimeInput').value;
     const checkoutDateStr = document.getElementById('checkoutDatetimeInput').value;
+    const rentAmount = document.getElementById('rentAmountInput').value.trim();
     const resultBox = document.getElementById('createResult');
 
     // 入住日 00:00 生效, 退房日 12:00 失效
@@ -354,6 +380,9 @@
       if (checkoutDT) {
         url += '&checkout_datetime=' + encodeURIComponent(checkoutDT.toISOString());
       }
+      if (rentAmount) {
+        url += '&rent_amount_ntd=' + encodeURIComponent(rentAmount);
+      }
       const res = await fetch(url);
       const data = await res.json();
 
@@ -367,6 +396,7 @@
             Starting reading: ${data.checkin_reading_kwh.toFixed(2)} kWh ${data.was_manual_reading ? '(manually entered)' : '(auto-read from meter)'}<br>
             Rate: NT$${data.rate_per_kwh}/kWh<br>
             ${data.electricity_included ? '<span style="color:#1976d2;">Airbnb booking — electricity included, billing hidden from guest</span><br>' : ''}
+            ${data.monthly_billing_enabled ? '<span style="color:#1976d2;">Monthly billing enabled — NT$' + Number(data.rent_amount_ntd).toLocaleString() + '/month (plus electricity, based on check-in date)</span><br>' : ''}
             ${data.door_code_available ? '' : '<span style="color:#999;">(Door code setup not available for this room yet)</span><br>'}
             Link: <a href="${data.guest_link}" target="_blank">${data.guest_link}</a>
             <br><button class="copy-btn" onclick="copyLink('${data.guest_link}')">Copy Link</button>
@@ -377,7 +407,9 @@
         document.getElementById('checkinDatetimeInput').value = '';
         document.getElementById('checkoutDatetimeInput').value = '';
         document.getElementById('electricityIncludedInput').checked = false;
+        document.getElementById('rentAmountInput').value = '';
         loadActiveBookings();
+        loadMonthlyBillingAdmin_();
       }
     } catch (e) {
       resultBox.innerHTML = `<div class="error">Connection failed, but the request may have still gone through on the server.<br><strong>Check "Current Stays" below before clicking Generate Link again</strong> — retrying may create a duplicate booking.</div>`;
@@ -409,7 +441,9 @@
           ${(b.checkin_datetime || b.checkout_datetime) ? `<div class="meta">Stay: ${b.checkin_datetime ? new Date(b.checkin_datetime).toLocaleString() : '—'} → ${b.checkout_datetime ? new Date(b.checkout_datetime).toLocaleString() : '—'}</div>` : ''}
           ${b.door_code_available ? `<div class="meta">Door code: ${b.door_code_set ? '✓ Set by guest' : 'Not set yet'}</div>` : ''}
           ${b.electricity_included ? `<div class="meta" style="color:#1976d2; font-weight:600;">Airbnb booking — electricity included</div>` : ''}
+          ${b.monthly_billing_enabled ? `<div class="meta" style="color:#1976d2; font-weight:600;">Monthly rent: NT$${Number(b.rent_amount_ntd).toLocaleString()}/month</div>` : ''}
           <button class="copy-btn" onclick="copyLink('${b.guest_link}')">Copy Link</button>
+          <button class="copy-btn" style="background:#555;" onclick="promptSetRent_('${b.token}', ${b.rent_amount_ntd || 0})">${b.monthly_billing_enabled ? 'Update Rent' : 'Set Monthly Rent'}</button>
           <button class="danger" id="checkoutBtn_${b.token.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="checkoutBooking('${b.token}')">Check Out</button>
         </div>
       `).join('');
@@ -536,6 +570,182 @@
       toggle.checked = !wantAvailable;
     }
     toggle.disabled = false;
+  }
+
+  // ---- 長租房客:設定/修改每月房租金額(填了金額才會開始產生月結帳單) ----
+  async function promptSetRent_(token, currentValue) {
+    const input = prompt('Monthly rent for this booking (NT$). Leave blank or enter 0 to turn off monthly billing for this booking:', currentValue || '');
+    if (input === null) return; // 使用者按了取消
+    const value = input.trim();
+    if (value !== '' && (isNaN(value) || Number(value) < 0)) {
+      alert('Please enter a valid non-negative number.');
+      return;
+    }
+    try {
+      const res = await fetch(API_BASE + '?action=set_rent_amount&token=' + encodeURIComponent(token) +
+        '&rent_amount_ntd=' + encodeURIComponent(value === '' ? '0' : value) + '&admin_key=' + encodeURIComponent(adminKey));
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        return;
+      }
+      loadActiveBookings();
+      loadMonthlyBillingAdmin_();
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+    }
+  }
+
+  // ---- 長租房客:月結帳單總覽 + 收款簽收 ----
+  function fmtDate_(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  async function loadMonthlyBillingAdmin_(attempt) {
+    attempt = attempt || 1;
+    const wrap = document.getElementById('billingList');
+    try {
+      const res = await fetch(API_BASE + '?action=list_monthly_bills&admin_key=' + encodeURIComponent(adminKey));
+      const data = await res.json();
+      if (data.error) {
+        wrap.innerHTML = `<div class="error">${data.message || 'Failed to load.'}</div>`;
+        return;
+      }
+      renderMonthlyBillingAdmin_(data.bookings || []);
+    } catch (e) {
+      if (attempt < 3) {
+        setTimeout(function () { loadMonthlyBillingAdmin_(attempt + 1); }, attempt * 1500);
+        return;
+      }
+      wrap.innerHTML = `<div class="error">Failed to load monthly billing. <button onclick="loadMonthlyBillingAdmin_()" style="width:auto; padding:6px 14px; font-size:12px;">Retry</button></div>`;
+    }
+  }
+
+  function renderMonthlyBillingAdmin_(bookings) {
+    const wrap = document.getElementById('billingList');
+    if (!bookings.length) {
+      wrap.innerHTML = `<div class="empty">No tenants with monthly rent set yet. Use "Set Monthly Rent" under a current stay, or fill it in at check-in.</div>`;
+      return;
+    }
+    wrap.innerHTML = bookings.map(function (b) {
+      const cyclesHtml = (b.bills || []).length
+        ? b.bills.slice().reverse().map(function (bill) { return renderBillCycle_(b.token, bill); }).join('')
+        : `<div class="empty" style="padding:10px 0;">No cycles generated yet — will appear after the first full billing cycle completes (or tap "Generate bills now" above).</div>`;
+      return `
+        <div class="bill-group">
+          <div class="bill-group-head">
+            <div class="name">${b.room}${b.guest_name ? ' — ' + b.guest_name : ''}</div>
+            <div class="meta">Monthly rent: NT$${Number(b.rent_amount_ntd).toLocaleString()} ${b.unpaid_count > 0 ? `· <span style="color:#d84315; font-weight:600;">${b.unpaid_count} unpaid</span>` : '· all paid'}</div>
+          </div>
+          ${cyclesHtml}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderBillCycle_(token, bill) {
+    const cid = cssSafe(token) + '_' + bill.cycle_index;
+    const electricityLine = bill.electricity_included
+      ? `<div class="meta">Electricity: included in rent</div>`
+      : (bill.electricity_usage_kwh !== null && bill.electricity_usage_kwh !== undefined
+        ? `<div class="meta">Electricity: ${bill.electricity_usage_kwh.toFixed(2)} kWh — NT$${bill.electricity_cost_ntd}</div>`
+        : '');
+
+    if (bill.locked) {
+      return `
+        <div class="bill-cycle paid">
+          <div class="bill-cycle-head">
+            <div><strong>Cycle ${bill.cycle_index}</strong> · ${fmtDate_(bill.cycle_start)} – ${fmtDate_(bill.cycle_end)}</div>
+            <span class="badge badge-paid">Paid</span>
+          </div>
+          ${electricityLine}
+          <div class="meta">Rent: NT$${Number(bill.rent_amount_ntd).toLocaleString()} · Total: NT$${Number(bill.total_amount_ntd).toLocaleString()}</div>
+          <div class="meta" style="color:#2e7d32;">Received NT$${Number(bill.paid_amount_ntd).toLocaleString()}${bill.paid_method ? ' via ' + bill.paid_method : ''} on ${fmtDate_(bill.paid_at)}${bill.paid_note ? ' — "' + bill.paid_note + '"' : ''}</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="bill-cycle">
+        <div class="bill-cycle-head">
+          <div><strong>Cycle ${bill.cycle_index}</strong> · ${fmtDate_(bill.cycle_start)} – ${fmtDate_(bill.cycle_end)}</div>
+          <span class="badge badge-unpaid">Unpaid</span>
+        </div>
+        ${electricityLine}
+        <div class="meta">Rent: NT$${Number(bill.rent_amount_ntd).toLocaleString()} · Total due: NT$${Number(bill.total_amount_ntd).toLocaleString()}</div>
+        <button class="secondary" style="width:auto; padding:6px 14px; font-size:13px; margin-top:8px;" onclick="toggleReceiveForm_('${cid}')">Mark as Received</button>
+        <div id="receiveForm_${cid}" class="receive-form" style="display:none; margin-top:10px; padding:12px; background:#fff; border-radius:8px; border:1px solid #eee;">
+          <label>Amount received (NT$)</label>
+          <input type="number" step="1" id="paidAmount_${cid}" value="${bill.total_amount_ntd}">
+          <label>Method (optional)</label>
+          <input type="text" id="paidMethod_${cid}" placeholder="e.g. Cash, Bank transfer">
+          <label>Note (optional)</label>
+          <input type="text" id="paidNote_${cid}" placeholder="Optional note">
+          <button onclick="submitSignBill_('${token}', ${bill.cycle_index}, '${cid}')" id="confirmReceive_${cid}">Confirm Received</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleReceiveForm_(cid) {
+    const el = document.getElementById('receiveForm_' + cid);
+    if (el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+  }
+
+  async function submitSignBill_(token, cycleIndex, cid) {
+    const amountEl = document.getElementById('paidAmount_' + cid);
+    const methodEl = document.getElementById('paidMethod_' + cid);
+    const noteEl = document.getElementById('paidNote_' + cid);
+    const btn = document.getElementById('confirmReceive_' + cid);
+    const amount = amountEl.value.trim();
+
+    if (!amount || isNaN(amount) || Number(amount) < 0) {
+      alert('Please enter a valid amount.');
+      return;
+    }
+    const confirmed = confirm(
+      `Confirm receipt of NT$${amount} for cycle ${cycleIndex}?\n\nThis is permanent and cannot be edited here afterward — only a direct spreadsheet edit can correct it.`
+    );
+    if (!confirmed) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    try {
+      const res = await fetch(API_BASE + '?action=sign_monthly_bill&token=' + encodeURIComponent(token) +
+        '&cycle_index=' + encodeURIComponent(cycleIndex) + '&paid_amount_ntd=' + encodeURIComponent(amount) +
+        '&paid_method=' + encodeURIComponent(methodEl.value.trim()) + '&paid_note=' + encodeURIComponent(noteEl.value.trim()) +
+        '&admin_key=' + encodeURIComponent(adminKey));
+      const data = await res.json();
+      if (data.error) {
+        alert(data.message);
+        btn.disabled = false;
+        btn.textContent = 'Confirm Received';
+        return;
+      }
+      loadMonthlyBillingAdmin_();
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Confirm Received';
+    }
+  }
+
+  async function generateBillsNow() {
+    const btn = document.getElementById('generateBillsBtn');
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    try {
+      const res = await fetch(API_BASE + '?action=generate_monthly_bills_now&admin_key=' + encodeURIComponent(adminKey));
+      await res.json();
+      loadMonthlyBillingAdmin_();
+    } catch (e) {
+      alert('Connection failed. Please try again.');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Generate bills now';
   }
 </script>
 
