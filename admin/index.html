@@ -648,44 +648,83 @@
 
   function renderBillCycle_(token, bill) {
     const cid = cssSafe(token) + '_' + bill.cycle_index;
-    const electricityLine = bill.electricity_included
-      ? `<div class="meta">Electricity: included in rent</div>`
-      : (bill.electricity_usage_kwh !== null && bill.electricity_usage_kwh !== undefined
-        ? `<div class="meta">Electricity: ${bill.electricity_usage_kwh.toFixed(2)} kWh — NT$${bill.electricity_cost_ntd}</div>`
-        : '');
 
+    // 改版前「房租+電費合併簽收」的舊紀錄,維持原本的單一收據顯示,
+    // 不套用下面新的拆分介面(這些舊紀錄已經簽收完畢,不需要再動)。
     if (bill.locked) {
+      const legacyElectricityLine = bill.electricity_included
+        ? `<div class="meta">Electricity: included in rent</div>`
+        : (bill.electricity_usage_kwh !== null && bill.electricity_usage_kwh !== undefined
+          ? `<div class="meta">Electricity: ${bill.electricity_usage_kwh.toFixed(2)} kWh — NT$${bill.electricity_cost_ntd}</div>`
+          : '');
       return `
         <div class="bill-cycle paid">
           <div class="bill-cycle-head">
             <div><strong>Cycle ${bill.cycle_index}</strong> · ${fmtDate_(bill.cycle_start)} – ${fmtDate_(bill.cycle_end)}</div>
             <span class="badge badge-paid">Paid</span>
           </div>
-          ${electricityLine}
+          ${legacyElectricityLine}
           <div class="meta">Rent: NT$${Number(bill.rent_amount_ntd).toLocaleString()} · Total: NT$${Number(bill.total_amount_ntd).toLocaleString()}</div>
-          <div class="meta" style="color:#2e7d32;">Received NT$${Number(bill.paid_amount_ntd).toLocaleString()}${bill.paid_method ? ' via ' + bill.paid_method : ''} on ${fmtDate_(bill.paid_at)}${bill.paid_note ? ' — "' + bill.paid_note + '"' : ''}</div>
+          <div class="meta" style="color:#2e7d32;">Received NT$${Number(bill.paid_amount_ntd).toLocaleString()}${bill.paid_method ? ' via ' + bill.paid_method : ''} on ${fmtDate_(bill.paid_at)}${bill.paid_note ? ' — "' + bill.paid_note + '"' : ''} <span style="color:#999;">(combined receipt, from before rent/electricity were split)</span></div>
         </div>
       `;
     }
 
+    // 新流程:房租、電費各自獨立顯示、獨立簽收
+    const electricityItemHtml = bill.electricity_included
+      ? `<div class="meta" style="margin-top:6px;">Electricity: included in rent</div>`
+      : (bill.has_electricity_charge ? billItemHtml_(token, bill, 'electricity', cid) : '');
+
     return `
-      <div class="bill-cycle">
+      <div class="bill-cycle ${bill.fully_settled ? 'paid' : ''}">
         <div class="bill-cycle-head">
           <div><strong>Cycle ${bill.cycle_index}</strong> · ${fmtDate_(bill.cycle_start)} – ${fmtDate_(bill.cycle_end)}</div>
-          <span class="badge badge-unpaid">Unpaid</span>
+          <span class="badge ${bill.fully_settled ? 'badge-paid' : 'badge-unpaid'}">${bill.fully_settled ? 'Fully settled' : 'Unpaid'}</span>
         </div>
-        ${electricityLine}
-        <div class="meta">Rent: NT$${Number(bill.rent_amount_ntd).toLocaleString()} · Total due: NT$${Number(bill.total_amount_ntd).toLocaleString()}</div>
-        <button class="secondary" style="width:auto; padding:6px 14px; font-size:13px; margin-top:8px;" onclick="toggleReceiveForm_('${cid}')">Mark as Received</button>
-        <div id="receiveForm_${cid}" class="receive-form" style="display:none; margin-top:10px; padding:12px; background:#fff; border-radius:8px; border:1px solid #eee;">
-          <label>Amount received (NT$)</label>
-          <input type="number" step="1" id="paidAmount_${cid}" value="${bill.total_amount_ntd}">
-          <label>Method (optional)</label>
-          <input type="text" id="paidMethod_${cid}" placeholder="e.g. Cash, Bank transfer">
-          <label>Note (optional)</label>
-          <input type="text" id="paidNote_${cid}" placeholder="Optional note">
-          <button onclick="submitSignBill_('${token}', ${bill.cycle_index}, '${cid}')" id="confirmReceive_${cid}">Confirm Received</button>
+        ${billItemHtml_(token, bill, 'rent', cid)}
+        ${electricityItemHtml}
+      </div>
+    `;
+  }
+
+  // 房租或電費單一項目的顯示 + (如果還沒付)收款表單。item 是 'rent' 或 'electricity'。
+  function billItemHtml_(token, bill, item, cid) {
+    const isRent = item === 'rent';
+    const label = isRent ? 'Rent' : 'Electricity';
+    const amount = isRent ? bill.rent_amount_ntd : bill.electricity_cost_ntd;
+    const paid = isRent ? bill.rent_paid : bill.electricity_paid;
+    const paidAmount = isRent ? bill.rent_paid_amount_ntd : bill.electricity_paid_amount_ntd;
+    const paidMethod = isRent ? bill.rent_paid_method : bill.electricity_paid_method;
+    const paidNote = isRent ? bill.rent_paid_note : bill.electricity_paid_note;
+    const paidAt = isRent ? bill.rent_paid_at : bill.electricity_paid_at;
+    const itemId = cid + '_' + item;
+    const extraLabel = (!isRent && bill.electricity_usage_kwh !== null && bill.electricity_usage_kwh !== undefined)
+      ? ` (${bill.electricity_usage_kwh.toFixed(2)} kWh)` : '';
+
+    if (paid) {
+      return `
+        <div class="meta" style="margin-top:6px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <span>${label}${extraLabel}: NT$${Number(amount).toLocaleString()}</span>
+          <span class="badge badge-paid">Paid</span>
         </div>
+        <div class="meta" style="color:#2e7d32;">Received NT$${Number(paidAmount).toLocaleString()}${paidMethod ? ' via ' + paidMethod : ''} on ${fmtDate_(paidAt)}${paidNote ? ' — "' + paidNote + '"' : ''}</div>
+      `;
+    }
+
+    return `
+      <div class="meta" style="margin-top:6px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <span>${label}${extraLabel}: NT$${Number(amount).toLocaleString()} due</span>
+        <span class="badge badge-unpaid">Unpaid</span>
+      </div>
+      <button class="secondary" style="width:auto; padding:5px 12px; font-size:12px; margin-top:4px;" onclick="toggleReceiveForm_('${itemId}')">Mark ${label} Received</button>
+      <div id="receiveForm_${itemId}" class="receive-form" style="display:none; margin-top:8px; padding:12px; background:#fff; border-radius:8px; border:1px solid #eee;">
+        <label>Amount received (NT$)</label>
+        <input type="number" step="1" id="paidAmount_${itemId}" value="${amount}">
+        <label>Method (optional)</label>
+        <input type="text" id="paidMethod_${itemId}" placeholder="${isRent ? 'e.g. Cash, Bank transfer' : 'e.g. Deducted from deposit'}">
+        <label>Note (optional)</label>
+        <input type="text" id="paidNote_${itemId}" placeholder="Optional note">
+        <button onclick="submitSignBillItem_('${token}', ${bill.cycle_index}, '${item}', '${itemId}')" id="confirmReceive_${itemId}">Confirm Received</button>
       </div>
     `;
   }
@@ -695,11 +734,11 @@
     if (el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
   }
 
-  async function submitSignBill_(token, cycleIndex, cid) {
-    const amountEl = document.getElementById('paidAmount_' + cid);
-    const methodEl = document.getElementById('paidMethod_' + cid);
-    const noteEl = document.getElementById('paidNote_' + cid);
-    const btn = document.getElementById('confirmReceive_' + cid);
+  async function submitSignBillItem_(token, cycleIndex, item, itemId) {
+    const amountEl = document.getElementById('paidAmount_' + itemId);
+    const methodEl = document.getElementById('paidMethod_' + itemId);
+    const noteEl = document.getElementById('paidNote_' + itemId);
+    const btn = document.getElementById('confirmReceive_' + itemId);
     const amount = amountEl.value.trim();
 
     if (!amount || isNaN(amount) || Number(amount) < 0) {
@@ -707,7 +746,7 @@
       return;
     }
     const confirmed = confirm(
-      `Confirm receipt of NT$${amount} for cycle ${cycleIndex}?\n\nThis is permanent and cannot be edited here afterward — only a direct spreadsheet edit can correct it.`
+      `Confirm receipt of NT$${amount} (${item}) for cycle ${cycleIndex}?\n\nThis is permanent and cannot be edited here afterward — only a direct spreadsheet edit can correct it.`
     );
     if (!confirmed) return;
 
@@ -715,7 +754,8 @@
     btn.textContent = 'Saving...';
     try {
       const res = await fetch(API_BASE + '?action=sign_monthly_bill&token=' + encodeURIComponent(token) +
-        '&cycle_index=' + encodeURIComponent(cycleIndex) + '&paid_amount_ntd=' + encodeURIComponent(amount) +
+        '&cycle_index=' + encodeURIComponent(cycleIndex) + '&item=' + encodeURIComponent(item) +
+        '&paid_amount_ntd=' + encodeURIComponent(amount) +
         '&paid_method=' + encodeURIComponent(methodEl.value.trim()) + '&paid_note=' + encodeURIComponent(noteEl.value.trim()) +
         '&admin_key=' + encodeURIComponent(adminKey));
       const data = await res.json();
