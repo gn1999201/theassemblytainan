@@ -888,19 +888,54 @@
 
   function billCardHtml_(b) {
     const period = fmtDateShort_(b.cycle_start) + ' – ' + fmtDateShort_(b.cycle_end);
-    const isPaid = b.status === 'paid' || b.locked;
 
+    // 改版前「房租+電費合併簽收」的舊紀錄,維持原本單一徽章的顯示方式
+    if (b.locked) {
+      const legacyElectricityRow = b.electricity_included
+        ? `<div class="reading-row"><span>Electricity</span><span>Included in rent</span></div>`
+        : (b.electricity_usage_kwh !== null && b.electricity_usage_kwh !== undefined
+          ? `<div class="reading-row"><span>Electricity (${b.electricity_usage_kwh.toFixed(2)} kWh)</span><span>NT$ ${b.electricity_cost_ntd}</span></div>`
+          : '');
+      return `
+        <div class="service-card">
+          <div class="service-head">
+            <div class="service-title-block" style="margin-left:0;">
+              <div class="service-title">Cycle ${b.cycle_index}<span class="cn" style="margin-left:6px;">第 ${b.cycle_index} 期</span></div>
+              <div class="live-hint" style="margin-top:2px; text-align:left;">${period}</div>
+            </div>
+            <span class="badge badge-active">Paid</span>
+          </div>
+          <div style="margin-top:12px;">
+            ${legacyElectricityRow}
+            <div class="reading-row"><span>Rent</span><span>NT$ ${Number(b.rent_amount_ntd).toLocaleString()}</span></div>
+          </div>
+          <div class="cost-box" style="margin-top:12px;">
+            <div><div class="label">Total<span class="cn">總額</span></div></div>
+            <div class="amount">NT$ ${Number(b.total_amount_ntd).toLocaleString()}</div>
+          </div>
+          <div class="closed-note" style="margin-top:12px; text-align:left;">
+            Received NT$${Number(b.paid_amount_ntd).toLocaleString()}${b.paid_method ? ' via ' + b.paid_method : ''} on ${fmtDateShort_(b.paid_at)}.
+            ${b.paid_note ? '<br>Note: ' + b.paid_note : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // 新流程:房租、電費分開顯示收款狀態
+    const miniBadge = function (paid) {
+      return `<span class="badge ${paid ? 'badge-active' : 'badge-other'}" style="margin:0 0 0 6px; font-size:9px; padding:1px 7px;">${paid ? 'Paid' : 'Unpaid'}</span>`;
+    };
     const electricityRow = b.electricity_included
       ? `<div class="reading-row"><span>Electricity</span><span>Included in rent</span></div>`
-      : (b.electricity_usage_kwh !== null && b.electricity_usage_kwh !== undefined
-        ? `<div class="reading-row"><span>Electricity (${b.electricity_usage_kwh.toFixed(2)} kWh)</span><span>NT$ ${b.electricity_cost_ntd}</span></div>`
+      : (b.has_electricity_charge
+        ? `<div class="reading-row"><span>Electricity (${b.electricity_usage_kwh.toFixed(2)} kWh)${miniBadge(b.electricity_paid)}</span><span>NT$ ${b.electricity_cost_ntd}</span></div>`
         : '');
 
-    const paidInfo = isPaid
-      ? `<div class="closed-note" style="margin-top:12px; text-align:left;">
-          Received NT$${Number(b.paid_amount_ntd).toLocaleString()}${b.paid_method ? ' via ' + b.paid_method : ''} on ${fmtDateShort_(b.paid_at)}.
-          ${b.paid_note ? '<br>Note: ' + b.paid_note : ''}
-        </div>`
+    const rentPaidNote = b.rent_paid
+      ? `<div class="closed-note" style="margin-top:8px; text-align:left;">Rent received${b.rent_paid_method ? ' via ' + b.rent_paid_method : ''} on ${fmtDateShort_(b.rent_paid_at)}.${b.rent_paid_note ? '<br>Note: ' + b.rent_paid_note : ''}</div>`
+      : '';
+    const electricityPaidNote = (b.has_electricity_charge && b.electricity_paid)
+      ? `<div class="closed-note" style="margin-top:4px; text-align:left;">Electricity received${b.electricity_paid_method ? ' via ' + b.electricity_paid_method : ''} on ${fmtDateShort_(b.electricity_paid_at)}.${b.electricity_paid_note ? '<br>Note: ' + b.electricity_paid_note : ''}</div>`
       : '';
 
     return `
@@ -910,17 +945,18 @@
             <div class="service-title">Cycle ${b.cycle_index}<span class="cn" style="margin-left:6px;">第 ${b.cycle_index} 期</span></div>
             <div class="live-hint" style="margin-top:2px; text-align:left;">${period}</div>
           </div>
-          <span class="badge ${isPaid ? 'badge-active' : 'badge-other'}">${isPaid ? 'Paid' : 'Unpaid'}</span>
+          <span class="badge ${b.fully_settled ? 'badge-active' : 'badge-other'}">${b.fully_settled ? 'Fully settled' : 'Unpaid'}</span>
         </div>
         <div style="margin-top:12px;">
           ${electricityRow}
-          <div class="reading-row"><span>Rent</span><span>NT$ ${Number(b.rent_amount_ntd).toLocaleString()}</span></div>
+          <div class="reading-row"><span>Rent${miniBadge(b.rent_paid)}</span><span>NT$ ${Number(b.rent_amount_ntd).toLocaleString()}</span></div>
         </div>
         <div class="cost-box" style="margin-top:12px;">
           <div><div class="label">Total<span class="cn">總額</span></div></div>
           <div class="amount">NT$ ${Number(b.total_amount_ntd).toLocaleString()}</div>
         </div>
-        ${paidInfo}
+        ${rentPaidNote}
+        ${electricityPaidNote}
       </div>
     `;
   }
