@@ -511,21 +511,16 @@
       bodyHtml = `
         <div class="kwh door-code-display">${savedCode}</div>
         <div class="live-hint">Valid for your entire stay — use this code to unlock your room door.</div>
-        <div style="text-align:center; margin-top:14px;">
-          <button onclick="toggleDoorCodeForm_()" style="width:auto; padding:6px 16px; font-size:12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#666; cursor:pointer;">Change Code</button>
-        </div>
-        <div id="doorCodeFormWrap" style="display:none; margin-top:12px;">
-          ${doorCodeInputForm_('Update Code')}
-        </div>
+        <div class="closed-note" style="margin-top:14px;">Need to change your code? Please contact your host.<span class="cn">如需更改密碼,請洽管理員。</span></div>
       `;
     } else if (data.door_code_set && !savedCode) {
       bodyHtml = `
-        <div class="live-hint" style="margin-bottom:8px;">A code was already set for this stay, but it isn't saved on this device. Set a new one below (this replaces the old one).</div>
-        ${doorCodeInputForm_('Set Code')}
+        <div class="live-hint" style="margin-bottom:8px;">A code has already been set for this stay, but it isn't saved on this device.</div>
+        <div class="closed-note">If you need your code again, or need it changed, please contact your host.<span class="cn">如需查詢或更改密碼,請洽管理員。</span></div>
       `;
     } else {
       bodyHtml = `
-        <div class="live-hint" style="margin-bottom:8px;">Choose a ${doorCodeLength_}-digit code to unlock your room during your stay.</div>
+        <div class="live-hint" style="margin-bottom:8px;">Choose a ${doorCodeLength_}-digit code to unlock your room during your stay. This can only be set once — please contact your host if you need it changed afterward.<span class="cn">密碼只能設定一次,之後如需更改請洽管理員。</span></div>
         ${doorCodeInputForm_('Set Code')}
       `;
     }
@@ -583,11 +578,6 @@
       </div>
       <div id="doorCodeError" style="color:#c62828; font-size:12px; margin-top:6px;"></div>
     `;
-  }
-
-  function toggleDoorCodeForm_() {
-    const wrap = document.getElementById('doorCodeFormWrap');
-    if (wrap) wrap.style.display = (wrap.style.display === 'none') ? 'block' : 'none';
   }
 
   async function submitDoorCode() {
